@@ -25,12 +25,6 @@ type packageRuntimeMetadata struct {
 
 const packageLadybugVersion = "v0.19.1"
 
-type packageBuildRoots struct {
-	LaneRoot    string
-	CacheRoot   string
-	RuntimeRoot string
-}
-
 type packageNativeFileIdentity struct {
 	Name   string
 	Bytes  int64
@@ -108,35 +102,18 @@ func buildGoRuntimePackage(packageRoot string, output io.Writer) error {
 	if _, err := exec.LookPath("go"); err != nil {
 		return fmt.Errorf("Go toolchain is required to build the packaged Anvien runtime: %w", err)
 	}
-	buildRoots, err := resolvePackageBuildRoots(sourceRoot)
-	if err != nil {
-		return err
-	}
-
 	outputDir := filepath.Join(root, "bin")
 	outputPath := filepath.Join(outputDir, "anvien.exe")
 	metadataPath := filepath.Join(outputDir, "anvien-runtime.json")
-	stageDir := filepath.Join(buildRoots.RuntimeRoot, "package-runtime")
-	if err := assertPackageChild(buildRoots.RuntimeRoot, stageDir); err != nil {
-		return err
-	}
-	stageOutputPath := filepath.Join(stageDir, "anvien.exe")
 	if err := os.MkdirAll(outputDir, 0o755); err != nil {
 		return err
 	}
-	if err := os.MkdirAll(stageDir, 0o755); err != nil {
-		return err
-	}
 
-	nativeDir, err := resolvePackageNativeDir(sourceRoot, buildRoots)
+	nativeDir, err := resolvePackageNativeDir(sourceRoot)
 	if err != nil {
 		return err
 	}
 	env := os.Environ()
-	env = setEnv(env, "GOCACHE", filepath.Join(buildRoots.CacheRoot, "go-build"))
-	env = setEnv(env, "GOMODCACHE", filepath.Join(buildRoots.CacheRoot, "go-mod"))
-	env = setEnv(env, "GOPATH", filepath.Join(buildRoots.CacheRoot, "go-path"))
-	env = setEnv(env, "GOTMPDIR", filepath.Join(buildRoots.CacheRoot, "go-tmp"))
 	env = setEnv(env, "GOENV", "off")
 	env = setEnv(env, "GOWORK", "off")
 	env = setEnv(env, "GOFLAGS", "")
@@ -164,17 +141,11 @@ func buildGoRuntimePackage(packageRoot string, output io.Writer) error {
 
 	fmt.Fprintf(output, "[package-runtime] building Go runtime for %s/%s\n", runtime.GOOS, runtime.GOARCH)
 	fmt.Fprintf(output, "[package-runtime] Go source root: %s\n", sourceRoot)
-	fmt.Fprintf(output, "[package-runtime] build lane root: %s\n", buildRoots.LaneRoot)
-	fmt.Fprintf(output, "[package-runtime] build cache root: %s\n", buildRoots.CacheRoot)
-	fmt.Fprintf(output, "[package-runtime] build runtime root: %s\n", buildRoots.RuntimeRoot)
 	fmt.Fprintf(output, "[package-runtime] LadybugDB native runtime: %s\n", nativeDir)
-	if err := runPackageCommand(output, sourceRoot, env, "go", "build", "-mod=vendor", "-tags", "ladybugdb", "-trimpath", "-ldflags=-s -w", "-o", stageOutputPath, "./cmd/anvien"); err != nil {
+	if err := runPackageCommand(output, sourceRoot, env, "go", "build", "-mod=vendor", "-tags", "ladybugdb", "-trimpath", "-ldflags=-s -w", "-o", outputPath, "./cmd/anvien"); err != nil {
 		return err
 	}
-	if err := os.Chmod(stageOutputPath, 0o755); err != nil {
-		return err
-	}
-	if err := copyPackageFileIfExists(stageOutputPath, outputPath); err != nil {
+	if err := os.Chmod(outputPath, 0o755); err != nil {
 		return err
 	}
 	if err := copyPackageNativeRuntime(nativeDir, outputDir); err != nil {
@@ -310,11 +281,7 @@ func verifyPackageGoVendor(sourceRoot string, output io.Writer) error {
 	if err != nil || stat.IsDir() {
 		return fmt.Errorf("Go vendor verifier is missing: %s", verifierPath)
 	}
-	powerShell := "pwsh"
-	if runtime.GOOS == "windows" {
-		powerShell = "powershell.exe"
-	}
-	cmd := exec.Command(powerShell, "-NoLogo", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", verifierPath, "-SourceRoot", sourceRoot, "-Json")
+	cmd := exec.Command("pwsh", "-NoLogo", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass", "-File", verifierPath, "-SourceRoot", sourceRoot, "-Json")
 	cmd.Dir = sourceRoot
 	cmd.Stdout = output
 	cmd.Stderr = output
@@ -341,7 +308,7 @@ func packageGoVendorManifestSHA256(sourceRoot string) (string, error) {
 	return strings.ToUpper(fmt.Sprintf("%x", hash.Sum(nil))), nil
 }
 
-func resolvePackageNativeDir(sourceRoot string, buildRoots packageBuildRoots) (string, error) {
+func resolvePackageNativeDir(sourceRoot string) (string, error) {
 	if runtime.GOOS == "windows" {
 		authorityRoot := strings.TrimSpace(os.Getenv("ANVIEN_BUILD_REPO_ROOT"))
 		if authorityRoot == "" {
@@ -349,87 +316,16 @@ func resolvePackageNativeDir(sourceRoot string, buildRoots packageBuildRoots) (s
 		}
 		return resolvePinnedWindowsNativeDir(authorityRoot)
 	}
-	version := os.Getenv("ANVIEN_LADYBUGDB_VERSION")
+	version := strings.TrimSpace(os.Getenv("ANVIEN_LADYBUGDB_VERSION"))
 	if strings.TrimSpace(version) == "" {
-		version = "auto"
+		version = packageLadybugVersion
 	}
-	outputRoot := filepath.Join(buildRoots.CacheRoot, "ladybug-native")
+	outputRoot := filepath.Join(sourceRoot, "third_party", "ladybugdb")
 	script, err := resolvePackageNativeScript(sourceRoot, "ensure-ladybug-native.sh")
 	if err != nil {
 		return "", err
 	}
 	return commandPackageOutput(sourceRoot, "bash", script, version, outputRoot)
-}
-
-func resolvePackageBuildRoots(sourceRoot string) (packageBuildRoots, error) {
-	repoRoot := strings.TrimSpace(os.Getenv("ANVIEN_BUILD_REPO_ROOT"))
-	if repoRoot == "" {
-		repoRoot = sourceRoot
-	}
-	repoRoot, err := filepath.Abs(repoRoot)
-	if err != nil {
-		return packageBuildRoots{}, err
-	}
-	tempRoot := filepath.Join(repoRoot, ".tmp")
-	if err := os.MkdirAll(tempRoot, 0o755); err != nil {
-		return packageBuildRoots{}, err
-	}
-
-	laneRoot := strings.TrimSpace(os.Getenv("ANVIEN_BUILD_LANE_ROOT"))
-	if laneRoot == "" {
-		laneRoot, err = os.MkdirTemp(tempRoot, "package-runtime-")
-		if err != nil {
-			return packageBuildRoots{}, err
-		}
-	}
-	laneRoot, err = filepath.Abs(laneRoot)
-	if err != nil {
-		return packageBuildRoots{}, err
-	}
-	if err := assertPackageChild(tempRoot, laneRoot); err != nil {
-		return packageBuildRoots{}, fmt.Errorf("invalid package build lane root: %w", err)
-	}
-
-	cacheRoot := strings.TrimSpace(os.Getenv("ANVIEN_BUILD_CACHE_ROOT"))
-	if cacheRoot == "" {
-		cacheRoot = filepath.Join(laneRoot, "cache")
-	}
-	cacheRoot, err = filepath.Abs(cacheRoot)
-	if err != nil {
-		return packageBuildRoots{}, err
-	}
-	if err := assertPackageChild(laneRoot, cacheRoot); err != nil {
-		return packageBuildRoots{}, fmt.Errorf("invalid package build cache root: %w", err)
-	}
-
-	runtimeRoot := strings.TrimSpace(os.Getenv("ANVIEN_BUILD_RUNTIME_ROOT"))
-	if runtimeRoot == "" {
-		runtimeRoot = filepath.Join(laneRoot, "runtime")
-	}
-	runtimeRoot, err = filepath.Abs(runtimeRoot)
-	if err != nil {
-		return packageBuildRoots{}, err
-	}
-	if err := assertPackageChild(laneRoot, runtimeRoot); err != nil {
-		return packageBuildRoots{}, fmt.Errorf("invalid package build runtime root: %w", err)
-	}
-	if strings.EqualFold(cacheRoot, runtimeRoot) {
-		return packageBuildRoots{}, fmt.Errorf("package build cache and runtime roots must be distinct: %s", cacheRoot)
-	}
-
-	for _, path := range []string{
-		cacheRoot,
-		runtimeRoot,
-		filepath.Join(cacheRoot, "go-build"),
-		filepath.Join(cacheRoot, "go-mod"),
-		filepath.Join(cacheRoot, "go-path"),
-		filepath.Join(cacheRoot, "go-tmp"),
-	} {
-		if err := os.MkdirAll(path, 0o755); err != nil {
-			return packageBuildRoots{}, err
-		}
-	}
-	return packageBuildRoots{LaneRoot: laneRoot, CacheRoot: cacheRoot, RuntimeRoot: runtimeRoot}, nil
 }
 
 func resolvePinnedWindowsNativeDir(authorityRoot string) (string, error) {
