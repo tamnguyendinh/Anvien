@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A001 KEEP / A001_COMMIT_COMPLETE / A002 PLAN_READY_FOR_MAIN_VERIFY / CODER_LOCKED`; `E2-P2A-A001REVIEW1/DECISION1/COMMIT1` preserve A001 acceptance and commits, while `E2-P2A-A002ARCH1/PLAN1` record the fresh A002 diagnostic-appender direction and exact four-ledger translation; no A002 implementation/build/test/measurement/Supervisor/disposition evidence exists
+- Current state: `A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A003 RESIDUAL_ATTRIBUTION_COMPLETE / ARCHITECT_ACTIVE`; `E2-P2A-A002REVIEW1` records `SUPERVISOR_A002_PASS`, `E2-P2A-A002DECISION1` records Main `KEEP` and separate repo-specific promotion, `E2-P2A-A003CURRENT1` records the accepted basis, and `E2-P2A-A003ATTRIB1` records current cause/owner/complete call path. P2-A/parent/D001 remain unchecked, D001 streak is `0`, D002-D017 remain queued, A002 accepted bytes remain uncommitted, visible Architect task `01a03cea-15cc-7d73-bf07-a984c69517d9` is active, and no A003 direction/Planner/Coder/detect/stage/commit exists
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -256,7 +256,7 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-AnnnSYSTEM1` | only on third consecutive unsuccessful child attempt: exact parent/child rows, denominator, retained child/parent times, three attempts/reasons, terminal child `SYSTEM_CHARACTERISTIC`, and matching child checklist check |
 | `E2-P2A-AnnnRANK1` | accepted-state child/parent/full-pipeline timing refresh, complete child/top-level list update, and exact next unchecked child/parent pointer |
 
-Current attempt basis: A001 source/build/review/decision/commit evidence remains complete and optimized bytes unchanged. `E2-P2A-A001REVIEW1` records `SUPERVISOR_A001_PASS`; Main's `E2-P2A-A001DECISION1` records A001 `KEEP`; `E2-P2A-A001COMMIT1` records `A001_COMMIT_COMPLETE` at exact commit `17a1f3af37dcb61f9d389345822b6470a8f772cc`. P2-A, parent, and all children remain unchecked; D001 remains active and its no-KEEP streak is `0`; D002-D017 remain queued/unopened. Existing `E:\Anvien` numeric rows stay superseded. Cheapapp and Restaurant Manager independently retain complete before/after A001 data, and each repo's optimized values remain its own accepted current baseline without averaging/combining. `E2-P2A-A002ARCH1/PLAN1` now bind A002 at `PLAN_READY_FOR_MAIN_VERIFY`; Coder remains locked, and A002 impact/source/build/test/measurement/Supervisor/disposition/detect/stage/commit evidence remains absent.
+Current attempt basis: A001 evidence/commit remains complete. A002 `ARCH1/PLAN1/IMPACT1/SRC1/BUILD1/TEST1/SCRIPTBUILD1/CHEAPAPP1/RESTAURANT1` bind the exact uncommitted candidate and two independent packets. Visible Supervisor task `01a03c97-02f9-7560-ae31-4a333c31798e` produced report `E:\Anvien\reports\Supervisor\rp_supervisor_260826_130617_by_gpt-5_child06a_a002_run_scoped_diagnostic_appender.md`, SHA-256 `11BEA6715CD8626F80746B158FE755347E6924EAC560B2C5171525FBDE58A78B`, exact verdict `SUPERVISOR_A002_PASS`. Main's `E2-P2A-A002DECISION1` records `KEEP` because D001, parent, and process decreased on both targets independently with equivalence/resource/lifecycle PASS. A002 values are now separate accepted current baselines; D001 remains active/unchecked and its streak resets/remains `0`; parent and all children remain unchecked; D002-D017 remain queued. `E2-P2A-A003CURRENT1/ATTRIB1` record the current basis and retained residual facts; visible Architect task `01a03cea-15cc-7d73-bf07-a984c69517d9` is active while Coder remains locked. Binding plan rules forbid per-attempt detect/stage/commit; P2-A stays open and A002 accepted bytes remain uncommitted.
 
 ### `E2-P2A-A001DRILL1` — Complete OP001 Resolution Child Measurement
 
@@ -591,6 +591,227 @@ Status: recorded / `A002 PLAN_READY_FOR_MAIN_VERIFY / CODER_LOCKED`.
 - Coder remains locked. This Planner refresh performs no source/test/report/plan-rules edit, graph/analyze/build/test/measurement, Supervisor/disposition, stage, or commit.
 - Next owner is Main Orchestration: independently verify the exact four ledger diffs/artifacts, then alone decide the next governance transition. No extra Architect consistency re-review is created by this translation.
 
+### `E2-P2A-A002IMPACT1` — Fresh Pre-Edit Anvien Impact
+
+Status: recorded / complete for the exact A002 production owner boundary.
+
+- Exact `anvien --help`: PASS.
+- Fresh pre-edit `anvien analyze --force`: exit `0`; `2217` scanned, `765` parsed, `0` failed; graph `123605` nodes / `170322` relationships; indexed commit `80eb8c3c9a9cf516dd17f8b3bf15802694bb1277`.
+- File risk: `internal/graphhealth/diagnostics.go`, `internal/resolution/emit.go`, and `internal/resolution/outcome.go` are HIGH.
+- Symbol risk: `AppendDiagnosticToNode`, `appendDiagnosticsFromProperties`, `emitter`, `newEmitter`, and `emitUnresolvedReference` are CRITICAL; `emitTypeScriptOutcomeDiagnostic` is LOW/0 while its file remains HIGH.
+- HIGH/CRITICAL were treated as blast-radius warnings. The implementation stayed inside the exact `E2-P2A-A002ARCH1/PLAN1` boundary.
+
+### `E2-P2A-A002SRC1` — Exact Production-First Candidate
+
+Status: recorded / uncommitted candidate at HEAD `cc420e7ad719d90dc4b2d9991be0249e8d648daa`; staged set empty; scoped diff-check PASS.
+
+- Exact production delta is `+56/-4`: `internal/graphhealth/diagnostics.go +52/-2`, `internal/resolution/emit.go +3/-1`, and `internal/resolution/outcome.go +1/-1`.
+- One new post-production test file exists: `internal/graphhealth/diagnostics_test.go`. No existing test file changed.
+- Final SHA-256 values: `diagnostics.go AEABA8A541D1C293DFA4FE411253A85A26B6AC0DD18047AFA6F9151B4932BEE8`; `emit.go 73AE20E8A18AC25F8019E2A3223407621AE7ABC358DBAF4F058E1D9AC3136060`; `outcome.go 02092F9FE7DA2A4BDB49E13056FBA3C97DC24F416141E7F27866EE80F60C1F7E`; `diagnostics_test.go 58E8CAE2C4EBBF4672D2D338CC5E1419B7CECA9F7389B0E24F51BF2F975A7CEA`.
+- The candidate adds one emitter-owned, write-through diagnostic appender; first touch normalizes supported existing diagnostics once, each incoming diagnostic once, and every successful append writes `[]Diagnostic` through `Graph.AddNode`. Legacy `AppendDiagnosticToNode` remains available for all other callers.
+- No forbidden owner, schema, public contract, persistence/reader, timing instrumentation, D002-D017, or unrelated dirty path changed.
+- Coder report: `E:\Anvien\reports\coder\rp_coder_260825_193200_by_gpt-5_child06a_a002_paused_handoff.md`; status `CODER_A002_SOURCE_BUILD_READY_FOR_MAIN`.
+
+### `E2-P2A-A002BUILD1` — Canonical Full-Build Validation
+
+Status: `PASS` / exit `0`; validation only, not product-performance evidence.
+
+- Exact command: `pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File E:\Anvien\scripts\full-build.ps1`.
+- Build-holder preflight found the analyze lock free and only editor-owned MCP services; nothing was terminated.
+- Vendor/runtime source verification passed with `1798` files, `0` missing, `0` extra, and `0` mismatched; canonical runtime and launcher/Vite build passed.
+- Runtime: version `1.2.8`, `73,767,936` bytes, SHA-256 `11895442CA4A5708FA439A787BC541102BE7144856315BCD17E9A7B772658AED`.
+- Maintenance analyze exited `0` with `2221` scanned, `767` parsed, `0` failed, graph `123811 / 170572`. This maintenance run and build duration are not A002 benchmark observations.
+
+### `E2-P2A-A002TEST1` — Focused/Graphhealth PASS And Pre-Existing Resolution Golden FAIL
+
+Status: all A002-focused checks and `internal/graphhealth` PASS; `internal/resolution` truthfully FAILs only on one proven pre-existing preserve-only golden. The package is not labeled PASS.
+
+- PASS after the definitive full-build PASS, in required order: `TestDiagnosticAppenderMatchesLegacySemantics`; `TestP6DStructuredOutcomeProjectionPreservesGraphJSONAndHealthParity`; `TestResolveAttachesSourceBackedUnresolvedDiagnostics`; `TestP6C3FinalOutcomeStatusPrecedenceAndCarriageMatrix`; `TestP6BResolverCarriesCatalogValidationFailuresPerSourceSite`; `go test ./internal/graphhealth -count=1`.
+- `go test ./internal/resolution -count=1` exits `1` solely at `TestProofBasedCallAccessGoldenCorpus` with `unclassified/review` instead of the stale expected classification/actionability.
+- A repo-local exact current-HEAD overlay for the three A002 production files reproduces the identical complete diagnostic payload. The failure is pre-existing/preserve-only, is neither A002 regression nor A002 validation proof, and does not authorize editing its owner.
+- Main independently verified HEAD, staged set, scoped status, final hashes, exact `+56/-4` production diff, new test source, and diff-check before advancing the ledger cursor.
+- Current transition after later measurement history: `A002 KEEP / A003 CURRENT_BASIS_RECORDED / RESIDUAL_CAUSE_PENDING / ARCHITECT_LOCKED`. Invalid history remains preserved; `REVIEW1/DECISION1` close A002 as KEEP; `A003CURRENT1` records the promoted basis. No A003 cause/Architect/Planner/Coder evidence, detect, stage, or commit exists.
+
+### `E2-P2A-A002MEASUREFAIL1` — Cheapapp Capture Ineligible: Missing 17-Child Instrumentation
+
+Status: `MEASUREMENT_A002_CHEAPAPP_INCOMPLETE_MISSING_17_CHILD_INSTRUMENTATION`. This is an invalid measurement invocation, not a production attempt result, Supervisor result, no-KEEP disposition, baseline promotion/restoration, or retry authorization.
+
+- Visible lane/report: `01a033a5-4700-7272-a28d-de3a71f58135`; `E:\Anvien\reports\Investigation\rp_child06a_a002_cheapapp_benchmark.md`; report SHA-256 `17F1D449A2766858EA70AB32D565EBBF078DA8830B36928816CB741815CE5AE8`.
+- Raw root: `E:\Anvien\.tmp\child06a_a002_cheapapp_benchmark`; accepted A001 before root remained `E:\Anvien\.tmp\child06a_a001_cheapapp_benchmark\owner-final-run\optimized` and was not rerun.
+- Exact one-shot command: `E:\Anvien\.tmp\child06a_a002_cheapapp_benchmark\candidate\anvien-a002-cheapapp-candidate.exe analyze E:\cheapapp.org --force --skip-git --json --progress --benchmark-json E:\Anvien\.tmp\child06a_a002_cheapapp_benchmark\candidate\benchmark.json --benchmark-label child06a-a002-cheapapp-candidate`.
+- Identity/result: launch count `1`; PID `12756`; start/end `2026-08-25T21:40:32.8136848+07:00` / `2026-08-25T21:43:09.4112295+07:00`; exit `0`; executable `73,767,936` bytes / SHA-256 `11895442CA4A5708FA439A787BC541102BE7144856315BCD17E9A7B772658AED`; target HEAD `a869876ab6262dacde6cd5d432d099a91852a646`.
+- Raw measured boundaries, all ineligible: process wall/CPU `156.946718300 / 110.906250000 s`; analyzer `120.335153100 s`; parent `resolution 22.664132600 s`; memory start/end/max-Sys `1,299,272 / 666,783,664 / 1,972,447,736` bytes.
+- Coverage: exactly `30/30` top-level operations with matching denominators, but the benchmark root has no `resolutionChildren`/equivalent collection and its `resolution` object contains semantic counters only. Candidate child coverage is exactly `0/17`; D001 duration/calls/files/rank/share/delta, all D002-D017 values, child sum, parent residual, exclusive intervals, overlaps, and resolution CPU profile are unavailable and were not inferred.
+- Same-work facts that did pass: scanned/parsed/failed `1359/887/0`; parser bytes `5,430,581`; graph `95,762 / 129,716`; projection `13,360 / 735`; DB readback `95,762 / 129,716`; all resolution semantic counters equal accepted A001.
+- Main independently recomputed raw hashes: benchmark `4CDF0F9813D977EE9C5B303EB94E1376800C4FAED98B7FC61CDB82EBC07747B3`; process `E8D026F49B30A45503C0718EC0A611EB6021D77AC34538056B144DA238A2704E`; graph `8763AA2D089328F3D782A5F01E06178D171922E3A5CE96A4EE6707510976C920`; stdout `F52193AD16DD18C3DBD78CC161B503CF4091BDFAC1B363962FEBC2C50AD7FEF4`; stderr `0FDCF15222C02C25771C98E17D9220C89FDCD0294137A6AE4D9B3AAFD4761ADC`. Graph/stdout/stderr exactly match the accepted A001 authority; Ladybug/meta raw-byte differences remain non-semantic and make no acceptance claim.
+- Exact cause: the frozen canonical candidate contained the A002 production appender but did not contain the accepted `resolve.go`/`types.go` child instrumentation. Setting a profile environment variable cannot create child metrics in a binary that was not built with the overlay. Raw Segment 05 `resolve.go` is forbidden for correction because it predates accepted A001 and would restore its old global import traversal.
+- Required correction: preserve the unchanged A002 source candidate; independently verify and use the accepted A001 optimized child-instrumentation overlay mapping only for `internal/resolution/resolve.go` and `internal/resolution/types.go`; build a frozen measurement binary with that overlay, then run exactly one corrected Cheapapp capture after zero-competitor preflight. Restaurant Manager remains queued until the corrected Cheapapp packet is valid.
+- State effect: no A002 value is promotable; A001 accepted baselines remain authoritative; D001 streak remains `0`; every checkbox remains unchanged; no retry was launched by the failing lane.
+
+### `E2-P2A-A002OVERLAY1` — Corrected 17-Child Measurement Overlay Identity
+
+Status: `CORRECTED_OVERLAY_VERIFIED_STATIC / BUILD_AND_RUNTIME_PENDING`. Two independent read-only checks plus Main verification agree; this authorizes only the corrected measurement build/run, not a production edit, benchmark result, Supervisor, disposition, or commit.
+
+- Accepted optimized manifest: `E:\Anvien\.tmp\child06a_a001_cheapapp_benchmark\optimized-overlay.json`, SHA-256 `7B138FBA06B41CBD4C6709E6DF00C80C03E4015B615D1E42F787DE2A65D378F7`. It has exactly two replacements: current `internal/resolution/resolve.go` -> optimized overlay SHA-256 `92A89227E1B1B1C159DE8BE77A1F060361C9058C4F83C78BFC32E9AB40DADEA9`; current `internal/resolution/types.go` -> optimized overlay SHA-256 `A8DDCB1C61C312D3D3B164B1DD02BFD91C640F1FEB8B6DB511B73FD923C802B8`.
+- A001 preservation: Main extracted `(*workspace).explicitImportNameClaimed` and proved current production equals optimized overlay byte-for-byte, while raw Segment 05 differs. The optimized overlay retains `w.importClaimsByReceiver`; raw Segment 05 would restore linear `w.imports` traversal and is forbidden.
+- Instrumentation completeness: optimized overlay declares `Metrics.ChildMeasurements`, the 17 exact child IDs, interval/source/call-path/denominator fields, and profile env `ANVIEN_OP001_RESOLUTION_CPU_PROFILE`.
+- A002 compatibility: the manifest does not map `internal/graphhealth/diagnostics.go`, `internal/resolution/emit.go`, or `internal/resolution/outcome.go`; build therefore consumes current A002 hashes `AEABA8A...BEE8`, `73AE20E8...36060`, and `02092F9F...C1F7E` directly. Static review found no signature/type conflict; actual compilation remains pending in the measurement lane.
+- Pinned native/toolchain contract: Go `go1.26.3 windows/amd64`; Ladybug directory `E:\Anvien\third_party\ladybugdb\v0.19.1\windows-x86_64`; pinned DLL SHA-256 `20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7`.
+- Stop boundary: do not use raw Segment 05 overlay; stop on any hash/target/source/native drift, competing analyze/benchmark process, build/analyze failure, absent/incorrect 17-child schema/order/interval conservation/profile, or workload/semantic/graph/output mismatch. No automatic retry.
+
+### `E2-P2A-A002MEASUREFAIL2` — Corrected Cheapapp Measurement Build Stopped Before Runtime
+
+Status: `MEASUREMENT_INCOMPLETE_BUILD_FAILURE_MISSING_LBUG_HEADER / ANALYZE_LAUNCH_COUNT_0`. This is measurement-infrastructure failure evidence, not a production-attempt result, no-KEEP disposition, baseline promotion/restoration, or retry by the failed lane.
+
+- Visible lane/report: `01a033a5-4700-7272-a28d-de3a71f58135`; `E:\Anvien\reports\Investigation\rp_child06a_a002_cheapapp_benchmark_corrected_17child.md`; report SHA-256 `AB0D18A91D5D344C3975B1D19597E088B5CFECF639E02392C2BAA6A040408EC9`.
+- Raw root: `E:\Anvien\.tmp\child06a_a002_cheapapp_benchmark_corrected_17child`; machine-readable failure: `build-result.json`.
+- One build attempt only: start/end `2026-08-25T22:16:04.2598316+07:00` / `2026-08-25T22:18:55.9468223+07:00`; wall `171.675682500 s`; exit `1`; candidate binary absent; analyze launch count `0`; benchmark/profile absent.
+- Exact failure: `internal\lbugnative\native_ladybugdb.go:6:10: fatal error: lbug.h: No such file or directory`.
+- All identity gates passed before build: Anvien HEAD `cc420e7ad719d90dc4b2d9991be0249e8d648daa`, staged count `0`, Cheapapp HEAD `a869876ab6262dacde6cd5d432d099a91852a646`, zero competitors, Go `go1.26.3 windows/amd64`, exact manifest/two mapped-file/A002/native-DLL hashes under `OVERLAY1`.
+- The historical attempt used a direct Go `-overlay` command with repo-local HOME/TEMP/XDG/Go caches, `GOPROXY/GOSUMDB=off`, `CGO_ENABLED=1`, and only a native PATH prefix. `CGO_CFLAGS` and `CGO_LDFLAGS` were unset for this sole build, so it could not locate `lbug.h`. The build was not interrupted or retried. The Owner subsequently corrected the workflow: direct Go compilation is not a valid recovery path in this workspace; the two repository build scripts are authoritative.
+- Target source, target HEAD/status, A002 source/test bytes, existing reports, ledgers, A001 artifacts, and Restaurant artifacts were unchanged. No target analyze or target-local graph mutation occurred.
+- State effect: A001 baselines remain authoritative and separate; D001 streak stays `0`; every checkbox remains unchanged; no product elapsed/resource/equivalence value is created from this failure.
+- Required recovery was completed by `E2-P2A-A002SCRIPTPLAN1/SCRIPTBUILD1`: preserve this failed root/report, do not repeat the ad-hoc direct build, and consume the validated reusable packet for one corrected Cheapapp capture. Restaurant and Supervisor remain locked until a valid Cheapapp packet is durably recorded.
+
+### `E2-P2A-A002BUILDRECOVERY1` — Existing Script-Compatible Overlay Path Is Missing
+
+Status: `NO_EXISTING_SCRIPT_COMPATIBLE_OVERLAY_PATH / SUPERSEDED_NEXT_STEP_BY_OWNER_SCRIPT_DIRECTION`. This is read-only build-interface evidence, not a production-attempt result, no-KEEP disposition, target measurement, or authorization to edit the existing build infrastructure.
+
+- Owner workflow authority: canonical builds use `E:\Anvien\scripts\full-build.ps1` and `E:\Anvien\anvien-launcher\build.ps1`; a direct `go build` retry is prohibited.
+- Fresh Main source inspection plus two independent read-only checks agree. `full-build.ps1` has no parameters, derives the fixed repository root, runs `go run -mod=vendor ..\cmd\anvien package build-runtime` from `E:\Anvien\anvien`, writes the fixed canonical runtime, invokes the fixed launcher build, then runs canonical `analyze . --force`.
+- `package build-runtime` uses `cobra.NoArgs`. `resolvePackageSourceRoot` always selects parent source `E:\Anvien` before `E:\Anvien\anvien\go-src` because all required source anchors exist. `buildGoRuntimePackage` hard-codes the canonical output and build flags, has no `-overlay`, and forces `GOFLAGS` empty; ambient overlay injection is therefore unavailable.
+- `prepare-go-source` has no arguments, deletes/recreates fixed `anvien\go-src` from current repo source, and has no overlay hook. The canonical workspace build ignores that fallback while parent source exists.
+- `anvien-launcher\build.ps1` has no parameters and does not build the CLI runtime; it requires the fixed canonical runtime/metadata, builds Web/launcher/server outputs, copies the native DLL, and registers the protocol.
+- Existing environment overrides affect Go executable or native authority only; none selects runtime source, overlay, or output. A temp-package/go-src/direct-Go workaround would be an ad-hoc workflow outside the two Owner-approved scripts.
+- Exact historical conclusion: no safe pre-existing command could build the verified two-file instrumentation overlay while preserving the script contract. The latest Owner direction supersedes only its next step: keep both canonical scripts unchanged and implement the reusable `scripts/build-a00x-benchmark.ps1`. Coder owns that exact script; Cheapapp runtime launch, Restaurant Manager, Supervisor, staging, and commit remain locked until script build validation completes.
+
+### `E2-P2A-A002SCRIPTPLAN1` — Owner-Directed Reusable A00x Benchmark Build Path
+
+Status: `SCRIPT_PLAN_RECORDED / CONSUMED_BY_E2-P2A-A002SCRIPTBUILD1`. This is Planner control evidence for measurement-support tooling, not A002 production evidence, benchmark data, Supervisor acceptance, disposition, or commit authorization.
+
+- Latest Owner authority requires the complete reusable contract to be durable, not remembered only from chat: `scripts/build-a00x-benchmark.ps1` is the common build path for A002 and later A00x overlay/instrumented benchmark candidates.
+- Required inputs are explicit attempt ID, overlay manifest, output directory, expected overlay hash, expected mapped-source hashes, and expected candidate-source hashes. For A002 the overlay is the exact two-mapping `resolve.go`/`types.go` authority from `E2-P2A-A002OVERLAY1`, while the three A002 production hashes remain those in `E2-P2A-A002SRC1`.
+- The script carries the canonical `-mod=vendor`, `ladybugdb`, trim/ldflags, Ladybug native include/link/PATH, CGO, offline Go, and toolchain environment; adds only the verified overlay, `-buildvcs=false`, and explicit repo-local `.tmp` output; copies the pinned DLL; and emits executable/DLL/overlay/source/Go/native/command provenance as JSON.
+- It never edits, copies, wraps through, or replaces `scripts/full-build.ps1` or `anvien-launcher/build.ps1`; never writes canonical runtime/launcher/server/web outputs; never registers protocol or runs `analyze`; and never mutates target repositories or shared/global caches.
+- After this script/native contract passes once, unchanged later A00x attempts call it with their own explicit input/hash contract and do not repeat general build-interface discovery or audit.
+- If a later A00x has a genuinely different feature/input and the script fails, the exact script error is the starting evidence. Planner refreshes that attempt, and Coder adjusts only the narrow reusable-script parameter/guard/environment/tag/generated-input/provenance behavior required by that A00x. Do not audit the canonical scripts again, alter production to evade the build failure, or change canonical build interfaces unless the Owner explicitly changes this rule.
+- Current Coder boundary: add only `scripts/build-a00x-benchmark.ps1` and update the existing A002 Coder handoff. After holder preflight, canonical full-build `PASS` must precede script execution; then verify PowerShell parse, one A002 script build, binary/version/DLL/provenance identities, scoped diff-check, and empty staged set. The Coder runs no target analyze.
+- Failure/rollback: remove only the new script and exact `.tmp` packet if invalid. A script failure creates no numeric row, no no-KEEP increment, no baseline/checklist change, and no A002 production rollback.
+- Fresh plan-authoring evidence: `anvien --help` PASS; `anvien analyze --force` exit `0`, `2223` scanned / `767` parsed / `0` failed, graph `123840 / 170601`; all four standard ledgers are current/non-stale LOW-risk documentation files with `2` inbound / `1` outbound relationships and `0` unresolved references.
+
+### `E2-P2A-A002SCRIPTBUILD1` — Reusable A00x Script And Frozen A002 Packet Validated
+
+Status: `PASS / CODER_A002_A00X_SCRIPT_BUILD_READY_FOR_MAIN / CORRECTED_CHEAPAPP_MEASUREMENT_PENDING`. This is measurement-support build evidence only; it creates no product benchmark value, no no-KEEP increment, no baseline/checklist change, and no A002 disposition.
+
+- Added only `scripts/build-a00x-benchmark.ps1`, SHA-256 `ADA407C7496FCEA988276F03BAD5001ED139A4AEC9A16B9C32947DA440814EC5`; updated only the existing Coder report. Staged set remains empty and all canonical scripts/package-runtime/A002 source-test/ledger/target identities remain unchanged.
+- Exact holder preflight first misclassified `MsMpEng` PID `3840`; termination returned Access Denied and no build started. Narrow Restart Manager proof then identified five actual canonical EXE/DLL holders (`5564`, `8320`, `10888`, `12552`, `7484`), all installed `anvien mcp` processes. Only those proven holders were terminated; all five disappeared, both outputs accepted exclusive access, and analyze lock was free before build.
+- Canonical `scripts/full-build.ps1` ran after holder clearance, exit `0`, start/end `2026-08-26T02:52:20.7205211Z / 2026-08-26T02:58:30.0364325Z`; elapsed `369.3159114 s` is validation only. Vendor verification passed; maintenance analyze recorded `2224` scanned / `767` parsed / `0` failed and is not target benchmark evidence.
+- PowerShell parse PASS (`4924` tokens, `0` errors). Bad-overlay-hash and output-outside-`.tmp` guards each failed closed before any output/work root and do not count as valid builds.
+- Exactly one valid A002 script invocation ran, exit `0`, start/end `2026-08-26T03:05:27.6669857Z / 2026-08-26T03:08:38.2045746Z`. Go identity is `go version go1.26.3 windows/amd64`.
+- Frozen packet root: `E:\Anvien\.tmp\child06a_a002_a00x_benchmark_build`. Executable `anvien-a002-benchmark.exe`: version `1.2.8`, `73,816,576` bytes, SHA-256 `0F8B8244ABC80339A73E3A29F38D32F55A7A6A65281A64C291785ACF8F4A241E`. DLL SHA-256 `20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7`. Provenance SHA-256 `673FCCFEA17C48640C0AC62243479FE5EFD71E172CB1D4136D046C806E5855F1`.
+- Provenance independently verifies schema `1`, attempt `A002`, HEAD `cc420e7ad719d90dc4b2d9991be0249e8d648daa`, exact build argv/flags, `2/2` overlay mappings, `3/3` A002 candidate sources, `3/3` native inputs, output hashes/version/bytes, exit `0`, and all Go cache/temp/home/AppData/XDG paths beneath the packet-local `.a00x-A002-work` directory.
+- Validation artifacts are under `E:\Anvien\.tmp\child06a_a002_a00x_script_validation`; packet verification and preserve-boundary verification both record `PASS`. Coder report: `E:\Anvien\reports\coder\rp_coder_260825_193200_by_gpt-5_child06a_a002_paused_handoff.md`.
+- Next action: run exactly one corrected Cheapapp capture with the frozen executable and accepted A001 before; Restaurant Manager and per-attempt Supervisor remain locked until the complete Cheapapp packet is durably recorded.
+
+### `E2-P2A-A002CHEAPAPP1` — Valid Frozen Cheapapp Candidate Measurement Recorded
+
+Status: `MEASUREMENT_COMPLETE / CHEAPAPP_MEASUREMENT_RECORDED / RESTAURANT_MEASUREMENT_PENDING`. This is one target's measurement/equivalence/resource evidence only. It does not promote A002, decide `KEEP`, change the accepted A001 baseline, increment/reset the D001 no-KEEP streak, check any parent/child, open Supervisor, or authorize detect/stage/commit.
+
+- Visible lane/turn: task `01a033a5-4700-7272-a28d-de3a71f58135`, turn `01a03c2e-64d2-7f31-ad22-5f4488977209`, completed without error after exactly one target analyze launch.
+- Report: `E:\Anvien\reports\Investigation\rp_child06a_a002_cheapapp_benchmark_frozen_17child.md`.
+- Raw root: `E:\Anvien\.tmp\child06a_a002_cheapapp_frozen_17child_20260826`; machine-readable authority is `preflight.json`, `validation.json`, `comparison.json`, `output-manifest.json`, and `candidate/{benchmark.json,process.json,stdout.json,stderr.log,resolution.cpu.pprof}`.
+- Exact frozen executable: `E:\Anvien\.tmp\child06a_a002_a00x_benchmark_build\anvien-a002-benchmark.exe`, version `1.2.8`, `73,816,576` bytes, SHA-256 `0F8B8244ABC80339A73E3A29F38D32F55A7A6A65281A64C291785ACF8F4A241E`; adjacent DLL SHA-256 `20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7`; provenance SHA-256 `673FCCFEA17C48640C0AC62243479FE5EFD71E172CB1D4136D046C806E5855F1`.
+- Exact command: `anvien-a002-benchmark.exe analyze E:\cheapapp.org --force --skip-git --json --progress --benchmark-json E:\Anvien\.tmp\child06a_a002_cheapapp_frozen_17child_20260826\candidate\benchmark.json --benchmark-label child06a-a002-cheapapp-frozen-17child-20260826`.
+- Process proof: launch count `1`; PID `13232`; start/end `2026-08-26T10:58:53.0369124+07:00` / `2026-08-26T11:01:09.5419385+07:00`; exit `0`; process wall/CPU `136.729876000 / 105.125000000 s`; zero competing analyze/benchmark processes immediately before launch.
+- Complete schema/conservation proof: `30/30` unique top-level operations; `17/17` unique resolution children; raw instrumentation order matches accepted A001 and `comparison.json` normalizes the exact rows to `B2-P2A-A001-D001..D017`; D001 denominator `calls=27890; files=887`; `2675` exclusive intervals; overlap `0`; every child duration equals its interval sum; parent/child-sum/residual `19.040468000 / 19.024756200 / 0.015711800 s`; all durations/denominators nonnegative; profile `61,264` bytes and nonempty.
+- Accepted A001 -> unpromoted A002 candidate elapsed values:
+  - D001 `resolve_calls`: `25.045225300 -> 3.090914200 s`; delta `-21.954311100 s (-87.658669%)`.
+  - parent `resolution`: `184.481061700 -> 19.040468000 s`; delta `-165.440593700 s (-89.678904%)`.
+  - analyzer total: `274.474620900 -> 100.843249000 s`; delta `-173.631371900 s (-63.259536%)`.
+  - process wall: `279.105934600 -> 136.729876000 s`; delta `-142.376058600 s (-51.011477%)`.
+- Same-work/equivalence proof: files `1359/887/0`; parser bytes `5,430,581`; graph and DB rows `95,762 / 129,716`; dependency edges/projection unresolved `13,360 / 735`; all operation/child denominators match accepted A001; resolution semantic counters, diagnostics, and outcomes are equal. Canonical Graph JSON, stdout, and stderr hashes match exactly: `8763AA2D089328F3D782A5F01E06178D171922E3A5CE96A4EE6707510976C920`, `F52193AD16DD18C3DBD78CC161B503CF4091BDFAC1B363962FEBC2C50AD7FEF4`, and `0FDCF15222C02C25771C98E17D9220C89FDCD0294137A6AE4D9B3AAFD4761ADC`.
+- Ladybug/meta raw bytes differ and are not used as the semantic gate: candidate Ladybug `597,946,368` bytes / `2FEC9F35F7662B45789865DC9EB40A97555AAA1A68DB243BBC3A8D9B778C5AF4`; candidate meta SHA-256 `2FC9B672D97543DF42BED79F7CF19F113A70E1AA3A0561A871DA263557A9D43E`. Logical DB counts, canonical Graph JSON, public output, and affected semantics match.
+- Resource fields: accepted A001 -> A002 start allocation `1,309,264 -> 1,315,328` bytes (`+6,064`); end allocation `863,629,352 -> 1,055,121,264` (`+191,491,912`); maximum observed `Sys` `1,989,634,552 -> 1,972,115,960` (`-17,518,592`). Structural source/Coder proof remains `O(T)` map entries/slice headers with the graph and cache sharing one normalized slice and no second retained diagnostic-object copy.
+- Source/target identity: Anvien HEAD stayed `cc420e7ad719d90dc4b2d9991be0249e8d648daa`, staged set stayed empty, the four A002 hashes remained exact, Cheapapp HEAD stayed `a869876ab6262dacde6cd5d432d099a91852a646`, and its complete `13`-row pre/post status arrays are identical.
+- Main independently recomputed the process/schema/conservation/denominator/profile/workload/graph/DB/hash/status facts from raw artifacts. A separate bounded read-only check found `FAILED: none` and `NO_EVIDENCE: none` for the assigned invariants. The lane report is therefore accepted as a valid measurement input, not as a campaign verdict.
+- The next action after this Cheapapp record was Restaurant recovery. That transition completed later under `E2-P2A-A002RESTAURANTBLOCK1/RESTAURANT1`; the current gate is now the fresh visible A002 per-attempt Supervisor.
+
+### `E2-P2A-A002RESTAURANTBLOCK1` — Handoff Restaurant Task Unavailable
+
+Status: `HISTORICAL_BLOCKER / RESOLVED_BY_REPLACEMENT_LANE`. This was an orchestration/task-availability blocker, not a product measurement failure, no-KEEP result, source defect, baseline change, or disposition.
+
+- Handoff-specified task: `01a033a5-4ec3-7e42-8946-0ab9172f6088`.
+- Fresh `read_thread` on host `local` returned `No Codex thread found`.
+- Fresh active task listing did not contain the ID; archived task listing returned no tasks.
+- Reversible recovery attempt `set_thread_archived(archived=false)` on the exact ID also returned `No Codex thread found`.
+- Local Codex project metadata still contains a project-reference entry for the ID, but no rollout/session file exists beneath the local sessions tree; the reference is stale metadata rather than a callable task.
+- No Restaurant command was sent, no target process launched, no target/source/artifact changed, and no substitute lane was opened.
+- Main cannot perform the external target measurement itself or use an internal/hidden lane because the orchestration boundary requires a separate visible functional lane. Creating a replacement visible task is a materially new task-management action and requires explicit Owner authority.
+- Historical effect: Cheapapp remained valid/unpromoted; accepted A001 baselines stayed separate; D001 streak stayed `0`; all parent/child checkboxes stayed unchecked; no detect/stage/commit/P3/Child 07 action occurred.
+- Resolution: replacement visible task `01a03c72-5f6d-7fd0-948a-88b06a1ebb65` executed the frozen packet once and produced the valid `E2-P2A-A002RESTAURANT1` packet. This historical blocker no longer controls the current cursor.
+
+### `E2-P2A-A002RESTAURANT1` — Valid Frozen Restaurant Manager Candidate Measurement Recorded
+
+Status: `MEASUREMENT_COMPLETE / BOTH_TARGET_MEASUREMENTS_RECORDED / SUPERVISOR_PENDING`. This is the second target's measurement/equivalence/resource evidence only. It does not promote A002, decide `KEEP`, change either accepted A001 baseline, change the D001 no-KEEP streak, check any parent/child, supply a Supervisor verdict, or authorize detect/stage/commit.
+
+- Visible replacement task: `01a03c72-5f6d-7fd0-948a-88b06a1ebb65`; exactly one target analyze launch.
+- Report: `E:\Anvien\reports\Investigation\rp_child06a_a002_restaurant_manager_benchmark_frozen_17child.md`; report SHA-256 `77BA7EA058A8F4F42059ED15E28F896840C31E6E70A5098E50DB26773A9DCCB1`.
+- Raw root: `E:\Anvien\.tmp\child06a_a002_restaurant_manager_frozen_17child_20260826`; machine-readable authority includes `candidate/benchmark.json`, `candidate/process.json`, canonical outputs, profile, and the packet comparison/validation artifacts.
+- Exact frozen executable: `E:\Anvien\.tmp\child06a_a002_a00x_benchmark_build\anvien-a002-benchmark.exe`, version `1.2.8`, `73,816,576` bytes, SHA-256 `0F8B8244ABC80339A73E3A29F38D32F55A7A6A65281A64C291785ACF8F4A241E`; adjacent DLL SHA-256 `20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7`; provenance SHA-256 `673FCCFEA17C48640C0AC62243479FE5EFD71E172CB1D4136D046C806E5855F1`.
+- Exact command: `anvien-a002-benchmark.exe analyze E:\Restaurant_manager --force --json --progress --exclude electron/renderer/src/api/userApi.ts --benchmark-json E:\Anvien\.tmp\child06a_a002_restaurant_manager_frozen_17child_20260826\candidate\benchmark.json --benchmark-label child06a-a002-restaurant-manager-frozen-17child-20260826`.
+- Process proof: launch count `1`; PID `15688`; start/end `2026-08-26T05:12:53.9496932+00:00` / `2026-08-26T05:15:19.0185984+00:00`; exit `0`; process wall/CPU `145.066210900 / 114.203125000 s`.
+- Complete schema/conservation proof: `30/30` top-level operations; ordered `17/17` resolution children; D001 denominator `calls=86030; files=1234`; `3716` exclusive intervals; overlap `0`; parent/child-sum/residual `21.242055400 / 21.217471500 / 0.024583900 s`; conservation PASS; nonempty profile `59,197` bytes.
+- Accepted A001 -> unpromoted A002 candidate elapsed values:
+  - D001 `resolve_calls`: `40.769294200 -> 9.909636600 s`; delta `-30.859657600 s (-75.693382%)`.
+  - parent `resolution`: `136.436879300 -> 21.242055400 s`; delta `-115.194823900 s (-84.430855%)`.
+  - analyzer total: `215.972455200 -> 109.339859600 s`; delta `-106.632595600 s (-49.373239%)`.
+  - process wall: `218.680628900 -> 145.066210900 s`; delta `-73.614418000 s (-33.662981%)`.
+- Same-work/equivalence proof: files `1556/1234/0`; graph and DB rows `137229 / 190644`; all operation/child denominators, resolution semantic counters, diagnostics, and outcomes PASS. Canonical Graph JSON, stdout, and stderr match accepted A001 exactly: `09708B038AD63B659A95BAC34304A752F2C6350952B91CF435EBD5C5F9D94B7C`, `CD0028F3B3939451FF4D3623DF7DD7482A993E0934D2DFA773682D37D4FB0E94`, and `0FDCF15222C02C25771C98E17D9220C89FDCD0294137A6AE4D9B3AAFD4761ADC`.
+- Ladybug/meta raw bytes are recorded but non-governing alone: Ladybug `503,070,720` bytes / SHA-256 `5CDE4541F687E515CF04C2824F89EE9E6C701B38EE7D090AB75438B9572E1E48`; meta `267` bytes / SHA-256 `B45157FC1B230FE1522E0A395226997ED071534F4BC73DDED8C870F5CE03078A`.
+- Resource fields: accepted A001 -> A002 start allocation `1,461,312 -> 1,475,192` bytes (`+13,880`); end allocation `876,051,256 -> 1,119,052,736` (`+243,001,480`); maximum observed `Sys` `3,050,756,728 -> 2,911,591,032` (`-139,165,696`). Structural proof remains `O(T)` slice-header map with graph/cache sharing the same normalized slice and no second retained diagnostic-object copy.
+- Source/target boundary: Anvien HEAD remained `cc420e7ad719d90dc4b2d9991be0249e8d648daa`; Restaurant HEAD remained `605c0bda99491789e7f07628ec4b3d39a3ae1c67`; staged set and the exact pre-existing Restaurant status rows remained unchanged.
+- Raw hashes: benchmark `C2E94CD1939C8A0435A970D00341EDF4F366E9418B53284058D92355195E51FF`; process `2045359544842E3E110C32B1E93CDB19BAFA115F4B64FE4B16C77CF3566B7E16`; profile `97F0BB7E24D5DF9585F0B0221B352E63B2E603E26BE9CB959371885CE646F4DB`.
+- Current effect: `CHEAPAPP1/RESTAURANT1` form the complete two-target measurement input. Both remain separate and unpromoted; accepted baselines, D001 streak `0`, and every checkbox remain unchanged. The next owner is one fresh visible A002 per-attempt Supervisor.
+
+### `E2-P2A-A002REVIEW1` — Independent A002 Per-Attempt Supervisor PASS
+
+Status: `SUPERVISOR_A002_PASS`. This is independent acceptance evidence; it does not itself decide `KEEP`, promote baselines, change streak/checklists, detect, stage, commit, or open P3.
+
+- Visible Supervisor task/turn: `01a03c97-02f9-7560-ae31-4a333c31798e` / `01a03c97-05a9-7242-91ce-374722cf204d`.
+- Report: `E:\Anvien\reports\Supervisor\rp_supervisor_260826_130617_by_gpt-5_child06a_a002_run_scoped_diagnostic_appender.md`; SHA-256 `11BEA6715CD8626F80746B158FE755347E6924EAC560B2C5171525FBDE58A78B`.
+- Exact verdict: `SUPERVISOR_A002_PASS`.
+- Current identity recheck: HEAD `cc420e7ad719d90dc4b2d9991be0249e8d648daa`; staged set empty; production numstat exactly `+56/-4`; all four A002 hashes match; explicit forbidden owners are clean.
+- Source/invariant clearance: legacy callers remain on `AppendDiagnosticToNode`; the two resolution routes share one closure created by the single per-run `newEmitter`; first touch and incoming normalization, merge policy, per-append write-through, `[]Diagnostic` representation, sequential lifecycle, `O(T)` map/slice-header ownership, and no I/O/goroutine/lock/global cache/flush/finalizer pass.
+- Runtime/build/test clearance: frozen executable/DLL/provenance identities match. Existing canonical full-build evidence remains identity-bound. Focused checks and `internal/graphhealth` remain PASS; `internal/resolution` remains truthfully FAIL only on the identical current-HEAD-overlay preserve-only golden and is not called PASS.
+- Target clearance: both raw packets independently pass one launch/exit `0`, `30/30`, ordered `17/17`, denominator equality, conservation/zero overlap, nonempty profile, workload/graph/DB/semantic/Graph JSON/stdout/stderr equivalence, resource fields, and unchanged target boundary.
+- Elapsed clearance remains separate: Cheapapp D001/parent/process `25.045225300 -> 3.090914200`, `184.481061700 -> 19.040468000`, `279.105934600 -> 136.729876000 s`; Restaurant `40.769294200 -> 9.909636600`, `136.436879300 -> 21.242055400`, `218.680628900 -> 145.066210900 s`.
+- Residual same-invariant blockers: none. Next owner: Main Orchestration for disposition only.
+
+### `E2-P2A-A002DECISION1` — Official Main KEEP And Separate Baseline Promotion
+
+Status: `A002 KEEP / A003 RESIDUAL_ATTRIBUTION_COMPLETE / ARCHITECT_ACTIVE`.
+
+- Main accepts `E2-P2A-A002REVIEW1` and decides `A002 = KEEP` because D001, parent, and process elapsed all decrease on Cheapapp independently and Restaurant Manager independently, while correctness/equivalence/resource/lifecycle gates and Supervisor pass.
+- Promotion remains repo-specific and never averaged or combined:
+  - Cheapapp accepted current A002 baseline: D001 `3.090914200 s`; parent `19.040468000 s`; analyzer/process `100.843249000 / 136.729876000 s`; denominator `calls=27890; files=887`.
+  - Restaurant accepted current A002 baseline: D001 `9.909636600 s`; parent `21.242055400 s`; analyzer/process `109.339859600 / 145.066210900 s`; denominator `calls=86030; files=1234`.
+- Checklist/streak effect: P2-A, `B1-P1A-OP001`, and D001 remain unchecked; D002-D017 remain queued/unopened; D001 no-KEEP streak resets/remains `0`. No child or parent is terminalized.
+- Source effect: the exact A002 four-file source/test boundary becomes accepted current state. It remains uncommitted inside open P2-A; staged set remains empty.
+- Commit authority: none. `plan-rules.md` defines P2-A as the sole implementation slice, explicitly prohibits per-attempt commits, and reserves detect/stage/commit for P3-C after P2-A exhaustion/final review. Therefore A002 `KEEP` does not trigger detect/stage/commit and does not open another phase/slice.
+- Next cursor: A003 on the same active D001. A002 Architect direction expired at disposition. No production edit is permitted until current accepted residual cause/owner/full call path is proven, a fresh visible A003 Architect decides direction, and Planner records A003 `PLAN1`.
+
+### `E2-P2A-A003CURRENT1` — Accepted A002 Basis And Residual-Attribution Lock
+
+Status: `CURRENT_BASIS_RECORDED / RESIDUAL_CAUSE_PENDING / ARCHITECT_LOCKED`.
+
+- Active parent/child remain `B1-P1A-OP001 resolution` and `B2-P2A-A001-D001 resolve_calls`; complete child list remains `17/17`; D002-D017 stay queued/unopened.
+- Current accepted values are the separate promoted A002 baselines recorded under `DECISION1`; D001 streak is `0`.
+- `E2-P2A-A003ATTRIB1` records the existing residual packet without rerunning work. Separate profile facts: Cheapapp `resolveCall 2.76 s`, appender `0.92 s`, normalization/policy/decoder `0.87 s`; Restaurant `resolveCall 9.19 s`, appender `2.35 s`, normalization/policy `2.11 s`, decoder `2.10 s`. These are cumulative CPU samples, overlapping, non-additive, non-averaged, and not elapsed proof.
+- Retained cause: per diagnostic, `diagnosticAppender.appendToNode` enters structured normalization and `decodeStructuredResolutionOutcome` decodes the same trimmed `Diagnostic.Note` into an envelope and again into a typed outcome. Exact retained-work owner: `internal/graphhealth/diagnostics.go::decodeStructuredResolutionOutcome:377-400`; decode sites `385/396`; per-diagnostic entry `appendToNode:60-88`, normalization line `77`.
+- Complete path: `internal/analyze.Run:365-370 -> runPhase:1134-1155 -> resolution.ResolveBoundInto:57-128 -> w.files/ir.Calls:91-94 -> resolveCall:385-605`. Repository-unresolved branches at lines `388/392/560/564` call `emitUnresolvedReference:182-225 -> e.diagnosticAppender:220`; the TypeScript branch `516-535` calls `recordTypeScriptLookup:926-977 -> emitTypeScriptOutcomeDiagnostic:372-397 -> e.diagnosticAppender:392`. `newEmitter:31-42` binds `NewDiagnosticAppender:52-58` to `appendToNode`.
+- No exact invocation count, path-family split, or elapsed-time share inside D001 is claimed; not all `encoding/json.Unmarshal` samples are assigned exclusively to this decoder. No solution or gain is inferred by this evidence.
+- Visible fresh Architect task `01a03cea-15cc-7d73-bf07-a984c69517d9` is active. No A003 `ARCH1`, `PLAN1`, allowed production/test surfaces, expected gain, validation boundary, rollback map, Coder, or measurement exists yet.
+
 ### Attempt State Machine
 
 | From | Required evidence | To / next owner |
@@ -608,6 +829,15 @@ Status: recorded / `A002 PLAN_READY_FOR_MAIN_VERIFY / CODER_LOCKED`.
 | A001 `KEEP` recorded | `E2-P2A-A001REVIEW1`, `E2-P2A-A001DECISION1`; two repo-specific accepted baselines remain separate | cursor `A002 / ARCHITECT_PENDING` on the same unchecked D001; Main opens a fresh visible Architect, never Coder directly |
 | A001 implementation commit recorded | `E2-P2A-A001COMMIT1`; exact commit/subject, 12-path manifest, staged set empty | `A001_COMMIT_COMPLETE`; cursor remains `A002 / ARCHITECT_PENDING`, with no A002 evidence or Coder authorization |
 | A002 architecture and Planner refresh recorded | `E2-P2A-A002ARCH1`, `E2-P2A-A002PLAN1`; exact report/commit, cause, three production owners, one post-production test owner, invariants, validation/resource/measurement/rollback/STOP boundary | `A002 PLAN_READY_FOR_MAIN_VERIFY`; Main verifies the four ledgers and alone decides the next governance transition; Coder remains locked |
+| A002 source/build/test validation complete | `E2-P2A-A002IMPACT1/SRC1/BUILD1/TEST1`; exact four-file candidate, definitive full-build PASS before tests, focused/graphhealth PASS, identical baseline-overlay proof for the preserve-only resolution golden, staged set empty | `A002 CODER_COMPLETE / TWO_TARGET_MEASUREMENT_PENDING`; Main dispatches independent Cheapapp then Restaurant candidate measurements without overlap or aggregation |
+| Cheapapp invocation omits the complete child collection | `E2-P2A-A002MEASUREFAIL1`; launch `1`, exit `0`, `30/30` operations, `0/17` children, D001 unavailable | keep A001 baseline/streak/checklists unchanged; verify the accepted A001 optimized `resolve.go`/`types.go` instrumentation overlay and run exactly one corrected Cheapapp capture; Restaurant remains queued |
+| Corrected Cheapapp measurement-binary build cannot find `lbug.h`, and the supported scripts expose no overlay input | `E2-P2A-A002MEASUREFAIL2/BUILDRECOVERY1/SCRIPTPLAN1`; build attempt `1`, exit `1`, no binary, analyze launch `0`; reusable script plan bound | keep A001 baseline/streak/checklists unchanged; preserve failed root; consume `SCRIPTBUILD1`; Restaurant remains queued |
+| Owner-directed reusable A00x script validated for A002 | `E2-P2A-A002SCRIPTPLAN1/SCRIPTBUILD1`; explicit overlay/output/hash inputs, canonical vendor/native/CGO/offline flags, `.tmp` binary/DLL/provenance, canonical scripts preserve-only, unchanged-contract reuse rule | `A00X_SCRIPT_BUILD_COMPLETE / CORRECTED_CHEAPAPP_MEASUREMENT_PENDING`; run one corrected Cheapapp capture; later A00x reuses the unchanged script unless an exact new feature/input failure proves a narrow script-contract change is needed |
+| Valid Cheapapp frozen candidate packet independently recorded | `E2-P2A-A002CHEAPAPP1`; one launch/exit `0`, frozen executable identity, `30/30` operations, `17/17` children, denominator `27890/887`, `2675` intervals/zero overlap, conservation, workload/graph/DB/output/semantic/resource/source-status proof | keep values unpromoted and accepted A001 baseline/streak/checklists unchanged; Restaurant recovery/measurement follows |
+| Handoff Restaurant task unavailable | `E2-P2A-A002RESTAURANTBLOCK1`; exact read/unarchive/list/session evidence proves ID `01a033a5-4ec3-7e42-8946-0ab9172f6088` was not callable | historical blocker resolved by replacement task `01a03c72-5f6d-7fd0-948a-88b06a1ebb65`; no product-state effect |
+| Valid Restaurant frozen candidate packet independently recorded | `E2-P2A-A002RESTAURANT1`; one launch/exit `0`, identical frozen executable identity, exact one userApi exclusion, `30/30` operations, ordered `17/17` children, denominator `86030/1234`, `3716` intervals/zero overlap, conservation, workload/graph/DB/output/semantic/resource/source-status proof | `BOTH_TARGET_MEASUREMENTS_RECORDED / SUPERVISOR_PENDING`; keep both packets unpromoted and accepted baselines/streak/checklists unchanged; open one fresh visible A002 per-attempt Supervisor |
+| A002 Supervisor PASS and Main KEEP | `E2-P2A-A002REVIEW1/DECISION1`; exact Supervisor report/verdict, current identity, both target elapsed/equivalence/resource gates | promote each repo's A002 values separately, reset/retain D001 streak `0`, keep parent/D001 unchecked, and record `E2-P2A-A003CURRENT1`; no per-attempt detect/stage/commit |
+| A003 attribution complete | `E2-P2A-A003CURRENT1/ATTRIB1`; accepted A002 basis, active rows, complete child list, streak, separate profile facts, retained cause, exact owner, and complete call path | visible fresh Architect task `01a03cea-15cc-7d73-bf07-a984c69517d9` decides one attempt direction; Coder remains locked pending `ARCH1` and Planner `PLAN1` |
 | Supervisor `REJECT` or no retainable gain | `AnnnREVIEW1`, `AnnnDECISION1`, `AnnnRESTORE1` | increment unsuccessful streak; rejected candidate is not ranked |
 | unsuccessful child streak `1` or `2` | restored accepted state plus rejection/no-gain packet | new attempt records current parent/child basis before a new Visible Architect for the same child |
 | unsuccessful child streak `3` | three full attempt families plus `AnnnSYSTEM1` and accepted `AnnnRANK1` refresh | child `SYSTEM_CHARACTERISTIC`; remeasure accepted child/parent/E2E, refresh both ordered lists, check only that child, and select the largest remaining unchecked child of the same parent |
@@ -617,11 +847,12 @@ Status: recorded / `A002 PLAN_READY_FOR_MAIN_VERIFY / CODER_LOCKED`.
 
 ### Attempt Result Ledger
 
-Append one row after every attempt result. Current rows: `1`.
+Append one row after every attempt result. Current rows: `2`.
 
 | Attempt | Parent row / selected child / accepted baseline | Complete child list / checklist | Architect evidence | Planner refresh | Coder / build | Child / parent / E2E rows | Supervisor result | Disposition | Child unsuccessful streak after | Promotion / restoration / checklist effect | Next owner / action |
 |---------|-------------------------------------------------|---------------------------------|--------------------|-----------------|---------------|---------------------------|-------------------|-------------|-----------------------------------|------------------------------------------|---------------------|
 | `A001` | `B1-P1A-OP001` / `B2-P2A-A001-D001`; pre-A001 baselines remain separate: Cheapapp D001/parent/process `209.823705100 / 733.384225100 / 890.314783200 s`; Restaurant D001/parent/process `501.638742800 / 1090.085959900 / 1178.391336900 s` | complete `17/17` rows per target; parent and all `17` child checklist items remain unchecked | `E2-P2A-A001ARCH1` | `E2-P2A-A001PLAN1`, `E2-P2A-A001CONSISTENCY1` | `E2-P2A-A001IMPACT1/SRC1/BUILD1/TEST1/COMMIT1`; exact five-file `+174/-10` candidate, build PASS, focused PASS, pre-existing package golden FAIL recorded truthfully, implementation commit `17a1f3af37dcb61f9d389345822b6470a8f772cc` complete; Coder report `E:\Anvien\reports\coder\rp_coder_260825_175710_by_gpt-5_child06a_a001_import_claim_index.md` remains outside that implementation manifest and is committed separately at `18b5063d236f9f2567fea90e48eca8f1501bd1eb` with a one-file report manifest | separate accepted after values: Cheapapp D001/parent/process `25.045225300 / 184.481061700 / 279.105934600 s`; Restaurant `40.769294200 / 136.436879300 / 218.680628900 s`; denominators unchanged | `SUPERVISOR_A001_PASS`; `E2-P2A-A001REVIEW1` | `KEEP`; `E2-P2A-A001DECISION1` | `0` | promote each repo's optimized values as that repo's accepted current baseline; never average/combine; leave P2-A/parent/D001 unchecked and D002-D017 queued/unopened | `A001_COMMIT_COMPLETE`; Main Orchestration opens fresh visible Architect A002 on the same active D001; Coder remains closed |
+| `A002` | `B1-P1A-OP001` / `B2-P2A-A001-D001`; accepted A001 baselines separate: Cheapapp D001/parent/process `25.045225300 / 184.481061700 / 279.105934600 s`; Restaurant `40.769294200 / 136.436879300 / 218.680628900 s` | complete `17/17` rows per target; parent and all `17` child checklist items remain unchecked | `E2-P2A-A002ARCH1` | `E2-P2A-A002PLAN1` | `E2-P2A-A002IMPACT1/SRC1/BUILD1/TEST1/SCRIPTBUILD1`; exact three-production-plus-one-test boundary, build PASS, focused/graphhealth PASS, pre-existing package golden FAIL recorded truthfully; accepted bytes remain uncommitted inside P2-A | separate promoted after values: Cheapapp D001/parent/process `3.090914200 / 19.040468000 / 136.729876000 s`; Restaurant `9.909636600 / 21.242055400 / 145.066210900 s`; denominators unchanged | `SUPERVISOR_A002_PASS`; `E2-P2A-A002REVIEW1` | `KEEP`; `E2-P2A-A002DECISION1` | `0` | promote each repo's A002 values separately; leave P2-A/parent/D001 unchecked and D002-D017 queued; no per-attempt commit | `E2-P2A-A003CURRENT1`; bounded read-only residual attribution, then fresh A003 Architect only after current cause/owner/call-path proof |
 
 ### Final P2-A Evidence
 
