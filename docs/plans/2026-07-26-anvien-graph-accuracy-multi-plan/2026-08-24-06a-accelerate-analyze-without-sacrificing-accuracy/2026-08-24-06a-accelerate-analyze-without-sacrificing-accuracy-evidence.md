@@ -796,8 +796,8 @@ Status: `A002 KEEP / A003 RESIDUAL_ATTRIBUTION_COMPLETE / ARCHITECT_ACTIVE`.
   - Cheapapp accepted current A002 baseline: D001 `3.090914200 s`; parent `19.040468000 s`; analyzer/process `100.843249000 / 136.729876000 s`; denominator `calls=27890; files=887`.
   - Restaurant accepted current A002 baseline: D001 `9.909636600 s`; parent `21.242055400 s`; analyzer/process `109.339859600 / 145.066210900 s`; denominator `calls=86030; files=1234`.
 - Checklist/streak effect: P2-A, `B1-P1A-OP001`, and D001 remain unchecked; D002-D017 remain queued/unopened; D001 no-KEEP streak resets/remains `0`. No child or parent is terminalized.
-- Source effect: the exact A002 four-file source/test boundary becomes accepted current state. It remains uncommitted inside open P2-A; staged set remains empty.
-- Commit authority: none. `plan-rules.md` defines P2-A as the sole implementation slice, explicitly prohibits per-attempt commits, and reserves detect/stage/commit for P3-C after P2-A exhaustion/final review. Therefore A002 `KEEP` does not trigger detect/stage/commit and does not open another phase/slice.
+- Source effect: the exact A002 four-file source/test boundary becomes accepted current state. Corrected `plan-rules.md` requires its scoped detected implementation progress checkpoint before A003 production editing; that checkpoint does not close P2-A or check D001/parent.
+- Commit authority: accepted-attempt progress checkpoint only. P3-C retains one local closure commit and does not prohibit earlier scoped checkpoints.
 - Next cursor: A003 on the same active D001. A002 Architect direction expired at disposition. No production edit is permitted until current accepted residual cause/owner/full call path is proven, a fresh visible A003 Architect decides direction, and Planner records A003 `PLAN1`.
 
 ### `E2-P2A-A003CURRENT1` — Accepted A002 Basis And Residual-Attribution Lock
@@ -810,7 +810,31 @@ Status: `CURRENT_BASIS_RECORDED / RESIDUAL_CAUSE_PENDING / ARCHITECT_LOCKED`.
 - Retained cause: per diagnostic, `diagnosticAppender.appendToNode` enters structured normalization and `decodeStructuredResolutionOutcome` decodes the same trimmed `Diagnostic.Note` into an envelope and again into a typed outcome. Exact retained-work owner: `internal/graphhealth/diagnostics.go::decodeStructuredResolutionOutcome:377-400`; decode sites `385/396`; per-diagnostic entry `appendToNode:60-88`, normalization line `77`.
 - Complete path: `internal/analyze.Run:365-370 -> runPhase:1134-1155 -> resolution.ResolveBoundInto:57-128 -> w.files/ir.Calls:91-94 -> resolveCall:385-605`. Repository-unresolved branches at lines `388/392/560/564` call `emitUnresolvedReference:182-225 -> e.diagnosticAppender:220`; the TypeScript branch `516-535` calls `recordTypeScriptLookup:926-977 -> emitTypeScriptOutcomeDiagnostic:372-397 -> e.diagnosticAppender:392`. `newEmitter:31-42` binds `NewDiagnosticAppender:52-58` to `appendToNode`.
 - No exact invocation count, path-family split, or elapsed-time share inside D001 is claimed; not all `encoding/json.Unmarshal` samples are assigned exclusively to this decoder. No solution or gain is inferred by this evidence.
-- Visible fresh Architect task `01a03cea-15cc-7d73-bf07-a984c69517d9` is active. No A003 `ARCH1`, `PLAN1`, allowed production/test surfaces, expected gain, validation boundary, rollback map, Coder, or measurement exists yet.
+- Visible Architect task `01a03cea-15cc-7d73-bf07-a984c69517d9` returned the updated canonical direction below. No A003 source/build/test/measurement/Supervisor/disposition exists yet.
+
+### `E2-P2A-A003ARCH1` — Canonical Single-Interpretation Decoder Architecture
+
+Status: `ARCHITECT_A003_READY_FOR_PLANNER`.
+
+- Report: `E:\Anvien\reports\system-architect\rp_system-architect_260826_141200_by_gpt-5_child06a_a003_residual_direction.md`; visible task `01a03cea-15cc-7d73-bf07-a984c69517d9`.
+- The updated canonical direction supersedes and withdraws the earlier status-marker fast-path wording: one Diagnostic -> one canonical outer-Note interpretation -> one semantic result (`UNSTRUCTURED`, `STRUCTURED_VALID`, or `STRUCTURED_INVALID`) -> one policy decision -> one graph write. There is no production primary/recovery/legacy/retry/fallback decoder.
+- Exact semantic owner: `internal/graphhealth/diagnostics.go::decodeStructuredResolutionOutcome:377-400`. Allowed implementation surface is that decoder plus, only if necessary, one private non-exported decode-result/wire representation in the same file exclusively owned by it. No other existing semantic owner or production file may change.
+- Test owner after production: append A003-only differential cases to `internal/graphhealth/diagnostics_test.go`; the test-local pre-A003 oracle is not a production path. `compute_test.go` and `p6d_outcome_projection_test.go` remain run-only.
+- Anvien: containing file HIGH; exact symbol LOW; `12` impacted symbols, `1` direct caller, `1` module, `0` processes across three graph-health files. HIGH remains a scope warning.
+- Preserve the externally observed `(outcome, structured, valid)` tuple; exact case-sensitive marker presence and `SourceSiteStatus`; invalid structured evidence remains fail-closed; nested authority decode; diagnostic/graph/output/persistence/lifecycle/resource contracts. No retained cache/shared contract/I/O/goroutine/lock/global state.
+- Expected gain is qualitative only at D001, parent, and process boundaries on each target independently. No numeric prediction or cross-target aggregate exists.
+- Exact rollback owns only the canonical decoder/private-result hunk and A003-specific test additions. STOP on any need for a second decoder route, another semantic owner/file, shared/public contract, cache, emitter/persistence/instrumentation surface, D002-D017, or weakened fail-closed behavior.
+
+### `E2-P2A-A003PLAN1` — Exact Planner Translation
+
+Status: `PLAN_READY_FOR_MAIN_VERIFY / CODER_PRE_EDIT_LOCKED`.
+
+- Production-first: replace the two independent full-note interpretations with one canonical presence-aware interpretation owned by `decodeStructuredResolutionOutcome`; it produces structure evidence, typed outcome, and validity together. No second production decode route survives or is introduced.
+- Test-after-production: append differential tuple/policy cases covering status evidence, exact note markers, both evidence sources, markerless valid structured notes, unstructured/malformed/non-object/null/type-error inputs, missing/exact/case-variant markers, duplicates, unknown fields, conflicting evidence, and invalid authority/proof.
+- Validation order: current Coder Anvien file-detail/impact -> production -> tests -> holder/lock preflight -> canonical full build -> focused parity/appender/P6D/resolution checks -> `internal/graphhealth` -> truthful `internal/resolution` execution with the unchanged preserve-only golden classification.
+- Measurement: unchanged accepted A00x build script/17-child overlay contract; Cheapapp and Restaurant Manager separately compare accepted A002 with accepted-A002-plus-only-A003, recording D001/parent/analyzer/process, 30/17 rows, denominators, graph/output/semantic/resource parity; no renewed build-interface audit.
+- After both packets, a fresh visible Supervisor reviews the exact candidate. Main alone decides disposition. Accepted A003 receives a scoped detected progress commit; rejected A003 rolls back exact owned bytes and increments the D001 streak.
+- Next transition: docs/report checkpoint; visible Coder startup in pre-edit lock while Main secures the accepted A002 progress checkpoint; then explicit Main release to the fresh pre-edit gate.
 
 ### Attempt State Machine
 
@@ -837,7 +861,7 @@ Status: `CURRENT_BASIS_RECORDED / RESIDUAL_CAUSE_PENDING / ARCHITECT_LOCKED`.
 | Handoff Restaurant task unavailable | `E2-P2A-A002RESTAURANTBLOCK1`; exact read/unarchive/list/session evidence proves ID `01a033a5-4ec3-7e42-8946-0ab9172f6088` was not callable | historical blocker resolved by replacement task `01a03c72-5f6d-7fd0-948a-88b06a1ebb65`; no product-state effect |
 | Valid Restaurant frozen candidate packet independently recorded | `E2-P2A-A002RESTAURANT1`; one launch/exit `0`, identical frozen executable identity, exact one userApi exclusion, `30/30` operations, ordered `17/17` children, denominator `86030/1234`, `3716` intervals/zero overlap, conservation, workload/graph/DB/output/semantic/resource/source-status proof | `BOTH_TARGET_MEASUREMENTS_RECORDED / SUPERVISOR_PENDING`; keep both packets unpromoted and accepted baselines/streak/checklists unchanged; open one fresh visible A002 per-attempt Supervisor |
 | A002 Supervisor PASS and Main KEEP | `E2-P2A-A002REVIEW1/DECISION1`; exact Supervisor report/verdict, current identity, both target elapsed/equivalence/resource gates | promote each repo's A002 values separately, reset/retain D001 streak `0`, keep parent/D001 unchecked, and record `E2-P2A-A003CURRENT1`; no per-attempt detect/stage/commit |
-| A003 attribution complete | `E2-P2A-A003CURRENT1/ATTRIB1`; accepted A002 basis, active rows, complete child list, streak, separate profile facts, retained cause, exact owner, and complete call path | visible fresh Architect task `01a03cea-15cc-7d73-bf07-a984c69517d9` decides one attempt direction; Coder remains locked pending `ARCH1` and Planner `PLAN1` |
+| A003 Architect and Planner complete | `E2-P2A-A003CURRENT1/ATTRIB1/ARCH1/PLAN1`; accepted basis, residual packet, canonical direction, exact owner/test/validation/measurement/rollback contract | docs/report checkpoint; open visible Coder in pre-edit lock while accepted A002 progress checkpoint is secured, then Main releases the fresh pre-edit gate |
 | Supervisor `REJECT` or no retainable gain | `AnnnREVIEW1`, `AnnnDECISION1`, `AnnnRESTORE1` | increment unsuccessful streak; rejected candidate is not ranked |
 | unsuccessful child streak `1` or `2` | restored accepted state plus rejection/no-gain packet | new attempt records current parent/child basis before a new Visible Architect for the same child |
 | unsuccessful child streak `3` | three full attempt families plus `AnnnSYSTEM1` and accepted `AnnnRANK1` refresh | child `SYSTEM_CHARACTERISTIC`; remeasure accepted child/parent/E2E, refresh both ordered lists, check only that child, and select the largest remaining unchecked child of the same parent |
