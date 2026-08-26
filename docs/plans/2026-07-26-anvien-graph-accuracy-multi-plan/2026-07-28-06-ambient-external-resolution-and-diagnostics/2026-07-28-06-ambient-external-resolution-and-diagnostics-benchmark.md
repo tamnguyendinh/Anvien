@@ -7,19 +7,17 @@
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-benchmark.md`
 - Actual status: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-actual-status.md`
+- Successor: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 
 ## Benchmark Rules
 
-- Record only Child 06 declaration-authority, external-target, structured-outcome, graph-health, target, and P6-E end-to-end `anviens analyze` runtime measurements; the granular cost map is the attribution method for that product goal.
+- Record only Child 06 declaration-authority, external-target, structured-outcome, graph-health, target, native/build authority, and affected-reader measurements through P6-D closure.
 - Use exact source sites, input corpus, TypeScript configuration, selected authority inputs, built runtime, and commands for baseline/final comparisons.
 - P6-A defines mechanism-specific metrics after comparing feasible designs; this ledger records only measurements required by the accepted mechanism.
 - The accepted investigation numbers are bounded baseline context, not a current final measurement.
 - Build/test pass-fail belongs in the evidence ledger. Record timing, size, memory, throughput, and capacity only for systems the accepted P6 design changes.
 - P6-D records the durable LadybugDB bundle as an exact file/byte/hash inventory only when the three repository-owned inputs are materialized; this plan correction records the `0/3 -> 3/3` requirement but invents no size/hash result.
-- No performance or resource limit becomes an acceptance threshold without measured baseline and explicit Owner decision.
-- P6-E profile runs are attribution evidence only; comparable wall acceptance uses frozen same-condition alternating unprofiled A/B trials after A/A noise, with repetitions/stopping rule/cache regime fixed before B and median, dispersion, and confidence interval reported.
-- Sum only disjoint wall leaves from one run and retain an explicit process-wall residual. Never add inclusive caller/callee samples, concurrent GC samples, profiled and unprofiled runs, or old percentages.
-- `17m20` is a turn containing a lost-handle attempt plus rerun, `678,182 ms` is the retained full-build command, and `~8m` is poll-derived without exact analyze timestamps. None is a comparable single-run P6-E baseline.
+- Former P6-E profile attribution and performance-measurement/final-speedup authority are transferred to Child 06A. Legacy values and fixed-work references in historical Child 06 rows remain provenance only.
 
 ## B0 - P0 Benchmarks
 
@@ -63,44 +61,12 @@
 | P6-D | built/native ResolutionGap reader parity | built rows / native rows / structured differences | no current-runtime reader proof | `53,156 / 53,156 / 0`; group split `2,730 + 50,426`; exact structured sample `1/1` | independently accepted | exact equality and zero field/authority differences | parity established | `E6-P6D-PARITY1`, `E6-P6D-REVIEW1` |
 | P6-D | target analyze observation | scanned / parsed / failed / nodes / relationships | target baseline false-gap graph | `1,359 / 887 / 0 / 95,762 / 129,716` | accepted current-runtime target observation | one normal analyze with source/config/Git preservation | current target graph established | `E6-P6D-TARGET1`, `E6-P6D-BOUNDARY1`, `E6-P6D-REVIEW1` |
 | P6-D | affected persistence/reader field differences | count | pending affected inventory | 0 across built/native/edge/oracle target rows and generic reader matrices | accepted 0 | 0 across every affected row | zero differences | `E6-P6D-PARITY1`, `E6-P6D-REVIEW1` |
-| P6-E | profiled current-run benchmark wall / resolution wall | ms | no comparable unprofiled baseline | `596,568.8634 / 533,746.9551` | pending | attribution context only; no threshold | N/A | `E6-P6E-RC1`, `B6-P6E-ATTRIBUTION1` |
-| P6-E | profiled current-run workload | scanned / parsed / failed / nodes / relationships / dependency edges / unresolved projections | no comparable baseline | `2,075 / 763 / 0 / 120,853 / 167,428 / 20,310 / 478` | pending | preserve exact paired workload/output | N/A | `E6-P6E-RC1`, `B6-P6E-ATTRIBUTION1` |
-| P6-E | canonical-path cumulative attribution | CPU cumulative seconds / allocated MB / allocated objects | no comparable baseline | `324.75 / 149,590.52 / 3,056,971,217` | pending | attribution only; never a wall-saving promise | N/A | `E6-P6E-RC1`, `B6-P6E-ATTRIBUTION1` |
-| P6-E | diagnostic append / structured decoder attribution | cumulative CPU seconds | no comparable baseline | `113.20 / 112.93` | pending | overlapping attribution only; do not sum | N/A | `E6-P6E-RC1`, `B6-P6E-ATTRIBUTION1` |
 
-## P6-E: Accelerate Analyze Without Sacrificing Accuracy
+## Child 06A Benchmark Transfer
 
-All P6-E benchmark rows belong to exactly one checklist slice and one commit boundary. U1-U4 are ordered internal units; their A/B rows do not create separate slices, gates, or commits.
-
-Each measured cost-center row must carry the following fields. `Measured` means a direct counter or monotonic boundary; `profile-attribution` remains separate from unprofiled wall; unavailable values remain `not-instrumented` rather than estimated by subtraction.
-
-| Field group | Required fields | Accounting rule |
-|-------------|-----------------|-----------------|
-| Pair/run authority | pair ID, run ID, timestamp, repository/dirty/corpus manifest hashes, direct executable/runtime/native/dependency hashes, options, environment, cache/storage regime, instrumentation mode | A and B differ only by the active P6-E candidate step; identity drift invalidates the pair |
-| Ownership/path | cost-center ID, phase/substep, owner file/symbol, caller, full call path, parent span | caller/callee identity is preserved; no inclusive value is assigned to two independent savings |
-| Time | process wall, span start/end, inclusive wall, exclusive wall, CPU flat/cumulative, residual, wait/block/mutex | exclusive wall uses union of child intervals; only disjoint unprofiled leaves sum; residual stays explicit |
-| Allocation/memory | allocated bytes, allocated objects, live heap, peak heap/Sys, retained index/accumulator bytes | profile estimates are labeled; resource budgets are Owner-approved after baseline |
-| I/O | read/write bytes and operations, native/CSV/snapshot bytes, flush/close/rename/transaction boundaries | no I/O time is inferred from CPU samples |
-| Work denominator | work-unit type/count, call count, items visited, hits/misses, input/output bytes, histogram schema and buckets | workload and histogram definition are identical across A/B |
-| Output/equivalence | scanned/parsed/failed and fact counts, nodes/relationships/dependency edges/unresolved projections, graph bytes/SHA, canonical in-memory/Graph JSON/Ladybug/native digests | counts alone cannot replace exact ordered/hash equivalence |
-| Confidence | measurement status, repetitions, median, dispersion, confidence interval, A/A noise, materiality/resource decision, unknowns | no arbitrary threshold or promised speedup |
-
-### P6-E Benchmark Row Registry
-
-| Benchmark ID | Measurement | Baseline / current value | Required final record | Status | Evidence |
-|--------------|-------------|--------------------------|-----------------------|--------|----------|
-| `B6-P6E-ATTRIBUTION1` | retained profiled cost map | `596,568.8634 ms` benchmark, `533,746.9551 ms` resolution, current workload above | attribution context retained separately from throughput | measured / non-comparable | `E6-P6E-RC1` |
-| `B6-P6E-HISTORICAL1` | historical full-build/turn/poll pointers | `678,182 ms` successful full-build; `1,042,071 ms` turn; `~8m` poll inference | remain explicitly non-comparable and excluded from threshold/speedup | measured pointer / not baseline | `E6-P6E-RC1` |
-| `B6-P6E-AA1` | same-condition A/A whole wall, direct cost centers, and resources | pending | predeclared repetitions/stopping rule; median/dispersion/CI and noise distribution | open after fresh P6-E authority/impact identity |
-| `B6-P6E-BASELINE1` | alternating unprofiled current-runtime baseline | pending | frozen identity, cold/warm regime, exact workload/output hashes, direct counters | open after accepted A/A protocol |
-| `B6-P6E-U1AB1` | canonical-path reuse A/B | pending | direct clean-path call/byte/allocation change plus whole wall/resources/equivalence | ordered after baseline; no result yet |
-| `B6-P6E-U2AB1` | all-import index A/B | pending | claim calls/items/hits/misses, bucket count/size/build bytes/time, whole wall/resources/equivalence | ordered after accepted U1 gate |
-| `B6-P6E-REBASE1` | fresh absolute post-U1/U2 cost map | pending | reranked wall/CPU/allocation/I/O/wait/work units without old percentages | ordered after U2 candidate seal |
-| `B6-P6E-U3AB1` | diagnostic accumulator A/B | pending | append/list histogram, new/existing normalization, decode calls/bytes, sort work, memory, wall/resources/equivalence | ordered after rebaseline and clean ownership gate |
-| `B6-P6E-REBASE2` | fresh absolute post-U3 cost map | pending | current decoder and all-surface rerank; U4 materiality decision | ordered after U3 candidate seal |
-| `B6-P6E-U4AB1` | conditional one-pass decoder A/B | pending | one-versus-two note passes, decode bytes/allocations/wall/resources/exact differential | conditional/ordered; use `E6-P6E-U4NA1` if not material |
-| `B6-P6E-PARETO1` | fresh DB/snapshot/parse/post-run rerank | pending | absolute named substep wall/CPU/allocation/I/O/wait/work units and current decision | ordered after U4 decision |
-| `B6-P6E-FINAL1` | final accepted P6-E versus comparable baseline | pending | end-to-end `anviens analyze` runtime speedup beyond the Owner-approved A/A noise/materiality rule, with alternating unprofiled whole wall and direct costs, median/dispersion/CI, resources, and exact workload/output/digests | ordered; no result yet |
+- Legacy `B6-P6E-*` rows are no longer executable Child 06 benchmark authority.
+- Exact legacy-to-current mapping and the retained attribution values now live in `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-benchmark.md`.
+- New performance measurements use Child 06A `B1-P1A-*` living control rows and dynamic `B2-P2A-*` attempt rows. Current truth is no detailed timing map, ordered actionable bottleneck list, production attempt, accepted baseline promotion, or achieved speedup.
 
 ## Mechanism-Specific Measurements
 
@@ -150,12 +116,12 @@ P6-A must add only measurements required by its accepted mechanism. Examples inc
 - Independent P6-D resubmission build/test timings (`6,600 ms` full-build FAIL/BLOCKED, `13,759 ms` affected-build PASS, and `283 ms` current-CLI FAIL/BLOCKED) are validation evidence, not performance benchmarks. The report independently clears the `6/6` local semantic denominator but adds no target/runtime capacity or throughput measurement.
 - Owner recovery correction adds no measured binary/runtime/native throughput result. The sealed blocker establishes only the durable-bundle baseline `0/3` and forbidden shared-root provenance; file bytes/hashes, current-runtime size/hash, canonical full-build duration, and native/built-reader measurements remain pending P6-D implementation.
 - Current recovery refresh supersedes only the bundle-inventory portion of that note: the uncommitted directory now measures `3/3`, `0` subdirectories, and `52,743,720` bytes with the exact per-file hashes recorded above. Release/asset/license provenance, canonical build/runtime size/hash, and native/built-reader results remain pending. The fresh graph `2,100/765/0`, QA PowerShell file-detail LOW `0`, and four-ledger impacts are validation/authoring evidence, not product performance benchmarks.
-- `E6-P6D-RECOVERY2` now verifies release/asset/license provenance and the bounded current-source native `1/1` write/read observation. Canonical build `21,577 ms`, final code-intelligence analyze `595,490 ms`, detect `23,990 ms`, and native confirmation `2,240 ms` are validation timings, not a P6-E comparable baseline or achieved speedup. No current runtime/package-size/built-reader/target benchmark exists.
-- `E6-P6D-VENDOR1` selected checked-in vendor authority. Historical `E6-P6D-VENDOR2` first recorded the standard baseline and fixed-point denominator; the current accepted closure is now `45` modules / `1,798` sealed files / `190,350,404` bytes, supplemental `20` roots / `163` files, exactly one patch, determinism `2/2`, licenses `45/45`, and final vendor-tree SHA-256 `B42427FF27ACD6EC1BA92B756AE6BD438DD409A55CAF536010DCA95AA45FC8E2`. Compile/build/test timings remain validation evidence, not P6-E performance proof.
+- `E6-P6D-RECOVERY2` verifies release/asset/license provenance and the bounded current-source native `1/1` write/read observation. Canonical build `21,577 ms`, final code-intelligence analyze `595,490 ms`, detect `23,990 ms`, and native confirmation `2,240 ms` are Child 06 validation timings, not a Child 06A comparable baseline or achieved speedup.
+- `E6-P6D-VENDOR1` selected checked-in vendor authority. Historical `E6-P6D-VENDOR2` first recorded the standard baseline and fixed-point denominator; the current accepted closure is now `45` modules / `1,798` sealed files / `190,350,404` bytes, supplemental `20` roots / `163` files, exactly one patch, determinism `2/2`, licenses `45/45`, and final vendor-tree SHA-256 `B42427FF27ACD6EC1BA92B756AE6BD438DD409A55CAF536010DCA95AA45FC8E2`. Compile/build/test timings remain Child 06 validation evidence, not Child 06A performance proof.
 - The interrupted network-enabled runtime build produced no valid binary and no benchmark. Its quarantined lane cache inventories (`5,687 / 469,406,586` module-cache files/bytes and `3,397 / 281,902,402` build-cache files/bytes) are cleanup/blocker evidence only; they are forbidden as build inputs and are not capacity/performance measurements. Target graph inventory was never collected.
 - The reject-only repair cache inventory (`1,487 / 64,115,238` build-cache files/bytes, `17 / 0` module-cache lock files/bytes, and empty GOPATH) plus its policy-rejected exact cleanup attempt are cleanup/blocker evidence only, not a benchmark. No downloaded module content exists in the repair cache and no cleanup workaround occurred.
 - `E6-P6C3-COMMIT1` records isolated 26-path commit `0d9803777880d8ecca09cae90592d4728a231160`. Commit hash/path count and the remaining 49 protected reports are closure evidence, not product benchmarks.
-- P6-E Root Cause profile values are measured attribution for the current profiled runtime, not an unprofiled baseline. Inclusive clean-path and diagnostic samples overlap their callers and each other and cannot be added into expected or achieved savings.
-- No P6-E A/A, comparable baseline, A/B result, resource budget, materiality threshold, deterministic/freshness/failure equivalence result, or achieved speedup exists at P6-E opening time. P6-D acceptance, fresh current-byte detect, and isolated commit `81163e39718b94a509e41114cada224e8f269e36` now pass, so P6-E preflight/A/A/baseline work is open; result rows remain pending until measured. Detect and commit counts are closure evidence, not performance benchmarks.
+- Former P6-E Root Cause profile values are transferred attribution provenance in Child 06A, not an unprofiled baseline. Inclusive clean-path and diagnostic samples overlap their callers and each other and cannot be added into expected or achieved savings.
+- No Child 06A current detailed timing map, ordered actionable bottleneck list, dynamic attempt result, final equivalence result, or achieved speedup exists at transfer time. P6-D acceptance and commit `81163e39718b94a509e41114cada224e8f269e36` are predecessor evidence only.
 - `E6-P6D-COMMIT1` records exact `1,883`-path isolated P6-D commit `81163e39718b94a509e41114cada224e8f269e36`. Commit hash/path count, `5,866,720` insertions / `314` deletions, and post-commit graph inventory are closure/validation evidence; no synthetic product-performance delta is attributed to the commit.
-- P6-E remains exactly one U1-U4 slice. Per-unit benchmark rows are rollback/equivalence evidence inside that slice and never imply four slices, four gates, or four commits.
+- Child 06A owns measurement-only P1-A and exactly one dynamic P2-A implementation slice. Per-attempt benchmark rows and accuracy reviews never imply multiple implementation slices or commits.

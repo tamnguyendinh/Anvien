@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Status: `P0 complete / P6-A committed at b98131e44932a7bcac17b487ecb2914535927d01 / P6-B committed at 5c1584fef7153a7a331c8fedd1ce64176ddc873d / P6-C1 committed at 8055f0a6860721e26462572e34469e0d708d4a52 / P6-C2 committed at 2acd357db32ac0c2bd3c3968a950c773acf3000d / P6-C3 committed at 0d9803777880d8ecca09cae90592d4728a231160 / P6-D committed and closed at 81163e39718b94a509e41114cada224e8f269e36 / P6-E exactly one U1-U4 slice and OPEN / preflight and implementation authorized under its ordered gates`
+- Status: `CLOSED at accepted P6-D commit 81163e39718b94a509e41114cada224e8f269e36 / P6-A through P6-D retain accepted isolated boundaries / performance work transferred to Child 06A`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-benchmark.md`
@@ -12,11 +12,11 @@
 - Roadmap: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-26-anvien-graph-accuracy-roadmap.md`
 - Persistence dependency: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-02-current-graph-persistence-and-reader-consistency/2026-07-28-02-current-graph-persistence-and-reader-consistency-plan.md`
 - Predecessor: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md`
-- Successor: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-plan.md`
+- Successor: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 
 ## Goal
 
-Make TypeScript standard-library and other evidenced external declarations resolve truthfully on the current production resolver, so `Promise`, `Math.max`, and `Math.min` are external results or explicit external-capability outcomes rather than false in-repository analyzer gaps. After that correctness boundary is accepted and committed, speed up end-to-end `anviens analyze` runtime while preserving accuracy, semantic completeness, graph correctness, deterministic output, freshness, failure/publication behavior, and persistence/reader parity.
+Make TypeScript standard-library and other evidenced external declarations resolve truthfully on the current production resolver, so `Promise`, `Math.max`, and `Math.min` are external results or explicit external-capability outcomes rather than false in-repository analyzer gaps. Child 06 closes at the accepted P6-D correctness/runtime/reader boundary; analyze-performance work is owned by direct successor Child 06A.
 
 ## Rules
 
@@ -38,8 +38,7 @@ Make TypeScript standard-library and other evidenced external declarations resol
 - HIGH or CRITICAL impact is a warning requiring narrow edits and affected-boundary regression, not an edit prohibition.
 - Implement production behavior before adding or updating tests. Run the full repository build before boundary validation.
 - Every completed production slice requires focused behavior evidence, affected regression, ledger refresh, Supervisor PASS, `anvien detect-changes --repo E:\Anvien --scope all`, and an isolated commit. P6-A is a decision/document slice and records its exact worktree/commit evidence without claiming implementation change detection.
-- P6-E opened only after P6-D had clean Supervisor PASS, fresh detect-changes, exact cleanup disposition, and isolated commit `81163e39718b94a509e41114cada224e8f269e36`. Inside P6-E, each ordered work step must pass its own code-first/tests-after, full-build-before-validation, A/B equivalence, resource, and rollback gate before the next step opens; the complete slice then receives one independent Supervisor, detect, cleanup, and isolated-commit boundary.
-- Profiled attribution and unprofiled timing are separate evidence classes. Do not sum inclusive samples, promise a speedup, reduce workload/output, or set a performance/resource threshold without a comparable baseline, measured A/A noise, and explicit Owner acceptance.
+- Child 06 closes at P6-D commit `81163e39718b94a509e41114cada224e8f269e36`. Its former P6-E and performance-dependent aggregate/cleanup/handoff responsibilities are transferred to Child 06A and create no remaining Child 06 Pn gate.
 - Each touched production/test file owns one primary semantic responsibility. Do not add catch-all files or unrelated logic.
 - Do not introduce network access, package installation, package-script execution, or a new production runtime dependency implicitly. If P6-A evidence makes one necessary, update scope, risks, validation, and authority before implementation.
 - Analyze `E:\cheapapp.org` in place only in P6-D target validation. Keep target source unchanged and all plan/QA/report artifacts in `E:\Anvien`.
@@ -66,7 +65,7 @@ In scope:
 - exact target validation for `Promise`, `Math.max`, and `Math.min`;
 - affected persistence/readers identified by Child 02 inventory and fresh P6 impact.
 - repository-owned LadybugDB `v0.19.1` Windows x86_64 native inputs and the historically accepted P6-D runtime recovery/build evidence, with the future build mechanism governed by the later Owner supersession below;
-- faster end-to-end `anviens analyze` runtime after P6-D closure while preserving accuracy, semantic completeness, graph correctness, deterministic output, freshness, failure/publication behavior, and persistence/reader parity.
+- direct handoff of accepted P6-D correctness/runtime/reader authority to Child 06A.
 
 Out of scope:
 
@@ -78,8 +77,8 @@ Out of scope:
 - graphing all installed declarations or all dependency files without evidence;
 - module/export traversal owned by Child 05;
 - scanner behavior, target-source edits, and unrelated language semantics.
-- a separate build-recovery slice, alternate full-build workflow, shared `.tmp\ladybug-native` authority, or P6-E implementation inside P6-D;
-- workload reduction, skipped validation/persistence/output, stale or cross-run caches, arbitrary speed targets, and unmeasured concurrency or format/schema changes used as performance shortcuts.
+- a separate build-recovery slice, alternate full-build workflow, or shared `.tmp\ladybug-native` authority;
+- analyze-performance detailed measurement/ranking, dynamic measured-bottleneck attempts, per-attempt architecture/planning/accuracy gates, final performance review, cleanup, commit, and Child 07 handoff now owned by Child 06A.
 
 ## Non-Goals
 
@@ -131,14 +130,6 @@ Out of scope:
 - None of the three may remain `in_repo_unresolved` or `analyzer_gap`.
 - Target validation records exact source sites, outcomes, proofs, graph records, and pre/post target boundary. Aggregate graph-health counts alone are insufficient.
 
-### End-to-end `anviens analyze` runtime performance
-
-- P6-E starts only after P6-D Supervisor PASS, fresh detect, cleanup disposition, and isolated commit. P6-D remains the sole active slice until then.
-- Freeze an exact E-only repository/corpus/runtime/dependency/native-library/cache/instrumentation identity, establish A/A noise and an alternating unprofiled A/B protocol, and maintain a living cost map down to owner, caller, call path, work unit, call count, wall/CPU/allocation/I/O/wait, bytes, and histogram fields.
-- Execute the accepted sequence inside one slice: reuse already-canonical import paths; build an immutable run-scoped all-import claim index including unresolved imports and original-order buckets; rebaseline absolute current costs; establish clean diagnostic ownership; add run-scoped diagnostic instrumentation/accumulation while preserving first-duplicate behavior, exact full stable-sort behavior, immediate graph materialization, and six-field fail-closed validation; rebaseline again; use a presence-aware one-pass decoder only if the fresh cost map still proves it material; then rerank DB, snapshot, parse, and post-run work from fresh absolute costs.
-- Every ordered optimization step implements production behavior first and tests second, runs the canonical full build before validation, and compares same-condition A/B outputs and resources before the next step opens. After all required and evidence-backed conditional steps pass, the complete P6-E slice obtains independent Supervisor PASS, fresh detect-changes, exact cleanup disposition, and one isolated commit.
-- Exact graph bytes/hash, canonical in-memory/Graph JSON/Ladybug/native-reader digests, ordered outcomes/diagnostics/evidence, deterministic replay, freshness invalidation/restore, failure class, transaction/temp/publication behavior, workload denominators, and Owner-approved resource budgets are acceptance gates. One mismatch rolls back the unit.
-
 ## Acceptance Criteria
 
 - P6-A records a Supervisor-accepted, source-backed declaration-universe decision before any P6-B production edit.
@@ -152,7 +143,7 @@ Out of scope:
 - Only affected persistence/readers identified by Child 02 and fresh impact are changed; their outcomes match the graph source.
 - Historical P6-D acceptance proves that the repository-owned native bundle contains the exact three LadybugDB `v0.19.1` Windows x86_64 inputs and that the accepted path contains no `.tmp\ladybug-native` authority. Its then-used unique lane-owned cache/runtime root is historical evidence, not a future build requirement.
 - Full build, nearest real resolver/graph-health boundary, target boundary, regression, Supervisor, detect-changes, and per-slice commit evidence pass.
-- P6-E proves faster end-to-end `anviens analyze` runtime against a comparable current-runtime baseline while preserving exact workload/output/reader equivalence, deterministic replay, freshness, failure/publication parity, and resource gates before Child 06 Pn-A opens.
+- P6-D is accepted and committed at `81163e39718b94a509e41114cada224e8f269e36`; Child 06 has no remaining aggregate, cleanup, or handoff blocker before Child 06A.
 
 ## Checklist
 
@@ -168,10 +159,10 @@ Out of scope:
 
 ### P6: Ambient and external resolution
 
-- Phase Goal: resolve evidenced external declarations, project truthful outcomes into the graph and graph-health, and then speed up end-to-end `anviens analyze` runtime while preserving all accepted correctness and parity invariants.
+- Phase Goal: resolve evidenced external declarations and project truthful outcomes into the graph and graph-health through the accepted P6-D boundary.
 - Phase Boundary:
-  - In scope: P6-A through P6-E only.
-  - Out of scope: Child 05 module exports, broad public API changes, unevidenced declaration sources, and performance changes outside a fresh measured cost center.
+  - In scope: P6-A through P6-D only.
+  - Out of scope: Child 05 module exports, broad public API changes, unevidenced declaration sources, and Child 06A analyze-performance work.
   - Dependencies: Child 05 closure; Child 02 affected-reader inventory when persisted fields change.
 - Phase Implementation Rule: execute, validate, review, refresh, and commit one slice before opening the next.
 - Ordered Slice List:
@@ -181,7 +172,6 @@ Out of scope:
   - P6-C2: Add the necessary external target representation.
   - P6-C3: Produce structured resolution outcomes.
   - P6-D: Project outcomes and prove the target sites.
-  - P6-E: Accelerate Analyze Without Sacrificing Accuracy.
 
 - [x] P6-A: Establish the declaration-universe behavior and design from evidence.
   - State: `SUPERVISOR PASS / DECISION COMMITTED / P6-B OPEN`. Child 05 is closed at exact handoff commit `ec765debff335540c77d409ebb2c9f45e4a0a77d`. Initial review rejected only the out-of-boundary contract diff; reject-only repair restored that file to HEAD, final review accepted the unchanged four-ledger/report candidate, and Main committed the exact seven-path decision manifest as `b98131e44932a7bcac17b487ecb2914535927d01`.
@@ -470,14 +460,14 @@ Out of scope:
   - Commit Record: Main staged exact set `26/26` with zero missing/extra, zero unstaged tracked paths, and cached/worktree diff-check PASS. Isolated commit `0d9803777880d8ecca09cae90592d4728a231160` (`feat(resolution): add structured resolution outcomes`) has parent `2acd357db32ac0c2bd3c3968a950c773acf3000d`, exactly `26` paths, `3,337` insertions / `557` deletions, post-commit index empty, and remaining status exactly `49 = 40` Main + `6` prior Supervisor + `3` old coder reports. P6-C3 is closed without a second review/detect loop.
 
 - [x] P6-D: Project outcomes and prove the target sites.
-  - State: `INDEPENDENT SUPERVISOR PASS / CANONICAL FULL BUILD AND CURRENT RUNTIME PASS / READER GATE PASS / TARGET CAPABILITY OUTCOMES 3/3 / IN-REPOSITORY ANALYZER GAPS 0/3 / TARGET BOUNDARY PASS / PROCEDURE CLEAN / MAIN FRESH CURRENT-BYTE DETECT PASS / ISOLATED COMMIT 81163e39718b94a509e41114cada224e8f269e36 / CLOSED / P6-E OPEN`.
+  - State: `INDEPENDENT SUPERVISOR PASS / CANONICAL FULL BUILD AND CURRENT RUNTIME PASS / READER GATE PASS / TARGET CAPABILITY OUTCOMES 3/3 / IN-REPOSITORY ANALYZER GAPS 0/3 / TARGET BOUNDARY PASS / PROCEDURE CLEAN / MAIN FRESH CURRENT-BYTE DETECT PASS / ISOLATED COMMIT 81163e39718b94a509e41114cada224e8f269e36 / CHILD 06 CLOSED / CHILD 06A SUCCESSOR`.
   - Owner-Superseded Future Build Record: P6-D stays closed and commit `81163e39718b94a509e41114cada224e8f269e36` stays accepted provenance. Every remaining P6-D reference to per-run `.tmp` lane/cache/runtime/staging/provenance, custom home/temp roots, or PowerShell 5.1 describes historical execution only and must not drive a future build. The binding future flow and command/cache constraints are the `Persistence and target validation` contract above.
   - Goal: preserve the cleared graph-health projection, materialize the selected exact repository-owned `vendor/` dependency authority alongside the durable LadybugDB inputs, recover the canonical current-runtime path with unique lane-owned derived caches/runtime roots, then validate the three bounded target sites on that built current runtime.
   - Scope Boundary:
     - Editable for the approved correction: `scripts/materialize-go-vendor.ps1`, `scripts/verify-go-vendor.ps1`, `scripts/test-go-vendor-contract.ps1`, `vendor/**`, `third_party/go-vendor/manifest.v1.json`, `third_party/go-vendor/licenses/**`, and exactly `third_party/go-vendor/patches/tree-sitter-go-v0.25.0-remove-absent-scanner.patch`; original P6-D scope also retains the durable Ladybug bundle, `scripts/full-build.ps1`, `scripts/ensure-ladybug-native.ps1`, `internal/cli/package_runtime.go`, `internal/cli/package_command_test.go`, `internal/cli/package_runtime_p6d_test.go`, `anvien-launcher/build.ps1`, and `scripts/qa-child02-p2e-validation.ps1`. Any further owner requires fresh impact and another four-ledger refresh. Existing graph-health production/test bytes remain preserve-only unless a fresh same-invariant rejection requires repair.
     - Inspect-only: unchanged `go.mod`/`go.sum`, resolver outcomes, graph/persistence, `anvien/package.json` lifecycle wiring, canonical publication destinations, target source/worktree, and independent oracle.
     - Preserve-only: the independently cleared six-field projector/test bytes, committed P6-C3, unrelated health policies, target source, and all protected/shared/quarantined caches.
-    - Out of scope: resolver/declaration behavior accepted in earlier slices, an alternate full-build workflow, a separate recovery slice/commit, and every P6-E U1-U4 optimization.
+    - Out of scope: resolver/declaration behavior accepted in earlier slices, an alternate full-build workflow, a separate recovery slice/commit, and every Child 06A performance optimization.
   - Non-Goals: no `Promise`/`Math` branch, no reclassification without resolver evidence, no `.tmp\ladybug-native` build authority, no hand-pruned partial vendor tree, and no silent network/download/shared-cache/module-cache fallback.
   - Pre-flight Questions:
     - Data source: final structured outcomes, exact target source sites, sealed blocker report `E6-P6D-RECOVERY1`, Owner correction, and the exact durable LadybugDB bundle.
@@ -491,7 +481,7 @@ Out of scope:
     - Behavior test: durable-bundle selection, zero shared-root fallback, unique-root propagation, current-runtime provenance, mechanical status mapping, exact three target outcomes, zero in-repository analyzer gaps, parity, and target boundary.
     - Cleanup/quarantine: remove only the active lane's unique cache/runtime artifacts when authorized; preserve the durable third-party bundle, protected/shared/quarantined roots, and target source/worktree.
     - External side effects: canonical product publication and normal target analyze only after their gates; target source remains unchanged.
-    - N/A notes: build recovery and target proof remain internal work steps of P6-D, not a new slice/gate/commit; P6-E remains one later slice containing U1-U4.
+    - N/A notes: build recovery and target proof remain internal work steps of P6-D, not a new slice/gate/commit; performance work follows only in independent Child 06A.
   - Work Steps:
     1. Preserve the independently cleared six-field projector and refresh file-detail/impact only for the exact native/build recovery owners before edit; do not re-audit or rewrite accepted P6-C3/P6-D semantics.
        - UI flow check: conditional on affected UI.
@@ -525,7 +515,7 @@ Out of scope:
     - Historical vendor correction, now satisfied: `E6-P6D-VENDOR1` selected checked-in vendor authority and `E6-P6D-VENDOR2` proved the standard tree CGO-incomplete, requiring the accepted complete-root fixed-point overlay and exactly one guarded patch.
     - The historical pre-build gate is satisfied. `.tmp\ladybug-native`, stale/global runtime, protected/shared/quarantined cache, implicit network/package acquisition, and hidden fallback remain forbidden authorities.
     - The corrected canonical full build now produces the accepted current runtime; native/built-reader parity and the bounded target gate pass. Independent Supervisor report `E71777663D76C4989E744C544F27830E7CB535B3031E98E2450EF8975317F6A3` returns `PASS` with procedure `CLEAN`.
-    - P6-D is checked and closed. Fresh current-byte detect passed on the planner-finalized candidate; exact staged equality was `1,883/1,883` with missing/extra `0/0`; isolated commit `81163e39718b94a509e41114cada224e8f269e36` exists; post-commit index is empty; P6-E is open.
+    - P6-D is checked and closed. Fresh current-byte detect passed on the planner-finalized candidate; exact staged equality was `1,883/1,883` with missing/extra `0/0`; isolated commit `81163e39718b94a509e41114cada224e8f269e36` exists; post-commit index is empty; Child 06A is the direct successor.
   - Acceptance:
     - Source: graph-health maps resolver outcomes with no same-invariant target-text guess; durable native inputs and all affected build call sites contain no `.tmp\ladybug-native` authority or silent fallback.
     - Runtime/UI: corrected canonical full build produces a current lane-built runtime; all three target sites show correct external or accepted capability outcomes; UI is conditional.
@@ -535,7 +525,7 @@ Out of scope:
     - Evidence IDs: `E6-P6D-IMPACT1`, `E6-P6D-RECOVERY1`, `E6-P6D-RECOVERY2`, `E6-P6D-VENDOR1`, `E6-P6D-VENDOR2`, `E6-P6D-SRC1`, `E6-P6D-BUILD1`, `E6-P6D-TEST1`, `E6-P6D-PARITY1`, `E6-P6D-TARGET1`, `E6-P6D-ORACLE1`, `E6-P6D-BOUNDARY1`, `E6-P6D-REVIEW1`, `E6-P6D-DETECT1`, `E6-P6D-COMMIT1`.
     - Actual-status rows refreshed: graph-health projection, durable native/build authority, current-runtime provenance, target acceptance, and affected readers.
   - Evidence Targets: impact/recovery authority/source/build/tests/parity, target oracle/boundary, Supervisor, detect, commit.
-  - Actual-status Update: graph-health `wrong -> local candidate -> independent REJECT -> six-field repair independently cleared -> independent full-slice PASS`; native/build recovery `shared .tmp authority + no durable bundle -> source/native contract complete -> standard vendor incomplete -> complete-root overlay plus one guarded patch -> canonical full build/current runtime/readers accepted`; target `0/3 unproved -> accepted capability outcomes 3/3 with analyzer gaps 0/3`; procedure `not clean -> CLEAN`; Main fresh current-byte detect `pending -> PASS`; isolated commit `pending -> 81163e39718b94a509e41114cada224e8f269e36`; P6-D `open -> closed`; P6-E `locked -> open`.
+  - Actual-status Update: graph-health `wrong -> local candidate -> independent REJECT -> six-field repair independently cleared -> independent full-slice PASS`; native/build recovery `shared .tmp authority + no durable bundle -> source/native contract complete -> standard vendor incomplete -> complete-root overlay plus one guarded patch -> canonical full build/current runtime/readers accepted`; target `0/3 unproved -> accepted capability outcomes 3/3 with analyzer gaps 0/3`; procedure `not clean -> CLEAN`; Main fresh current-byte detect `pending -> PASS`; isolated commit `pending -> 81163e39718b94a509e41114cada224e8f269e36`; P6-D and Child 06 `open -> closed`; Child 06A becomes the direct successor.
   - Worker Pre-edit Record: `E6-P6D-IMPACT1` selects only `internal/graphhealth/diagnostics.go` for production edit. `internal/graphhealth/policy.go` already owns sufficient classification/actionability values and `internal/graphhealth/resolution_gap_inputs.go` copies normalized fields losslessly, so both are validate/preserve-only. The new direct test owner may be `internal/graphhealth/p6d_outcome_projection_test.go`. UI/Web remain preserve-only because fresh upstream impact contains no frontend file.
   - Worker Source/Build Record: current production bytes decode and validate the committed schema-v1 outcome plus the nested full P6-B authority proof matrix, mechanically override flat/heuristic policy, and fail closed on malformed, incomplete, identity/status/proof drift. No bounded target name is present in production. Tests were added only after production in the sole planned owner, including positive missing/rejected catalog-proof capability states. Exact repo lock was free before both builds. E-only/offline broad `go build -buildvcs=false ./...` exits `1` after `7,653 ms` on the preserved missing-module/mixed-fixture baseline; affected `go build -buildvcs=false ./internal/graphhealth` exits `0` after `11,799 ms`. `E6-P6D-SRC1` and `E6-P6D-BUILD1` are recorded; test/parity/target/oracle/boundary/detect/review/commit remain pending.
   - Worker Test/Parity Record: repaired-byte focused `go test ./internal/graphhealth -run '^TestP6D' -count=1 -v` and full `go test ./internal/graphhealth -count=1` both exit `0`. Exact direct rows are policy `3/3`, valid missing/rejected catalog-proof capability `2/2`, hostile fail-closed `26/26`, legacy `1/1`, and Graph JSON/gap/summary parity `1/1`. The six added hostile rows each drift only one nested/outer identity group and return `unclassified/review`. The three generic external/capability rows remain `standard_library/non_actionable=3/3` and `in_repo_unresolved/analyzer_gap=0/0` across Diagnostics and ResolutionGap inventory. `E6-P6D-TEST1` is recorded; `E6-P6D-PARITY1` is partial until real Ladybug/built readers and target are proven. P6-D remains unchecked.
@@ -556,119 +546,13 @@ Out of scope:
   - Residual Routing: committed P6-C3 `validateResolutionOutcome` six-field parity and non-Windows `scripts/ensure-ladybug-native.sh` remain explicit out-of-scope residuals; neither invalidates the accepted Windows P6-D boundary or authorizes expansion here.
   - Commit Record: exact staged equality was `1,883/1,883`, missing/extra `0/0`, with `1,871` additions and `12` modifications. The protected outside boundary remained `25/25` and included Owner deletion `CONTRIBUTING.md`. Isolated commit `81163e39718b94a509e41114cada224e8f269e36` (`feat: close P6-D runtime and reader target proof`) has parent `741335f7efa5ad215ec28361d88c462f431565ab`, tree `b6bc216172886d5de9ef80f82c0da3ed28880f13`, exactly `1,883` paths, `5,866,720` insertions / `314` deletions, empty post-commit index, and no push. Fresh post-commit graph is current/up-to-date at `2,170/765/0`, `122,649/169,300`, file projection `20,351/479`.
 
-- [ ] P6-E: Accelerate Analyze Without Sacrificing Accuracy.
-  - State: `OPEN / EXACTLY ONE SLICE WITH ORDERED U1-U4 UNITS / P6-D ANCHOR COMMITTED AT 81163e39718b94a509e41114cada224e8f269e36 / PREFLIGHT AND IMPLEMENTATION AUTHORIZED UNDER ORDERED GATES / NO SPEEDUP CLAIM YET`.
-  - Goal: Speed up end-to-end `anviens analyze` runtime while preserving accuracy, semantic completeness, graph correctness, deterministic output, freshness, failure/publication behavior, and persistence/reader parity.
-  - Scope Boundary:
-    - Editable: only cost-map, resolution, diagnostic, and later Pareto owners named by fresh P6-E file-detail/impact evidence; initial candidate owners are `internal/resolution/indexes.go`, `internal/resolution/resolve.go`, `internal/resolution/export_resolution.go`, and, only after the clean ownership gate, `internal/graphhealth/diagnostics.go` plus exact proven lifecycle/test owners.
-    - Inspect-only: graph construction, Graph JSON, Ladybug/native persistence, affected CLI/MCP/HTTP readers, publication/rollback boundaries, and target-independent accuracy oracles.
-    - Preserve-only: P6-A through P6-D accepted semantics, unresolved-import ownership, structured outcomes, first-duplicate behavior, exact full stable-sort behavior, immediate graph materialization, six-field fail-closed validation, target source, and every unmeasured cost center.
-    - Out of scope: workload/output reduction, skipped validation or persistence, output/schema/format changes, cross-run cache, GC tuning as a substitute, unmeasured concurrency, target access, and speedup promises or arbitrary thresholds.
-  - Non-Goals: do not treat profiled cumulative samples, `17m20`, or `~8m` as a comparable baseline; do not open an unknown DB/snapshot/parse/post-run edit from old percentages; do not stage, overwrite, stash, reset, checkout, or move rejected/user-owned P6-D anchor work.
-  - Pre-flight Questions:
-    - Data source: sealed Root Cause/Architect/Planner/Supervisor feasibility chain, then fresh E-only cost-map and A/A/A-B artifacts on identical repository/corpus/runtime/cache/instrumentation identity.
-    - Display permission: N/A — non-UI analyzer work; affected public readers are validate-only unless fresh impact proves an exact change.
-    - DB read flow: compare canonical ordered in-memory graph, Graph JSON, Ladybug/native load, and every proven affected reader.
-    - DB write flow: preserve the current native transaction, fallback/failure/skip rules, snapshot temp-write/flush/close/atomic-rename, and failed-run publication behavior.
-    - Render location: plan evidence in the evidence ledger and granular measurements in the benchmark ledger; graph/output artifacts remain at their normal product locations.
-    - UI behavior flow: N/A — no UI behavior is authorized.
-    - Docker runtime: N/A — this is a non-UI local CLI runtime; use the P6-D-corrected canonical `scripts/full-build.ps1` contract with the durable LadybugDB bundle and fresh distinct cache/runtime roots owned by one unique lane.
-    - Playwright target: N/A — no browser-visible behavior.
-    - Behavior test: differential legacy/candidate results, exact graph/output/native-reader parity, deterministic forced replay, freshness invalidation/restore, and failure/publication equivalence.
-    - Cleanup/quarantine: name exact unit-created artifacts and roots before work; clean only authorized unit-owned artifacts, preserve user/protected/shared/quarantined roots, and record blocked cleanup truthfully.
-    - External side effects: normal repository analyze output only after explicit authority; `E:\cheapapp.org`, network, install, package mutation, global wrappers, and alternate worktrees remain forbidden.
-    - N/A notes: Owner assigns exactly U1, U2, U3, and conditional U4 to this one checklist slice; setup, rebaseline, Pareto rerank, and closure are internal work steps, and no unit becomes a separate slice, gate, or commit boundary.
-  - Work Steps:
-    1. Establish implementation authority and the living granular cost map; freeze exact E-only repository bytes, dirty manifest, corpus, runtime/native/dependency/cache/instrumentation identity; record disjoint wall spans and residual, CPU/allocation/memory/I/O/wait/work-unit/call/byte/histogram fields; establish comparable A/A noise and an alternating unprofiled baseline with predeclared repetitions, stopping rule, cache regime, median, dispersion, confidence interval, and Owner-approved materiality/resource rules.
-       - UI flow check: N/A — non-UI analyzer measurement.
-       - DB/data flow check: baseline includes exact workload counts, graph bytes/hash, canonical in-memory/Graph JSON/Ladybug/native digests, and publication identity.
-       - Render location check: metrics go only to the benchmark ledger/artifacts; proof identities go to the evidence ledger.
-       - Mini QA: prove the measurement schema reconciles process wall with an explicit residual and does not add inclusive/profiled samples.
-       - Evidence target: `E6-P6E-RC1`, `E6-P6E-ARCH1`, `E6-P6E-WORKFLOW1`, `E6-P6E-FEAS1`, `E6-P6E-PLAN1`, `E6-P6E-AUTH1`, `E6-P6E-IMPACT1`, `E6-P6E-COSTMAP1`, `E6-P6E-BASELINE1`; `B6-P6E-ATTRIBUTION1`, `B6-P6E-HISTORICAL1`, `B6-P6E-AA1`, `B6-P6E-BASELINE1`.
-    2. Implement canonical import-path reuse in production first with `O(1)` additional retained memory, then differential path/claim tests; run the canonical full build before same-condition A/B and exact workload/output/reader/failure/resource equivalence. Roll back this step on any semantic mismatch, nondeterminism, stale result, resource-budget failure, noise-only direct-cost change, or unexplained whole-wall regression.
-       - UI flow check: N/A.
-       - DB/data flow check: scan order, early exit, import claims, ordered outcomes, graph, and persistence remain exact.
-       - Render location check: normal analyzer outputs only.
-       - Mini QA: Windows separator, dot-segment, empty-path, and unresolved-import differential cases plus full graph/native parity.
-       - Evidence target: `E6-P6E-U1SRC1`, `E6-P6E-U1BUILD1`, `E6-P6E-U1TEST1`, `E6-P6E-U1BENCH1`, `E6-P6E-U1EQ1`; `B6-P6E-U1AB1`.
-    3. After Step 2 passes and its candidate identity is sealed, implement a second purpose-specific immutable run-scoped all-import claim index with exact shape `{canonical source file path, exact local name} -> []original w.imports index`; append every resolved and unresolved import in original order, do not repurpose `importsByReceiver`, and do not cache final resolution answers. Keep index construction/state `O(I)` and run-scoped only; keep all current semantic-import, shadow, target, label, and nil-target rules in the consumers; then repeat code-first/tests-after/full-build/A-B/equivalence/resource gates and roll back only this step on failure.
-       - UI flow check: N/A.
-       - DB/data flow check: index is used only for direct lookup, never iterated for output, and is disposed at run end.
-       - Render location check: normal analyzer outputs only.
-       - Mini QA: legacy/indexed calls, items, hits, misses, bucket-size distribution, unresolved claims, order, shadowing, and nil-target cases match exactly.
-       - Evidence target: `E6-P6E-U2SRC1`, `E6-P6E-U2BUILD1`, `E6-P6E-U2TEST1`, `E6-P6E-U2BENCH1`, `E6-P6E-U2EQ1`; `B6-P6E-U2AB1`.
-    4. Rebaseline fresh absolute costs after accepted Steps 2-3; discard old percentages as priority authority. Before any diagnostic edit, prove P6-D is accepted and committed and the current diagnostic owner is cleanly owned; otherwise stop P6-E at this boundary.
-       - UI flow check: N/A.
-       - DB/data flow check: rebaseline repeats the exact workload/output/native identities and records fresh diagnostic call/list/byte distributions.
-       - Render location check: updated cost map and ownership evidence only.
-       - Mini QA: confirm no old seven-path aggregate hash or rejected ledger bytes are treated as current acceptance.
-       - Evidence target: `E6-P6E-REBASE1`, `E6-P6E-ANCHOR1`, `E6-P6E-OWNERSHIP1`; `B6-P6E-REBASE1`.
-    5. After the clean ownership gate, implement diagnostic instrumentation and a run-scoped accumulator with `O(D)` state in production first, then tests. On a node's first access, normalize its pre-existing diagnostic slice exactly once; normalize/decode every incoming diagnostic exactly once, including structured policy and all six nested-authority checks; retain the normalized slice plus a first-matching bucket index; after every new-bucket full stable sort, rebuild that index to the first matching value. Preserve first-duplicate semantics, the exact current full stable sort, immediate node property materialization, missing-node result, six-field fail-closed validation, and second-writer/property-drift abort; run full build, A/B, exact parity, failure/publication/resource gates and roll back only this step on failure.
-       - UI flow check: N/A.
-       - DB/data flow check: compare node properties after every append and through Graph JSON/ResolutionGap/Ladybug/native readers.
-       - Render location check: normal diagnostic and graph outputs only.
-       - Mini QA: pre-existing duplicate buckets, sort-key mutation, new bucket sort, malformed markers, missing nodes, cancellation, DB/snapshot failure, and immediate publication behavior; same-schema A/B evidence must expose new-vs-existing normalization/decode counters.
-       - Evidence target: `E6-P6E-U3SRC1`, `E6-P6E-U3BUILD1`, `E6-P6E-U3TEST1`, `E6-P6E-U3BENCH1`, `E6-P6E-U3EQ1`, `E6-P6E-U3PARITY1`, `E6-P6E-U3FAILURE1`, `E6-P6E-U3PUBLICATION1`; `B6-P6E-U3AB1`.
-    6. Rebaseline fresh absolute costs after Step 5. Open the presence-aware one-pass decoder only if the remaining current absolute decoder cost is material under the predeclared rule; otherwise record evidence-backed N/A. If opened, use one bounded local wire/nested-raw state per call with no memoization; preserve missing/null/wrong-type/malformed/unknown/duplicate-key last-value/nested-raw behavior and the exact `(outcome, structured, valid)` triple, then repeat production-first/tests-after/full-build/A-B/equivalence/resource gates and roll back on one mismatch.
-       - UI flow check: N/A.
-       - DB/data flow check: six-field nested authority validation and marker-present fail-closed behavior remain exact across persisted/read outputs.
-       - Render location check: normal diagnostic and graph outputs only.
-       - Mini QA: adversarial old/new decoder differential and full P6-D semantic matrix.
-       - Evidence target: `E6-P6E-REBASE2`, `E6-P6E-U4GATE1`, conditional `E6-P6E-U4SRC1`, `E6-P6E-U4BUILD1`, `E6-P6E-U4TEST1`, `E6-P6E-U4BENCH1`, `E6-P6E-U4EQ1`, or `E6-P6E-U4NA1`; `B6-P6E-REBASE2`, conditional `B6-P6E-U4AB1`.
-    7. Produce a fresh absolute Pareto rerank for DB, snapshot, parse, and post-run. Do not edit a later owner until the four ledgers name its current measured cost, exact owner/surface, architecture contract, benchmark row, failure/publication/resource rules, and rollback condition; apply the same code-first/tests-after/full-build/A-B/equivalence gate to every activated later step.
-       - UI flow check: N/A unless fresh impact proves a public reader; then update the plan before edit.
-       - DB/data flow check: no row/property/evidence/fallback/transaction/snapshot reduction is accepted as speedup.
-       - Render location check: fresh cost map, evidence, and normal product outputs.
-       - Mini QA: absolute-cost rerank, exact affected boundary, and no workload/output shortcut.
-       - Evidence target: `E6-P6E-PARETO1`; `B6-P6E-PARETO1`.
-    8. Prove the accepted P6-E candidate speeds up end-to-end `anviens analyze` runtime beyond the Owner-approved A/A noise/materiality rule, then run final exact equivalence and deterministic/freshness/failure/publication/resource validation, obtain independent Supervisor PASS, run fresh detect-changes, record exact cleanup disposition, and create one isolated P6-E commit before Pn-A opens.
-       - UI flow check: N/A unless fresh impact previously activated a public reader.
-       - DB/data flow check: exact graph bytes/SHA and canonical ordered in-memory/Graph JSON/Ladybug/native digests match the frozen baseline; two forced replays and source invalidation/restore pass.
-       - Render location check: final normal graph/read outputs and four living ledgers.
-       - Mini QA: nearest real built CLI/readers plus all affected semantic, failure, and publication boundaries.
-       - Evidence target: `E6-P6E-DETERMINISM1`, `E6-P6E-FRESHNESS1`, `E6-P6E-PARITY1`, `E6-P6E-FAILURE1`, `E6-P6E-PUBLICATION1`, `E6-P6E-RESOURCE1`, `E6-P6E-REVIEW1`, `E6-P6E-DETECT1`, `E6-P6E-CLEAN1`, `E6-P6E-COMMIT1`; `B6-P6E-FINAL1`.
-  - Implementation Gate:
-    - Before editing any target file/symbol, run the required fresh Anvien graph, file-detail, and upstream impact commands and record `E6-P6E-IMPACT1`; HIGH/CRITICAL remains a scope warning, not a ban.
-    - P6-D has clean independent Supervisor PASS, fresh current-byte detect PASS, exact cleanup disposition, and isolated commit `81163e39718b94a509e41114cada224e8f269e36`. P6-E is open; fresh impact, cost-map, A/A, and baseline gates remain mandatory before U1 production edits.
-    - P6-E inherits the committed P6-D canonical full-build contract: repository-owned `third_party/ladybugdb/v0.19.1/windows-x86_64` inputs plus fresh distinct cache/runtime roots owned by one unique lane for every run. Bare/global/stale/protected/shared/quarantined inputs remain forbidden; Owner/Main still approves numeric A/A-derived materiality/resource rules.
-    - Structural resource bounds are hard contracts: U1 additional retained memory is `O(1)`; U2 index construction/state is `O(I)` and run-scoped only; U3 accumulator state is `O(D)` and run-scoped only; U4 uses one bounded local wire/nested-raw state per call with no memoization. No unbounded package-global, global, shared, or cross-run cache is allowed, and numeric budgets do not replace these structural bounds.
-    - Each numbered optimization step must pass its direct-cost, exact-equivalence, deterministic/freshness/failure/publication, and resource gate before the next step begins; failed step bytes are rolled back before continuing.
-  - Acceptance:
-    - Source: only fresh measured owners changed; canonical paths, all-import index, diagnostic accumulator, conditional decoder, and any later Pareto owner satisfy the accepted contracts with no hidden fallback or concurrency.
-    - Runtime/UI: canonical full build succeeds before validation; alternating unprofiled A/B proves end-to-end `anviens analyze` runtime improves beyond the Owner-approved A/A noise/materiality rule, with direct-cost attribution and no unexplained sibling-phase/resource regression; UI is N/A unless fresh impact proves otherwise.
-    - DB/data: exact workload, ordered outcomes/diagnostics/evidence, graph bytes/SHA, canonical in-memory/Graph JSON/Ladybug/native digests, readers, deterministic replay, freshness, failure, transaction/temp/publication, and resource budgets pass.
-    - Behavior test: production-first differential, affected regression, two forced replays, controlled invalidation/restore, hostile failure, and rollback cases pass; counts alone are insufficient.
-    - Cleanup/quarantine: only exact P6-E-owned artifacts are removed; user/protected/shared/quarantined work is preserved; any blocked cleanup is recorded and reviewed.
-    - Evidence IDs: `E6-P6E-RC1`, `E6-P6E-ARCH1`, `E6-P6E-WORKFLOW1`, `E6-P6E-FEAS1`, `E6-P6E-PLAN1`, `E6-P6E-AUTH1`, `E6-P6E-ANCHOR1`, `E6-P6E-IMPACT1`, `E6-P6E-COSTMAP1`, `E6-P6E-BASELINE1`, exact U1-U4/rebaseline/Pareto IDs, `E6-P6E-DETERMINISM1`, `E6-P6E-FRESHNESS1`, `E6-P6E-PARITY1`, `E6-P6E-FAILURE1`, `E6-P6E-PUBLICATION1`, `E6-P6E-RESOURCE1`, `E6-P6E-REVIEW1`, `E6-P6E-DETECT1`, `E6-P6E-CLEAN1`, `E6-P6E-COMMIT1`.
-    - Actual-status rows refreshed: P6-D transition/commit prerequisite, performance authority/baseline, primary import cost, secondary diagnostic cost, dirty diagnostic ownership, cost-map/Pareto state, and P6-E/Pn-A lock state.
-  - Evidence Targets: causal/architecture/feasibility seals; fresh impact/cost-map/baseline; per-step source/build/test/A-B/equivalence; parity/determinism/freshness/failure/publication/resource; Supervisor/detect/cleanup/commit.
-  - Actual-status Update: `absent -> declared/locked`; after implementation begins, refresh each affected cost-center row and next-step decision without changing P6-D history. No implementation or benchmark result is claimed by this update.
-  - Commit Boundary: after all required and evidence-backed conditional P6-E work passes one independent Supervisor review, fresh detect, and cleanup disposition, commit the exact accepted P6-E implementation/tests/instrumentation/reports and four refreshed Child 06 ledgers as one isolated slice boundary. Pn-A remains locked until `E6-P6E-COMMIT1` exists.
+## Child 06 Closure And Child 06A Handoff
 
-- [ ] Pn-A: Call Supervisor for Child 06 acceptance.
-  - Goal: independently verify the seven slices, design decision, source diff, runtime/target/performance evidence, ledgers, and commits.
-  - Work Steps:
-    1. Run Supervisor review over the complete Child 06 scope.
-    2. Return only rejected invariants to their owning slice and repeat until PASS or a precise blocker.
-  - Implementation Gate: P6-A through P6-E are independently accepted and committed; an evidence-backed blocker remains a blocker and cannot open aggregate acceptance.
-  - Acceptance: `E6-PNA-REVIEW1` records Supervisor PASS or a precise blocker.
-
-- [ ] Pn-B: Remove dead work created by Child 06.
-  - Goal: retain only accepted source, tests, fixtures/assets, evidence, and ledgers.
-  - Work Steps:
-    1. Inventory failed, duplicate, superseded, or unused Child 06 artifacts and decisions.
-    2. Remove only those artifacts, verify the final diff, and obtain Supervisor confirmation.
-  - Implementation Gate: do not remove pre-existing user work or another child's artifacts.
-  - Acceptance: `E6-PNB-CLEAN1` records cleanup and Supervisor result.
-
-- [ ] Pn-C: Close and hand off Child 06.
-  - Goal: finish final validation, ledgers, detect-changes, commit evidence, and Child 07 handoff.
-  - Work Steps:
-    1. Run final full build and all accepted affected runtime boundaries.
-    2. Refresh actual status, evidence, and benchmark with final values.
-    3. Run detect-changes, record all slice commits, verify worktree ownership, and refresh Child 07 from accepted results.
-  - Implementation Gate: Pn-A and Pn-B pass; no Child 06 acceptance row remains pending.
-  - Acceptance: `E6-PNC-DETECT1`, `E6-PNC-COMMITS1`, and `E6-PNC-HANDOFF1` record final closure and exact Child 07 opening condition.
+- Child 06 is `CLOSED` at accepted P6-D commit `81163e39718b94a509e41114cada224e8f269e36`.
+- Former P6-E goal, scope, requirements, acceptance, checklist, evidence/benchmark execution, aggregate performance review, cleanup, commit, and final Child 07 handoff responsibilities are transferred to the independent Child 06A standard plan set.
+- Child 06 has no pending `Pn-A`, `Pn-B`, or `Pn-C` gate. Those former performance-dependent gates cannot block Child 06A.
+- Direct successor: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`.
+- Child 07 follows only the Child 06A closure commit and no longer opens directly from Child 06.
 
 ## Risk Notes
 

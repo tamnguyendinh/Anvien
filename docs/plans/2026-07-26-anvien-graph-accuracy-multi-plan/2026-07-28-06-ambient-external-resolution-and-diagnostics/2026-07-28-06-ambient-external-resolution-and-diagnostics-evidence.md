@@ -7,6 +7,7 @@
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-benchmark.md`
 - Actual status: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-actual-status.md`
+- Successor: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 
 ## Evidence Rules
 
@@ -17,6 +18,7 @@
 - Every production slice requires impact, source, build, behavior, boundary/parity where applicable, Supervisor, detect-changes, and commit evidence.
 - Record exact source sites and outcomes for `Promise`, `Math.max`, and `Math.min`; aggregate health counts cannot close the target gate.
 - Long measurements belong in the benchmark ledger.
+- Child 06 closes at accepted P6-D commit `81163e39718b94a509e41114cada224e8f269e36`. Former P6-E executable evidence and performance-dependent closure evidence are transferred to Child 06A; historical references below remain provenance only.
 
 ### Evidence ID Naming
 
@@ -658,48 +660,18 @@ Exact remaining zero-byte module-download lock paths:
 - `E6-P6D-COMMIT1`: before commit, staged equality was exact `1,883/1,883`, missing/extra `0/0`, with `1,871` additions and `12` modifications. All `25` protected outside-boundary rows remained unstaged, including Owner deletion `CONTRIBUTING.md`, sixteen Main handoffs, the Microsoft artifact, the P6-E-only Supervisor report, and six superseded retry outputs.
 - Isolated commit `81163e39718b94a509e41114cada224e8f269e36` (`feat: close P6-D runtime and reader target proof`) has parent `741335f7efa5ad215ec28361d88c462f431565ab`, tree `b6bc216172886d5de9ef80f82c0da3ed28880f13`, exactly `1,883` paths, `5,866,720` insertions / `314` deletions, and no push. Post-commit index is empty and remaining status is exactly the same `25` protected rows.
 - Fresh post-commit `anvien analyze --force` exits `0`: `2,170` scanned / `765` parsed / `0` failed, graph `122,649` nodes / `169,300` relationships, file projection `20,351` dependency edges / `479` unresolved. `anvien status` reports indexed/current commit `81163e3` and up-to-date. The initial isolated-home attempt exited before analysis because Git trust was absent; the corrected invocation used process-local `safe.directory=E:/Anvien` and is the only accepted post-commit graph.
-- P6-D is closed. P6-E is open as the sole current Child 06 slice, still exactly one U1-U4 commit boundary. No P6-E implementation or performance result is inferred from the closure.
+- P6-D and Child 06 are closed. Direct successor Child 06A owns the former P6-E intent, current truth, implementation, final acceptance, cleanup, commit, and Child 07 handoff. No performance result is inferred from the P6-D closure.
 
-### P6-E: Accelerate Analyze Without Sacrificing Accuracy
+## Child 06 Closure Evidence
 
-P6-E is declared immediately after P6-D and before Pn-A as exactly one checklist slice and one commit boundary. Its ordered optimization units are U1 canonical-path reuse, U2 all-import index, U3 diagnostic accumulator, and conditional U4 one-pass decoder; setup, rebaseline, Pareto rerank, and closure remain internal work steps rather than extra slices/gates/commits. Its product goal is: speed up end-to-end `anviens analyze` runtime while preserving accuracy, semantic completeness, graph correctness, deterministic output, freshness, failure/publication behavior, and persistence/reader parity. Its state is `OPEN / P6-D ANCHOR COMMITTED / PREFLIGHT AND IMPLEMENTATION AUTHORIZED UNDER ORDERED GATES / NO SPEEDUP CLAIM YET`. The accepted discussion chain proves strategy feasibility only; implementation still requires fresh impact, cost-map, A/A, baseline, and each ordered unit gate.
+- `E6-P6D-COMMIT1` is the terminal Child 06 boundary: isolated commit `81163e39718b94a509e41114cada224e8f269e36`, parent `741335f7efa5ad215ec28361d88c462f431565ab`, exact `1,883` paths, empty post-commit index, preserved outside boundary, and current post-commit graph.
+- No Child 06 `Pn-A`, `Pn-B`, or `Pn-C` evidence remains pending. Owner command closes Child 06 at P6-D and retires those former performance-dependent gates as Child 06 blockers.
+- Direct successor: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`.
 
-Authoritative discussion evidence:
+## Child 06A Transfer Provenance
 
-- `E6-P6E-RC1` — recorded: Root Cause report `reports/Investigation/rp_investigation_260823_103434_by_gpt-5_analyze_performance_root_cause.md`, `32,620` bytes / `341` LF / SHA-256 `100998373E396A7E66B887357214B5952C4F9D90BC4D26558F291F9F60B950B6`, verifies the current primary whole-import scan/repeated canonicalization path and secondary repeated diagnostic normalization/double-decode path. Historical regression attribution and exact multiplicities remain unverified.
-- `E6-P6E-ARCH1` — architecture continuation: `reports/system-architect/rp_system-architect_260823_110218_by_gpt-5_analyze_performance_solution_architecture.md`, `36,360` bytes / `485` LF / SHA-256 `4CD4DB7EE6D195ADDED4CB0E0879EA1C2C288B81596F56248B6624485C2957BC`, selects canonical-path reuse, an immutable all-import claim index, rebaseline, a run-scoped diagnostic accumulator, rebaseline, a conditional presence-aware decoder, and a fresh Pareto loop.
-- `E6-P6E-WORKFLOW1` — recorded workflow input: `reports/planner/rp_planner_260823_113133_by_gpt-5_analyze_performance_execution_workflow.md`, `48,426` bytes / `494` LF / SHA-256 `B6AED404298D5399001EE3D33E2D17590DDC7D52F1025C49397B3E2610061F5B`, is discussion evidence, not implementation evidence or a substitute for this checklist slice.
-- `E6-P6E-FEAS1` — feasibility verdict: `reports/Supervisor/rp_supervisor_260823_123112_by_gpt-5_analyze_performance_discussion_chain_review.md`, `17,270` bytes / `140` LF / SHA-256 `0458C59504C6463F0E0C3BDAF2BCA7A1B7A4A3E03373C771647B73AF03F3E6D2`, returns PASS only for strategy feasibility and explicitly does not authorize implementation or claim speedup.
-- `E6-P6E-ANCHOR1` — recorded current prerequisite authority: independent P6-D PASS report `reports/Supervisor/rp_supervisor_260824_063140_by_gpt-5_p6d_runtime_reader_target_acceptance.md` is `24,954` bytes / `240` LF / SHA-256 `E71777663D76C4989E744C544F27830E7CB535B3031E98E2450EF8975317F6A3`; fresh current-byte detect is PASS; isolated P6-D commit is `81163e39718b94a509e41114cada224e8f269e36`; post-commit graph is current/up-to-date. Earlier P6-D REJECT reports remain immutable history and are not current authority.
-
-| Evidence ID | Required proof | Current status |
-|-------------|----------------|----------------|
-| `E6-P6E-RC1` / `E6-P6E-ARCH1` / `E6-P6E-WORKFLOW1` / `E6-P6E-FEAS1` | exact causal, architecture, workflow, and feasibility report identities with bounded claims | recorded; feasibility PASS is not implementation acceptance or speedup proof |
-| `E6-P6E-PLAN1` | P6-E product goal, placement, exact one-slice U1-U4 structure, evidence/benchmark protocol, and current open state agree across roadmap and all four Child 06 ledgers | recorded/open; U1-U4 are internal units, not separate slices/gates/commits; preflight and implementation are authorized only through the ordered gates |
-| `E6-P6E-AUTH1` | inherited committed P6-D canonical full-build authority using `third_party/ladybugdb/v0.19.1/windows-x86_64` plus fresh distinct cache/runtime roots owned by one unique lane, with dependency/holder/cleanup identity | recorded/open — inherited from committed P6-D anchor `81163e39718b94a509e41114cada224e8f269e36`; each P6-E run must still prove its exact fresh run identity |
-| `E6-P6E-ANCHOR1` | P6-D current-byte Supervisor PASS, fresh detect, cleanup disposition, isolated commit, and clean diagnostics ownership | recorded — PASS seal `E7177766...F6A3`, commit `81163e39718b94a509e41114cada224e8f269e36`, empty post-commit index, current graph; P6-E is open |
-| `E6-P6E-IMPACT1` | fresh graph, full file-detail, symbol/file impact, blast radius, allowed files, and same-invariant reader/failure surfaces before each edit | pending/open as the first P6-E pre-edit gate |
-| `E6-P6E-COSTMAP1` | living granular map with owner/caller/call path, disjoint wall, CPU, allocation, memory, I/O, wait, work units, calls, bytes, histograms, hashes, confidence, and explicit residual/no-double-count accounting | pending |
-| `E6-P6E-BASELINE1` | frozen same-repository/runtime/corpus/cache/instrumentation identity, A/A noise, alternating unprofiled baseline, predeclared repetitions/stopping rule, median/dispersion/CI, and Owner-approved materiality/resource decisions | pending; profiled attribution and historical timings are not this baseline |
-| `E6-P6E-U1SRC1` / `U1BUILD1` / `U1TEST1` / `U1BENCH1` / `U1EQ1` | canonical-path reuse with unchanged scan/order/match semantics; code first, tests after, full build, A/B, and exact equivalence | pending/locked |
-| `E6-P6E-U2SRC1` / `U2BUILD1` / `U2TEST1` / `U2BENCH1` / `U2EQ1` | immutable run-scoped all-import index including unresolved imports and original-order buckets with exact shadow/nil-target behavior | pending/locked behind accepted U1 gate |
-| `E6-P6E-REBASE1` | fresh absolute cost map and Pareto ordering after U1/U2; no inherited percentages or summed inclusive samples | pending/locked behind U2 candidate seal and per-step direct-cost/equivalence/resource gate; no U2 commit required |
-| `E6-P6E-OWNERSHIP1` | clean committed/superseded diagnostics owner with no rejected or user-owned anchor staged, overwritten, stashed, reset, checked out, or moved to another worktree | pending/blocked |
-| `E6-P6E-U3SRC1` / `U3BUILD1` / `U3TEST1` / `U3BENCH1` / `U3EQ1` / `U3PARITY1` / `U3FAILURE1` / `U3PUBLICATION1` | run-scoped diagnostic accumulator preserves first duplicate, exact current full stable sort, immediate materialization, missing-node behavior, six-field fail-closed validation, readers, failures, and publication | pending/locked behind rebaseline and ownership gate |
-| `E6-P6E-REBASE2` | fresh absolute costs and decoder call/pass/byte counters after U3 | pending/locked behind U3 candidate seal and per-step direct-cost/equivalence/resource gate; no U3 commit required |
-| `E6-P6E-U4GATE1` | fresh evidence that the second whole-note decode remains material under the predeclared rule | pending; U4 conditional |
-| `E6-P6E-U4SRC1` / `U4BUILD1` / `U4TEST1` / `U4BENCH1` / `U4EQ1` | presence-aware single-pass decoder with exact missing/null/type/malformed/unknown/duplicate-key/nested-raw and `(outcome, structured, valid)` equivalence | conditional/pending; otherwise record `E6-P6E-U4NA1` |
-| `E6-P6E-PARETO1` | fresh absolute rerank of DB, snapshot, parse, and post-run; any activated owner receives an exact ledger contract and the same per-unit gates before edit | pending |
-| `E6-P6E-DETERMINISM1` / `FRESHNESS1` / `PARITY1` | two forced byte-identical replays, controlled source invalidation/restore, exact graph bytes/hash, and canonical in-memory/Graph JSON/Ladybug/native-reader digests | pending |
-| `E6-P6E-FAILURE1` / `PUBLICATION1` / `RESOURCE1` | exact error/fail-closed/rollback/temp/transaction/publication equivalence and Owner-approved peak/allocation/I/O/wait/index/accumulator resource budgets | pending |
-| `E6-P6E-REVIEW1` / `DETECT1` / `CLEAN1` / `COMMIT1` | final independent P6-E acceptance, current detect, exact cleanup disposition, and one isolated slice commit | pending |
-
-## Closure Evidence
-
-| Evidence ID | Required proof | Status |
-|-------------|----------------|--------|
-| `E6-PNA-REVIEW1` | independent Supervisor acceptance of all seven Child 06 slices, decision, source, runtime, target, performance equivalence, ledgers, benchmarks, and commits | pending; locked until P6-E acceptance/commit set |
-| `E6-PNB-CLEAN1` | dead-work inventory, removal result, final diff, and Supervisor confirmation | pending |
-| `E6-PNC-DETECT1` | final detect-changes evidence after accepted cleanup | pending |
-| `E6-PNC-COMMITS1` | ordered P6-A/P6-B/P6-C1/P6-C2/P6-C3/P6-D/P6-E commit hashes and worktree ownership | pending |
-| `E6-PNC-HANDOFF1` | exact accepted outcomes/metrics supplied to Child 07 and its refreshed opening status | pending |
+- Former P6-E discussion, attribution, scope, performance evidence/benchmark targets, final review, cleanup, detect, commit, and Child 07 handoff are active only in the Child 06A four-file set. Current executable work is measurement-ranked and does not inherit the old fixed solution order.
+- Exact legacy-to-current evidence mapping is authoritative in `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`.
+- Legacy `E6-P6E-*` and performance-dependent `E6-PNA/PNB/PNC-*` names remain historical search keys only. New work uses Child 06A `E0-P0A-*`, `E1-P1A-*`, dynamic `E2-P2A-Annn*`, and `E3-P3A/P3B/P3C-*` IDs.
+- Current transferred truth is not a completion claim: no detailed Child 06A timing map, ordered bottleneck list, production attempt, accepted speedup, final review, or implementation commit exists.
+- Historical/protected artifacts remain provenance only; no report hash/bytes/LF/wording audit or evidence-about-evidence is required.
