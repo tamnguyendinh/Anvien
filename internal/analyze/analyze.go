@@ -128,6 +128,7 @@ type Metrics struct {
 	Label         string              `json:"label,omitempty"`
 	TotalDuration time.Duration       `json:"totalDuration"`
 	Phases        []PhaseMetric       `json:"phases"`
+	Operations    []OperationMetric   `json:"operations,omitempty"`
 	Scanner       scanner.Metrics     `json:"scanner"`
 	Structure     structure.Metrics   `json:"structure,omitempty"`
 	Documents     documents.Metrics   `json:"documents,omitempty"`
@@ -146,11 +147,22 @@ type Metrics struct {
 	Embeddings    EmbeddingMetrics    `json:"embeddings,omitempty"`
 	Files         FileMetrics         `json:"files"`
 	Memory        MemoryMetrics       `json:"memory"`
+
+	analyzerOrchestrationStartedAt time.Time
+	analyzerOrchestrationDuration  time.Duration
+	analyzerOrchestrationRunning   bool
 }
 
 type PhaseMetric struct {
 	Name     PhaseName     `json:"name"`
 	Duration time.Duration `json:"duration"`
+}
+
+type OperationMetric struct {
+	Boundary     string           `json:"boundary"`
+	Name         string           `json:"name"`
+	Duration     time.Duration    `json:"duration"`
+	Denominators map[string]int64 `json:"denominators,omitempty"`
 }
 
 type FileMetrics struct {
@@ -206,6 +218,7 @@ type scanResult struct {
 }
 
 func Run(ctx context.Context, repoPath string, options Options) (result Result, err error) {
+	setupStart := time.Now()
 	if ctx == nil {
 		ctx = context.Background()
 	}
@@ -229,9 +242,14 @@ func Run(ctx context.Context, repoPath string, options Options) (result Result, 
 
 	start := time.Now()
 	result = Result{RepoPath: resolvedPath}
+	result.Metrics.addOperation("analyzer_outer", "analyze_setup", time.Since(setupStart), map[string]int64{
+		"analyzeRuns": 1,
+	})
+	result.Metrics.startAnalyzerOrchestration()
 	result.Metrics.Memory.StartAllocBytes = currentAlloc()
 	result.Metrics.Memory.MaxObservedSys = currentSys()
 	defer func() {
+		result.Metrics.finishAnalyzerOrchestration()
 		finalizeMetrics(&result.Metrics, start)
 	}()
 
@@ -408,21 +426,54 @@ func Run(ctx context.Context, repoPath string, options Options) (result Result, 
 		return result, err
 	}
 	result.Metrics.Semantic = semanticResult.Metrics
+	compactNodes := len(result.Graph.Nodes)
+	compactRelationships := len(result.Graph.Relationships)
+	result.Metrics.pauseAnalyzerOrchestration()
+	operationStart := time.Now()
 	result.Graph.Compact()
+	operationDuration := time.Since(operationStart)
+	result.Metrics.startAnalyzerOrchestration()
+	result.Metrics.addOperation("analyzer_internal", "graph_compact", operationDuration, map[string]int64{
+		"inputNodes":         int64(compactNodes),
+		"inputRelationships": int64(compactRelationships),
+	})
 	result.Metrics.Memory.MaxObservedSys = maxUint64(result.Metrics.Memory.MaxObservedSys, currentSys())
 
+	result.Metrics.pauseAnalyzerOrchestration()
+	operationStart = time.Now()
 	dbRunner, closeDBRunner, skipReason, err := resolveDBRunner(paths, options)
+	operationDuration = time.Since(operationStart)
+	result.Metrics.startAnalyzerOrchestration()
+	runnerCount := int64(0)
+	if dbRunner != nil {
+		runnerCount = 1
+	}
+	result.Metrics.addOperation("analyzer_internal", "db_runner_resolve", operationDuration, map[string]int64{
+		"runners": runnerCount,
+	})
 	if err != nil {
 		return result, err
+	}
+	closeResolvedDBRunner := func() error {
+		if closeDBRunner == nil {
+			return nil
+		}
+		result.Metrics.pauseAnalyzerOrchestration()
+		closeStart := time.Now()
+		closeErr := closeDBRunner()
+		closeDuration := time.Since(closeStart)
+		result.Metrics.startAnalyzerOrchestration()
+		result.Metrics.addOperation("analyzer_internal", "db_runner_close", closeDuration, map[string]int64{
+			"runners": 1,
+		})
+		return closeErr
 	}
 	if dbRunner != nil {
 		dbLoad, err := runPhase(ctx, &result.Metrics, options.OnEvent, PhaseDBLoad, func() (DBLoadMetrics, error) {
 			return loadGraph(ctx, paths, result.Graph, dbRunner)
 		})
 		if err != nil {
-			if closeDBRunner != nil {
-				_ = closeDBRunner()
-			}
+			_ = closeResolvedDBRunner()
 			return result, err
 		}
 		result.Metrics.DBLoad = dbLoad
@@ -431,17 +482,13 @@ func Run(ctx context.Context, repoPath string, options Options) (result Result, 
 				return runEmbeddings(ctx, result.Graph, dbRunner, options)
 			})
 			if err != nil {
-				if closeDBRunner != nil {
-					_ = closeDBRunner()
-				}
+				_ = closeResolvedDBRunner()
 				return result, err
 			}
 			result.Metrics.Embeddings = embeddingMetrics
 		}
-		if closeDBRunner != nil {
-			if err := closeDBRunner(); err != nil {
-				return result, err
-			}
+		if err := closeResolvedDBRunner(); err != nil {
+			return result, err
 		}
 	} else {
 		result.Metrics.DBLoad.Skipped = true
@@ -454,16 +501,33 @@ func Run(ctx context.Context, repoPath string, options Options) (result Result, 
 	}
 
 	if options.WriteGraphSnapshot {
-		if err := writeGraphSnapshot(paths.GraphPath, result.Graph); err != nil {
-			return result, err
+		result.Metrics.pauseAnalyzerOrchestration()
+		operationStart = time.Now()
+		snapshotErr := writeGraphSnapshot(paths.GraphPath, result.Graph)
+		operationDuration = time.Since(operationStart)
+		result.Metrics.startAnalyzerOrchestration()
+		result.Metrics.addOperation("analyzer_internal", "graph_snapshot", operationDuration, map[string]int64{
+			"nodes":         int64(len(result.Graph.Nodes)),
+			"relationships": int64(len(result.Graph.Relationships)),
+		})
+		if snapshotErr != nil {
+			return result, snapshotErr
 		}
 		result.GraphPath = paths.GraphPath
 	}
 	if options.BenchmarkPath != "" {
 		finalizeMetrics(&result.Metrics, start)
 		result.Metrics.Label = options.BenchmarkLabel
-		if err := WriteBenchmark(options.BenchmarkPath, result); err != nil {
-			return result, err
+		result.Metrics.pauseAnalyzerOrchestration()
+		operationStart = time.Now()
+		benchmarkErr := WriteBenchmark(options.BenchmarkPath, result)
+		operationDuration = time.Since(operationStart)
+		result.Metrics.startAnalyzerOrchestration()
+		result.Metrics.addOperation("analyzer_internal", "benchmark_write", operationDuration, map[string]int64{
+			"artifacts": 1,
+		})
+		if benchmarkErr != nil {
+			return result, benchmarkErr
 		}
 	}
 	return result, nil
@@ -515,6 +579,38 @@ func finalizeMetrics(metrics *Metrics, start time.Time) {
 	metrics.TotalDuration = time.Since(start)
 	metrics.Memory.EndAllocBytes = currentAlloc()
 	metrics.Memory.MaxObservedSys = maxUint64(metrics.Memory.MaxObservedSys, currentSys())
+}
+
+func (metrics *Metrics) addOperation(boundary string, name string, duration time.Duration, denominators map[string]int64) {
+	metrics.Operations = append(metrics.Operations, OperationMetric{
+		Boundary:     boundary,
+		Name:         name,
+		Duration:     duration,
+		Denominators: denominators,
+	})
+}
+
+func (metrics *Metrics) startAnalyzerOrchestration() {
+	if metrics.analyzerOrchestrationRunning {
+		return
+	}
+	metrics.analyzerOrchestrationStartedAt = time.Now()
+	metrics.analyzerOrchestrationRunning = true
+}
+
+func (metrics *Metrics) pauseAnalyzerOrchestration() {
+	if !metrics.analyzerOrchestrationRunning {
+		return
+	}
+	metrics.analyzerOrchestrationDuration += time.Since(metrics.analyzerOrchestrationStartedAt)
+	metrics.analyzerOrchestrationRunning = false
+}
+
+func (metrics *Metrics) finishAnalyzerOrchestration() {
+	metrics.pauseAnalyzerOrchestration()
+	metrics.addOperation("analyzer_internal", "analyzer_orchestration", metrics.analyzerOrchestrationDuration, map[string]int64{
+		"analyzeRuns": 1,
+	})
 }
 
 func resolveDBRunner(paths repo.StoragePaths, options Options) (lbugload.QueryRunner, func() error, string, error) {
@@ -1041,9 +1137,15 @@ func runPhase[T any](ctx context.Context, metrics *Metrics, onEvent func(Event),
 		return zero, err
 	}
 	emit(onEvent, Event{Kind: EventPhaseStart, Phase: phase})
+	metrics.pauseAnalyzerOrchestration()
 	start := time.Now()
 	value, err := run()
-	metrics.Phases = append(metrics.Phases, PhaseMetric{Name: phase, Duration: time.Since(start)})
+	duration := time.Since(start)
+	metrics.startAnalyzerOrchestration()
+	metrics.Phases = append(metrics.Phases, PhaseMetric{Name: phase, Duration: duration})
+	metrics.addOperation("analyzer_internal", string(phase), duration, map[string]int64{
+		"runs": 1,
+	})
 	metrics.Memory.MaxObservedSys = maxUint64(metrics.Memory.MaxObservedSys, currentSys())
 	emit(onEvent, Event{Kind: EventPhaseDone, Phase: phase})
 	if err != nil {

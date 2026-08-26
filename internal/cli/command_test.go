@@ -1352,6 +1352,81 @@ export function main() {
 	if !strings.Contains(string(benchmarkRaw), `"label": "fixture"`) {
 		t.Fatalf("benchmark JSON missing label:\n%s", benchmarkRaw)
 	}
+	type benchmarkOperation struct {
+		Boundary     string           `json:"boundary"`
+		Name         string           `json:"name"`
+		Duration     int64            `json:"duration"`
+		Denominators map[string]int64 `json:"denominators"`
+	}
+	var benchmarkPayload struct {
+		Phases []struct {
+			Name     string `json:"name"`
+			Duration int64  `json:"duration"`
+		} `json:"phases"`
+		Operations []benchmarkOperation `json:"operations"`
+	}
+	if err := json.Unmarshal(benchmarkRaw, &benchmarkPayload); err != nil {
+		t.Fatalf("benchmark JSON did not decode: %v\n%s", err, benchmarkRaw)
+	}
+	operationsByName := make(map[string]benchmarkOperation, len(benchmarkPayload.Operations))
+	for _, operation := range benchmarkPayload.Operations {
+		if _, exists := operationsByName[operation.Name]; exists {
+			t.Fatalf("benchmark operation %q was recorded more than once: %#v", operation.Name, benchmarkPayload.Operations)
+		}
+		if operation.Duration < 0 {
+			t.Fatalf("benchmark operation %q duration = %d, want non-negative", operation.Name, operation.Duration)
+		}
+		operationsByName[operation.Name] = operation
+	}
+	for _, phase := range benchmarkPayload.Phases {
+		operation, ok := operationsByName[phase.Name]
+		if !ok {
+			t.Fatalf("benchmark phase %q has no matching operation: %#v", phase.Name, benchmarkPayload.Operations)
+		}
+		if operation.Boundary != "analyzer_internal" || operation.Duration != phase.Duration || operation.Denominators["runs"] != 1 {
+			t.Fatalf("benchmark phase operation %q = %#v, want analyzer_internal with matching duration and one run", phase.Name, operation)
+		}
+	}
+	type operationExpectation struct {
+		boundary     string
+		denominators []string
+	}
+	expectedOperations := map[string]operationExpectation{
+		"analyze_setup":          {boundary: "analyzer_outer", denominators: []string{"analyzeRuns"}},
+		"graph_compact":          {boundary: "analyzer_internal", denominators: []string{"inputNodes", "inputRelationships"}},
+		"db_runner_resolve":      {boundary: "analyzer_internal", denominators: []string{"runners"}},
+		"graph_snapshot":         {boundary: "analyzer_internal", denominators: []string{"nodes", "relationships"}},
+		"analyzer_orchestration": {boundary: "analyzer_internal", denominators: []string{"analyzeRuns"}},
+		"benchmark_write":        {boundary: "analyzer_internal", denominators: []string{"artifacts"}},
+		"cli_startup":            {boundary: "cli_outer", denominators: []string{"commands"}},
+		"cli_preparation":        {boundary: "cli_outer", denominators: []string{"commands"}},
+		"memory_profile":         {boundary: "cli_outer", denominators: []string{"profiles"}},
+		"registry_meta":          {boundary: "cli_outer", denominators: []string{"repositories"}},
+		"ai_context":             {boundary: "cli_outer", denominators: []string{"generatedFiles", "baseSkills"}},
+		"file_projection":        {boundary: "cli_outer", denominators: []string{"files", "nodes", "relationships"}},
+		"output_publication":     {boundary: "cli_outer", denominators: []string{"outputs"}},
+		"cpu_profile_completion": {boundary: "cli_outer", denominators: []string{"profiles"}},
+	}
+	if resolve := operationsByName["db_runner_resolve"]; resolve.Denominators["runners"] == 1 {
+		expectedOperations["db_runner_close"] = operationExpectation{
+			boundary:     "analyzer_internal",
+			denominators: []string{"runners"},
+		}
+	}
+	for name, expectation := range expectedOperations {
+		operation, ok := operationsByName[name]
+		if !ok {
+			t.Fatalf("benchmark missing operation %q: %#v", name, benchmarkPayload.Operations)
+		}
+		if operation.Boundary != expectation.boundary {
+			t.Fatalf("benchmark operation %q boundary = %q, want %q", name, operation.Boundary, expectation.boundary)
+		}
+		for _, denominator := range expectation.denominators {
+			if _, ok := operation.Denominators[denominator]; !ok {
+				t.Fatalf("benchmark operation %q missing denominator %q: %#v", name, denominator, operation)
+			}
+		}
+	}
 	if _, err := os.Stat(filepath.Join(dir, ".anvien", "graph.json")); err != nil {
 		t.Fatalf("graph snapshot missing: %v", err)
 	}

@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"runtime/pprof"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/tamnguyendinh/anvien/internal/analyze"
@@ -153,6 +154,7 @@ func newServeCommand(logger *slog.Logger) *cobra.Command {
 }
 
 func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
+	commandStartedAt := time.Now()
 	var benchmarkPath string
 	var include []string
 	var exclude []string
@@ -176,6 +178,8 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 		Short: "Analyze a local repository with the Go pipeline",
 		Args:  cobra.MaximumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			cliStartupDuration := time.Since(commandStartedAt)
+			preparationStart := time.Now()
 			target, err := resolveAnalyzeArgument(args, skipGit)
 			if err != nil {
 				return err
@@ -228,66 +232,181 @@ func newAnalyzeCommand(logger *slog.Logger) *cobra.Command {
 			if err != nil {
 				return err
 			}
-			defer stopCPUProfile()
+			cpuProfileStopped := false
+			defer func() {
+				if !cpuProfileStopped {
+					stopCPUProfile()
+				}
+			}()
 
+			cliPreparationDuration := time.Since(preparationStart)
 			result, err := analyze.Run(contextFromCommand(cmd), target, options)
 			if err != nil {
 				return err
 			}
-			if err := writeAnalyzeMemoryProfile(memProfilePath); err != nil {
-				return err
+			result.Metrics.Operations = append([]analyze.OperationMetric{
+				{
+					Boundary: "cli_outer",
+					Name:     "cli_startup",
+					Duration: cliStartupDuration,
+					Denominators: map[string]int64{
+						"commands": 1,
+					},
+				},
+				{
+					Boundary: "cli_outer",
+					Name:     "cli_preparation",
+					Duration: cliPreparationDuration,
+					Denominators: map[string]int64{
+						"commands": 1,
+					},
+				},
+			}, result.Metrics.Operations...)
+
+			operationStart := time.Now()
+			memoryProfileErr := writeAnalyzeMemoryProfile(memProfilePath)
+			operationDuration := time.Since(operationStart)
+			memoryProfileCount := int64(0)
+			if memProfilePath != "" {
+				memoryProfileCount = 1
 			}
+			result.Metrics.Operations = append(result.Metrics.Operations, analyze.OperationMetric{
+				Boundary: "cli_outer",
+				Name:     "memory_profile",
+				Duration: operationDuration,
+				Denominators: map[string]int64{
+					"profiles": memoryProfileCount,
+				},
+			})
+			if memoryProfileErr != nil {
+				return memoryProfileErr
+			}
+
+			operationStart = time.Now()
 			registration, err := recordAnalyzeResult(result, analyzeRecordOptions{
 				Name:               registryName,
 				AllowDuplicateName: allowDuplicateName,
 			})
+			operationDuration = time.Since(operationStart)
+			result.Metrics.Operations = append(result.Metrics.Operations, analyze.OperationMetric{
+				Boundary: "cli_outer",
+				Name:     "registry_meta",
+				Duration: operationDuration,
+				Denominators: map[string]int64{
+					"repositories": 1,
+				},
+			})
 			if err != nil {
 				return err
 			}
-			_, err = generateAnalyzeAIContext(result, registration.Name, noStats)
+
+			operationStart = time.Now()
+			aiContextResult, err := generateAnalyzeAIContext(result, registration.Name, noStats)
+			operationDuration = time.Since(operationStart)
+			result.Metrics.Operations = append(result.Metrics.Operations, analyze.OperationMetric{
+				Boundary: "cli_outer",
+				Name:     "ai_context",
+				Duration: operationDuration,
+				Denominators: map[string]int64{
+					"generatedFiles": int64(len(aiContextResult.Files)),
+					"baseSkills":     int64(aiContextResult.BaseSkillCount),
+				},
+			})
 			if err != nil {
 				return err
 			}
+
+			operationStart = time.Now()
 			fileProjection := buildAnalyzeFileProjection(result.Graph)
-			if jsonOutput {
-				return writeJSON(cmd, map[string]any{
-					"repoPath":  result.RepoPath,
-					"graphPath": result.GraphPath,
-					"files":     result.Metrics.Files,
-					"graph": map[string]int{
-						"nodes":         len(result.Graph.Nodes),
-						"relationships": len(result.Graph.Relationships),
-					},
-					"fileProjection": fileProjection,
-				})
+			operationDuration = time.Since(operationStart)
+			result.Metrics.Operations = append(result.Metrics.Operations, analyze.OperationMetric{
+				Boundary: "cli_outer",
+				Name:     "file_projection",
+				Duration: operationDuration,
+				Denominators: map[string]int64{
+					"files":         int64(fileProjection.Files),
+					"nodes":         int64(len(result.Graph.Nodes)),
+					"relationships": int64(len(result.Graph.Relationships)),
+				},
+			})
+
+			operationStart = time.Now()
+			publicationErr := func() error {
+				if jsonOutput {
+					return writeJSON(cmd, map[string]any{
+						"repoPath":  result.RepoPath,
+						"graphPath": result.GraphPath,
+						"files":     result.Metrics.Files,
+						"graph": map[string]int{
+							"nodes":         len(result.Graph.Nodes),
+							"relationships": len(result.Graph.Relationships),
+						},
+						"fileProjection": fileProjection,
+					})
+				}
+				if _, err := fmt.Fprintf(
+					cmd.OutOrStdout(),
+					"analyzed %s\nfiles: scanned=%d parsed_code=%d failed=%d\nindexed: documents=%d metadata=%d analyzers=%d scripts=%d static=%d\ngaps: unsupported_language=%d unknown=%d\ngraph: nodes=%d relationships=%d path=%s\n",
+					result.RepoPath,
+					result.Metrics.Files.Scanned,
+					result.Metrics.Files.ParsedCode,
+					result.Metrics.Files.Failed,
+					result.Metrics.Files.Documents,
+					result.Metrics.Files.MetadataOnly,
+					result.Metrics.Files.DedicatedAnalyzer,
+					result.Metrics.Files.ScriptNoExtractor,
+					result.Metrics.Files.StaticAssets,
+					result.Metrics.Files.UnsupportedLanguage,
+					result.Metrics.Files.Unknown,
+					len(result.Graph.Nodes),
+					len(result.Graph.Relationships),
+					result.GraphPath,
+				); err != nil {
+					return err
+				}
+				for _, line := range analyzeFileProjectionLines(fileProjection) {
+					if _, err := fmt.Fprintln(cmd.OutOrStdout(), line); err != nil {
+						return err
+					}
+				}
+				return nil
+			}()
+			operationDuration = time.Since(operationStart)
+			result.Metrics.Operations = append(result.Metrics.Operations, analyze.OperationMetric{
+				Boundary: "cli_outer",
+				Name:     "output_publication",
+				Duration: operationDuration,
+				Denominators: map[string]int64{
+					"outputs": 1,
+				},
+			})
+			if publicationErr != nil {
+				return publicationErr
 			}
-			_, err = fmt.Fprintf(
-				cmd.OutOrStdout(),
-				"analyzed %s\nfiles: scanned=%d parsed_code=%d failed=%d\nindexed: documents=%d metadata=%d analyzers=%d scripts=%d static=%d\ngaps: unsupported_language=%d unknown=%d\ngraph: nodes=%d relationships=%d path=%s\n",
-				result.RepoPath,
-				result.Metrics.Files.Scanned,
-				result.Metrics.Files.ParsedCode,
-				result.Metrics.Files.Failed,
-				result.Metrics.Files.Documents,
-				result.Metrics.Files.MetadataOnly,
-				result.Metrics.Files.DedicatedAnalyzer,
-				result.Metrics.Files.ScriptNoExtractor,
-				result.Metrics.Files.StaticAssets,
-				result.Metrics.Files.UnsupportedLanguage,
-				result.Metrics.Files.Unknown,
-				len(result.Graph.Nodes),
-				len(result.Graph.Relationships),
-				result.GraphPath,
-			)
-			if err != nil {
-				return err
+
+			operationStart = time.Now()
+			stopCPUProfile()
+			operationDuration = time.Since(operationStart)
+			cpuProfileStopped = true
+			cpuProfileCount := int64(0)
+			if cpuProfilePath != "" {
+				cpuProfileCount = 1
 			}
-			for _, line := range analyzeFileProjectionLines(fileProjection) {
-				if _, err := fmt.Fprintln(cmd.OutOrStdout(), line); err != nil {
+			result.Metrics.Operations = append(result.Metrics.Operations, analyze.OperationMetric{
+				Boundary: "cli_outer",
+				Name:     "cpu_profile_completion",
+				Duration: operationDuration,
+				Denominators: map[string]int64{
+					"profiles": cpuProfileCount,
+				},
+			})
+
+			if benchmarkPath != "" {
+				if err := analyze.WriteBenchmark(benchmarkPath, result); err != nil {
 					return err
 				}
 			}
-			return err
+			return nil
 		},
 	}
 	cmd.Flags().StringVar(&benchmarkPath, "benchmark-json", "", "write analyze benchmark metrics JSON")
