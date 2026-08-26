@@ -3,21 +3,22 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Last revised: `2026-08-10`
+- Last revised: `2026-08-24`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-benchmark.md`
 - Actual status: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-actual-status.md`
 - Contract: `docs/contracts/graph-accuracy-contract.md`
 - Roadmap: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-26-anvien-graph-accuracy-roadmap.md`
+- Predecessor: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 
 ## Evidence Rules
 
 - Evidence must identify the exact source, command, artifact, result, and commit it proves.
 - The problem-origin report proves measured defects and bounded targets. Its proposed implementation design is DRAFT and cannot be used as implementation proof.
-- A predecessor handoff is valid only when it identifies its child, accepted commit, completed evidence IDs, and refreshed successor state.
+- A predecessor handoff is valid only when it identifies its child, accepted commit, completed evidence IDs, and refreshed successor state. P7-A requires seven handoffs through Child 06A and opens from the Child 06A closure commit, never directly from Child 06.
 - A pending evidence ID reserves required proof; it is not a completed result.
-- Child 07 records validation evidence only. Production repair evidence belongs to the owning Child 01 through Child 06 ledger.
+- Child 07 records validation evidence only. Correctness repair evidence belongs to the owning Child 01 through Child 06 ledger; analyze-performance or accepted-equivalence repair evidence belongs to Child 06A.
 - Build and behavior results belong here. Counts, sizes, durations, latency, throughput, and memory belong in the benchmark ledger.
 - Every target numerator must link to exact source-site and graph/outcome records. Empty, unrelated, stale, or pass-by-default results are invalid.
 - The affected-surface denominator is derived from accepted diffs, impact evidence, changed fields, and concrete readers. Broad category names are not evidence.
@@ -40,8 +41,9 @@ Matching plan item(s): `P0-A`
 - `E0-P0A-GRAPH1`: `anvien analyze --force` completed at HEAD `238aec06d28286acc0fca0f4e6a69f9eb4ff6a49` with `1,556` scanned files, `676` parsed code files, `0` failed files, `85,101` nodes, and `123,969` relationships. Graph path: `E:\Anvien\.anvien\graph.json`.
 - `E0-P0A-FD1`: fresh `anvien file-detail` calls classified all four Child 07 ledger files as low-risk documentation. Each ledger had one inbound relationship from the then-current roadmap and no source symbols, flows, routes, tools, or tests.
 - `E0-P0A-DOC1`: full contextual review confirms that Child 07 owns validation only. Its active contract is limited to three terminal slices and derives consumer coverage from accepted changes and current impact evidence.
-- `E0-P0A-STATUS1`: actual status now classifies P7-A, P7-B, and P7-C separately; P7 remains dependency-blocked until all six accepted handoffs exist.
+- `E0-P0A-STATUS1`: actual status classifies P7-A, P7-B, and P7-C separately; P7 remains dependency-blocked until all seven predecessor handoffs through Child 06A exist.
 - `E0-P0A-DIFF1`: this correction changes documentation only. No Child 07 production implementation or target source change is claimed.
+- `E0-P0A-ORDER1`: Direct structure is `Child 06 -> Child 06A -> Child 07`. Child 06 closes at P6-D commit `81163e39718b94a509e41114cada224e8f269e36`; Child 06A currently has no detailed timing map, ordered bottleneck list, production attempt, accepted speedup, or closure commit. Therefore P7-A remains blocked.
 
 ## E7 - P7 Evidence
 
@@ -51,7 +53,7 @@ Matching plan item(s): `P7-A`, `P7-B`, `P7-C`
 
 | Evidence ID | Required proof | Status |
 |-------------|----------------|--------|
-| `E7-P7A-INPUT1` | six accepted handoffs plus the exact source commit, config, analyzer build, command, machine policy, and canonical comparison rules | pending |
+| `E7-P7A-INPUT1` | seven accepted handoffs through Child 06A plus the exact source commit, config, analyzer build, command, machine policy, canonical comparison rules, and accepted Child 06A performance/equivalence/resource basis | pending; Child 06A closure commit absent |
 | `E7-P7A-BUILD1` | full build completed before validation | pending |
 | `E7-P7A-ANALYZE1` | at least five successful normal analyzes with identical inputs; failed invocations are reported as failures and excluded from accepted graph results | pending |
 | `E7-P7A-DETERMINISM1` | canonical node and relationship fact sets are equal across accepted runs under the Child 01/02 contract | pending |

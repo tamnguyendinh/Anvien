@@ -3,11 +3,12 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Last revised: `2026-08-10`
+- Last revised: `2026-08-24`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-evidence.md`
 - Benchmark: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-benchmark.md`
 - Actual status: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-actual-status.md`
+- Predecessor: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 
 ## Benchmark Rules
 
@@ -17,6 +18,7 @@
 - Create affected-reader metrics only after `E7-P7C-INVENTORY1` proves the concrete denominator.
 - Use a performance value as a release gate only when its baseline method and budget were recorded before the final measurement.
 - Do not average unrelated readers or native boundaries into one favorable aggregate.
+- P7 performance rows consume the accepted Child 06A initial/final/equivalence/resource handoff. Current Child 06A truth is no detailed timing map, ordered bottleneck list, production attempt, accepted speedup, or closure commit; no P7 performance row may open from Child 06 directly.
 
 ## B0 - P0 Benchmarks
 
@@ -59,9 +61,9 @@
 | P7-C | affected reader inventory | classified readers / discovered affected readers | 0/unknown | pending | pending | 100% with no unresolved candidate | pending | `E7-P7C-INVENTORY1` |
 | P7-C | affected projection drift | differing records or fields | pending | pending | pending | 0 | pending | `E7-P7C-PARITY1` |
 | P7-C | affected UI rows | passed / included UI rows | 0/unknown | pending | pending | 100% or zero rows with exclusion evidence | pending | `E7-P7C-PLAY1` |
-| P7-C | analyze duration | milliseconds; accepted aggregation | pending pre-recorded baseline | pending | pending | accepted pre-recorded budget | pending | `E7-P7C-BENCH1` |
-| P7-C | graph size | bytes | pending pre-recorded baseline | pending | pending | accepted pre-recorded budget | pending | `E7-P7C-BENCH1` |
-| P7-C | peak analyze memory | bytes | pending pre-recorded baseline | pending | pending | accepted pre-recorded budget | pending | `E7-P7C-BENCH1` |
+| P7-C | analyze duration | milliseconds; accepted aggregation | missing until accepted Child 06A handoff | pending | pending | accepted Child 06A final measured value/equivalence basis | pending | Child 06A `E3-P3C-HANDOFF1`; `E7-P7C-BENCH1` |
+| P7-C | graph size | bytes | missing until accepted Child 06A handoff | pending | pending | accepted Child 06A final measured value/equivalence basis | pending | Child 06A `E3-P3C-HANDOFF1`; `E7-P7C-BENCH1` |
+| P7-C | peak analyze memory | bytes | missing until accepted Child 06A handoff | pending | pending | accepted Child 06A final measured value/resource evidence when recorded | pending | Child 06A `E3-P3C-HANDOFF1`; `E7-P7C-BENCH1` |
 | P7-C | additional affected performance paths | one row per concrete path | pending inventory | pending | pending | accepted pre-recorded budget | pending | `E7-P7C-INVENTORY1`, `E7-P7C-BENCH1` |
 
 ## Non-Benchmarkable Notes

@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-07-28`
-- Last revised: `2026-08-10`
+- Last revised: `2026-08-24`
 - Status: `P0 complete / dependency-blocked`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-plan.md`
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-evidence.md`
@@ -11,7 +11,7 @@
 - Actual status: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-actual-status.md`
 - Contract: `docs/contracts/graph-accuracy-contract.md`
 - Roadmap: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-26-anvien-graph-accuracy-roadmap.md`
-- Predecessor: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-plan.md`
+- Predecessor: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Successor: `none — terminal child`
 
 ## Goal
@@ -24,8 +24,8 @@ Prove that the graph produced by the current Anvien production path is more corr
 - Treat `reports/problem/2026-07-26-tinh-chinh-cac-van-de-cua-anvien` as the problem-origin record. Its measured defects and bounded targets are evidence; its proposed implementation design is DRAFT and is not execution authority.
 - Use the current repository source, build, tests, runtime, command grammar, and normal graph output. Validation does not introduce a second implementation or a substitute execution path.
 - Child 07 is validation-only. It may update plan ledgers, reports, reusable QA scripts when an affected UI boundary requires them, and benchmark artifacts. It must not repair production behavior.
-- A failed check reopens the exact owning slice in Child 01 through Child 06. The affected child must implement and accept the repair before Child 07 reruns the failed check.
-- Open P7-A only after all six predecessor child handoffs identify accepted commits, completed evidence, and the exact source/config/analyzer basis to validate.
+- A failed check reopens the exact owning slice in Child 01 through Child 06A. Correctness failures return to Child 01-06; accepted performance/equivalence failures return to Child 06A. The affected child must implement and accept the repair before Child 07 reruns the failed check.
+- Open P7-A only after all seven predecessor handoffs through Child 06A identify accepted commits, completed evidence, and the exact source/config/analyzer basis to validate. Child 07 cannot open directly from Child 06.
 - Run `anvien analyze E:\Anvien --force` before graph-based validation. Before any validation-owned implementation artifact is edited, record its file-detail and impact evidence when applicable.
 - Run production code changes before test changes in the owning child. Child 07 consumes accepted behavior; it does not make a test pass by changing production or weakening the oracle.
 - Run the full build before runtime validation. If an affected surface is browser-visible, validate the real built runtime and store reusable Playwright evidence under `Reports/qa/playwright/` as JSON and Markdown.
@@ -48,7 +48,7 @@ The problem-origin report records five bounded accuracy defects in the graph gen
 4. Neither of two bounded calls through a barrel resolves to its terminal function.
 5. `Promise`, `Math.max`, and `Math.min` do not have truthful external or external-capability outcomes and are exposed as in-repository gaps.
 
-Children 01 through 06 own the corresponding production corrections. This terminal child exists because local tests alone cannot prove that the final graph is deterministic, structurally intact, correct at the original source sites, visible through affected consumers, and operationally acceptable.
+Children 01 through 06 own the corresponding production corrections. Child 06A owns the analyze-performance implementation and the eventual accepted equivalence boundary that follows Child 06. This terminal child exists because local tests alone cannot prove that the final graph is deterministic, structurally intact, correct at the original source sites, visible through affected consumers, operationally acceptable, and validated against the accepted Child 06A closure commit.
 
 ## Scope
 
@@ -88,7 +88,7 @@ Out of scope:
 
 ## Acceptance Criteria
 
-- All six predecessor handoffs are accepted and identify the exact commits under test.
+- All seven predecessor handoffs through Child 06A are accepted and identify the exact commits under test; Child 06A's closure commit is the direct opening anchor.
 - At least five normal analyzes of identical inputs produce equal canonical fact sets under the accepted normalization rules.
 - Integrity checks report zero unexplained lost occurrences, zero missing relationship endpoints, and zero orphan references in every affected persisted projection.
 - The terminal target table passes exactly:
@@ -116,7 +116,7 @@ Out of scope:
     1. Read the working rules, planner skill/templates, problem-origin report, roadmap, contract, all predecessor handoff requirements, and all four Child 07 ledgers in full.
     2. Refresh the Anvien graph, record documentation relationship evidence, classify missing predecessor results, and update P7-A/P7-B/P7-C from the measured report denominators.
   - Implementation Gate: no P7 validation run starts until the actual-status file records a final P0 decision.
-  - Acceptance: the status matrix identifies the baseline defects, missing handoffs, validation-only boundary, target boundary, affected-surface discovery rule, and next action through `E0-P0A-RULE1`, `E0-P0A-PLANNER1`, `E0-P0A-REPORT1`, `E0-P0A-REPORT2`, `E0-P0A-REPORT3`, `E0-P0A-BOUNDARY1`, `E0-P0A-GRAPH1`, `E0-P0A-FD1`, `E0-P0A-DOC1`, `E0-P0A-STATUS1`, and `E0-P0A-DIFF1`.
+  - Acceptance: the status matrix identifies the baseline defects, missing handoffs, validation-only boundary, target boundary, affected-surface discovery rule, direct Child 06 -> Child 06A -> Child 07 order, and next action through `E0-P0A-RULE1`, `E0-P0A-PLANNER1`, `E0-P0A-REPORT1`, `E0-P0A-REPORT2`, `E0-P0A-REPORT3`, `E0-P0A-BOUNDARY1`, `E0-P0A-GRAPH1`, `E0-P0A-FD1`, `E0-P0A-DOC1`, `E0-P0A-STATUS1`, `E0-P0A-DIFF1`, and `E0-P0A-ORDER1`.
 
 ### P7: Terminal graph-accuracy acceptance
 
@@ -124,7 +124,7 @@ Out of scope:
 - Phase Boundary:
   - In scope: validation evidence and reports for accepted production work.
   - Out of scope: production repair or new semantic infrastructure.
-  - Dependencies: six accepted predecessor handoffs and a fresh Child 07 actual-status refresh.
+  - Dependencies: seven accepted predecessor handoffs through Child 06A and a fresh Child 07 actual-status refresh.
 - Phase Implementation Rule: execute `P7-A`, accept and commit its evidence, refresh actual status, then execute `P7-B`, then `P7-C`. A failure returns to its owning child.
 - Ordered Slice List:
   - P7-A: Determinism, integrity, and repeated normal analyze.
@@ -140,7 +140,7 @@ Out of scope:
     - Out of scope: repairs and new production validation packages.
   - Non-Goals: fault-injection architecture, broad reader changes, or a new graph-writing contract.
   - Pre-flight Questions:
-    - Data source: exact commits, source/config/analyzer inputs, and canonical fact definitions from all six accepted handoffs.
+    - Data source: exact commits, source/config/analyzer inputs, canonical fact definitions, and accepted performance/equivalence basis from all seven predecessor handoffs through Child 06A.
     - Display permission: N/A — this slice has no visual behavior.
     - DB read flow: read the normal Graph JSON and Ladybug results produced by each successful analyze.
     - DB write flow: normal supported analyze output only; validation reports stay in Anvien.
@@ -153,7 +153,7 @@ Out of scope:
     - External side effects: repository-local operational graph output.
     - N/A notes: no DB-backed product UI is changed.
   - Work Steps:
-    1. Verify six handoffs and fix the comparison tuple for the run set: source commit, config, analyzer build, command, machine policy, and normalization rules.
+    1. Verify seven predecessor handoffs through the Child 06A closure commit and fix the comparison tuple for the run set: source commit, config, analyzer build, command, machine policy, normalization rules, and accepted Child 06A performance/equivalence/resource basis.
        - UI flow check: N/A — no UI surface.
        - DB/data flow check: all runs use identical graph inputs and normal output paths.
        - Render location check: Child 07 evidence ledger.
@@ -166,7 +166,7 @@ Out of scope:
        - Mini QA: inspect actual command results and representative corrected records.
        - Evidence target: `E7-P7A-ANALYZE1`, `E7-P7A-DETERMINISM1`, `E7-P7A-INTEGRITY1`.
   - Implementation Gate:
-    - All six predecessor handoffs and the accepted canonical comparison contract exist.
+    - All seven predecessor handoffs through Child 06A and the accepted canonical comparison contract exist.
     - Full build passes before analyze validation.
   - Acceptance:
     - Source: comparison inputs and normalization rules are exact and fixed for the run set.
