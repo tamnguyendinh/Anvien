@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_ACTIVE / D001_STREAK_0`; A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`, WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`, P2-A/parent/D001 unchecked state, D002-D017 queue, target-separated A003 benchmark bases, and all accepted gates remain valid
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_COMPLETE / A004_MEASUREMENT_READY / D001_STREAK_0`; A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`, WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`, P2-A/parent/D001 unchecked state, D002-D017 queue, target-separated A003 benchmark bases, and all accepted gates remain valid
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -1002,6 +1002,17 @@ Status: `A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_ACTIVE`.
 - Verification report: `E:\Anvien\reports\Supervisor\rp_supervisor_260826_232341_by_gpt-5_child06a_a004_planner_translation.md`; verdict `PASS`; scoped diff-check passed, staged set was empty, and checklist-line delta count was `0`.
 - Main released sole visible Coder task `01a03ee4-3c2a-72d0-afe7-08be98fe982e`. Its ownership is limited to `internal/resolution/export_binding_proof.go`, post-production A004 bytes in `internal/resolution/export_binding_proof_test.go`, and its Coder report.
 - Target measurement, post-measurement Supervisor, disposition, detect, staging, and implementation commit remain locked until Coder returns valid source/build/test evidence.
+
+### `E2-P2A-A004IMPACT1/SRC1/BUILD1/TEST1` — Coder Candidate Ready For Measurement
+
+Status: `CODER_A004_READY_FOR_MEASUREMENT_HANDOFF / MAIN_HANDOFF_PASS / A004_MEASUREMENT_READY`.
+
+- Coder task/report: `01a03ee4-3c2a-72d0-afe7-08be98fe982e`; `E:\Anvien\reports\coder\rp_coder_260826_by_gpt-5_child06a_a004_export_evidence_ordering.md`; report SHA-256 `52C62354D4F3D90BB4C6C922C77E1CA51E3E92169B86F580938625E00301A620`.
+- `A004IMPACT1`: fresh graph `2243/766/0`, `124096/170962`; file HIGH/current; helper impacts CRITICAL with exact fresh counts recorded in the Coder report.
+- `A004SRC1`: production only `internal/resolution/export_binding_proof.go`, `+18/-4`, SHA-256 `36D41BC7336A5A04B4C77D1EE9DEB45DE4E5E2BA120EEFBF98419BD2D846C4D2`; tests only `internal/resolution/export_binding_proof_test.go`, `+477/-0`, SHA-256 `99C6F6FC5FD0AE4D1BFDFE547D5F67C958544AA61FFD89895DC0BAC79C839BBC`.
+- `A004BUILD1`: holder preflight found no proven build-output holder; canonical `scripts/full-build.ps1` PASS before tests; runtime SHA-256 `7C077F8555ABDD9D1A76ED19931B448B208622A3B13F170BB71131A463E826F6`; maintenance analyze `2243/766/0`, graph `124258/171186`.
+- `A004TEST1`: A004 differential/export-binding, focused call/access/outcome, graphhealth/Graph JSON, and analyzer carriage suites PASS. Full `internal/resolution` truthfully exits `1` only on the identical recorded `TestProofBasedCallAccessGoldenCorpus`; no new failure and no golden edit.
+- Main verification report `E:\Anvien\reports\Supervisor\rp_supervisor_260826_235532_by_gpt-5_child06a_a004_coder_handoff.md` returns PASS for measurement handoff only. Candidate remains uncommitted/unstaged; target measurement, Supervisor disposition, detect, and implementation commit remain pending.
 
 | From | Required evidence | To / next owner |
 |------|-------------------|-----------------|
