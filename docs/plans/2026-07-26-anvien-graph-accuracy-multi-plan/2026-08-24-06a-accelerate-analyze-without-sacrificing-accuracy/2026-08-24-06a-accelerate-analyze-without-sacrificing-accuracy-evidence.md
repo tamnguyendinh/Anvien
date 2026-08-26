@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_COMPLETE / A004_BOTH_TARGET_MEASUREMENTS_RECORDED / A004_SUPERVISOR_PENDING / D001_STREAK_0`; A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`, WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`, P2-A/parent/D001 unchecked state, D002-D017 queue, target-separated A003 accepted bases, and all accepted gates remain valid
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_COMPLETE / A004_BOTH_TARGET_MEASUREMENTS_RECORDED / A004_SUPERVISOR_ACTIVE / D001_STREAK_0`; sole Supervisor task `01a03f21-63a6-7c53-a793-bb7cd459b858`; accepted A003/WAL/checklist/queue state remains valid
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -1034,6 +1034,7 @@ Status: `BOTH_TARGET_MEASUREMENTS_RECORDED / SUPERVISOR_PENDING`; numbers are un
 - Both targets preserve exact files/parser/graph/DB/dependency/projection/semantic/diagnostic/outcome identities; canonical graph.json, stdout, and stderr hashes equal each target's accepted A003 packet. Canonical graph byte identity proves full ordered Evidence arrays are unchanged.
 - Resource observations remain separate: Cheapapp end allocation and max observed system memory fall; Restaurant end allocation falls while max observed system memory rises. Secondary resources cannot override elapsed disposition.
 - No target is averaged or used to subsidize the other. No Supervisor verdict or disposition exists yet; accepted A003 baselines and D001 streak `0` remain unchanged.
+- Sole fresh Supervisor task `01a03f21-63a6-7c53-a793-bb7cd459b858` is active for exact A004 candidate correctness/equivalence/output/lifecycle only. It cannot decide performance disposition.
 
 | From | Required evidence | To / next owner |
 |------|-------------------|-----------------|

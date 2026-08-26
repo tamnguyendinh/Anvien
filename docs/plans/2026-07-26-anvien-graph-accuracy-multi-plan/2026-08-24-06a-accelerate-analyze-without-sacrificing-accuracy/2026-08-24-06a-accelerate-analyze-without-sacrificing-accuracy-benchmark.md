@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_BOTH_TARGET_MEASUREMENTS_RECORDED / A004_SUPERVISOR_PENDING / D001_STREAK_0`; A004 target values below are valid but unpromoted; accepted A003 baselines, checklist, streak, and queue remain unchanged pending Supervisor and disposition
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_BOTH_TARGET_MEASUREMENTS_RECORDED / A004_SUPERVISOR_ACTIVE / D001_STREAK_0`; A004 target values below are valid but unpromoted; accepted A003 baselines, checklist, streak, and queue remain unchanged pending verdict/disposition
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -614,7 +614,7 @@ P3-A/P3-B/P3-C are final review, cleanup, detect, commit, and handoff operations
 ## Non-Benchmarkable Notes
 
 - `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1/COMMIT1` records the confirmed `--force` stale-generation correctness bug, exact four-file fix, `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`, and checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`. It is not an optimization attempt, benchmark, profile, A003 rerun, streak change, or checklist transition.
-- `E2-P2A-A004CHEAPAPP1/RESTAURANT1` record both complete target-separated A004 packets. Values are unpromoted and no speedup/disposition claim exists before the fresh Supervisor and Main decision. Current cursor: `A004_BOTH_TARGET_MEASUREMENTS_RECORDED / A004_SUPERVISOR_PENDING / D001_STREAK_0`.
+- `E2-P2A-A004CHEAPAPP1/RESTAURANT1` record both complete target-separated A004 packets. Values are unpromoted and no speedup/disposition claim exists before Supervisor task `01a03f21-63a6-7c53-a793-bb7cd459b858` and Main decision. Current cursor: `A004_BOTH_TARGET_MEASUREMENTS_RECORDED / A004_SUPERVISOR_ACTIVE / D001_STREAK_0`.
 
 - P6-D commit identity, Architect decisions, Planner refreshes, source/test/build results, Supervisor verdicts, cleanup, detect, commit, and handoff are evidence rather than measurements.
 - `E2-P2A-A001CONSISTENCY1` records the completed Owner-required consistency/Main transition and sole Coder pre-edit identity; it is not a benchmark observation and changes none of the 17 child values or their order.
