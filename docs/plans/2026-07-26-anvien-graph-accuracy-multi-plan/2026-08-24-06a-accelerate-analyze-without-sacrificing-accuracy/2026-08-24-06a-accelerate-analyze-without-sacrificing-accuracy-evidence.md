@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBUTION_ACTIVE / ARCHITECT_LOCKED / D001_STREAK_1`; attribution task `01a03f3f-34e5-7032-9944-3509d3cf39cf`; accepted A003 remains baseline
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_PENDING / D001_STREAK_1`; accepted A003 remains baseline
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -1056,6 +1056,19 @@ Status: `A004_ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBU
 - A005 current numeric basis is the accepted target-separated A003 row; parent/D001 remain active/unchecked, D002-D017 queued, and streak is `1`.
 - A005 Architect is locked until a separate visible read-only attribution lane proves current residual cause, exact owner, and complete call path from both retained A004 CPU profiles plus current restored graph/source.
 - That sole attribution lane is active as task `01a03f3f-34e5-7032-9944-3509d3cf39cf`; it may write only `reports/Investigation/rp_child06a_a005_residual_attribution.md` and cannot select architecture or edit source/ledgers.
+
+### `E2-P2A-A005ATTRIB1` — Record-Time Outcome Serialization Residual
+
+Status: `A005_ATTRIBUTION_COMPLETE / ARCHITECT_PENDING`.
+
+- Attribution task/report: `01a03f3f-34e5-7032-9944-3509d3cf39cf`; `E:\Anvien\reports\Investigation\rp_child06a_a005_residual_attribution.md`; clean authoritative HEAD `6ee70e29`; one fresh graph `2249/766/0`, `124165/171031`.
+- Selected cause: `(*resolutionOutcomeCollector).record` eagerly calls `marshalResolutionOutcome/json.Marshal` for every accepted outcome. Repository-resolved callers discard the returned encoded bytes; resolved-external TypeScript may also not consume them; later `projectResolutionOutcomes` serializes every finalized retained outcome again for canonical graph/reference/diagnostic carriers.
+- Exact owner: `internal/resolution/outcome.go::(*resolutionOutcomeCollector).record` lines `83-106`, sampled unique path line `100`; helper `marshalResolutionOutcome` lines `220-226`, `json.Marshal` line `221`.
+- Four retained profiles are separately pinned. Under D001, `record/marshal` remains sampled in Cheapapp A003/A004 and Restaurant A003/A004; CPU samples are overlapping causal evidence only. A004 profiles expose the family after removing the rejected export-ordering work, but A004 values remain rejected.
+- Complete call path: `cli analyze -> analyze.Run -> PhaseResolution -> ResolveBoundInto -> resolveCall -> repository-resolved/repository-unresolved/TypeScript recorders -> collector.record -> marshalResolutionOutcome -> finalize -> projectResolutionOutcomes -> relationship/reference/diagnostic carriers -> analyze.Result -> graph consumers -> Ladybug DB/Graph JSON -> CLI consumers`.
+- Current graph: containing file HIGH (`119` symbols, `87` inbound, `122` outbound, `11` linked flows, `23` linked tests); file impact CRITICAL (`177` symbols, `55` files). Method `record` CRITICAL (`5` impacted, `5` direct, `10` processes, `2` files). Helper `marshalResolutionOutcome` CRITICAL (`127` impacted, `3` direct, `48` files, `25` modules, `52` processes). These are warnings, not edit permission.
+- Architect boundary: decide ownership/lifecycle of record-time encoded bytes versus immediate unresolved/non-resolved diagnostic needs and final projection serialization; preserve clone/validation/conflict/error timing, SourceSiteID/order, byte-identical Diagnostic/Evidence Notes, exact graph/output/persistence/readers, and bounded private resources. Attribution chooses no implementation.
+- A004 direction is excluded: it passed correctness but failed process elapsed on both targets, was `NO_KEEP`, and was rolled back. A001-A003 remain accepted preserve-only directions.
 
 | From | Required evidence | To / next owner |
 |------|-------------------|-----------------|

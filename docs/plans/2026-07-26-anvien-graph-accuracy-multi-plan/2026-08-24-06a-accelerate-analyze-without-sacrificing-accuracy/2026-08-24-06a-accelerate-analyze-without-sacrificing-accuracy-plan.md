@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Status: `P0-A complete / P1-A complete / A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBUTION_ACTIVE / ARCHITECT_LOCKED / D001_STREAK_1 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / repo-specific measurements preserved separately`
+- Status: `P0-A complete / P1-A complete / A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_PENDING / D001_STREAK_1 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / repo-specific measurements preserved separately`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -209,7 +209,7 @@ This is the living Planner refresh surface for the one implementation slice. Pla
 
 | Field | Current value |
 |-------|---------------|
-| Attempt state | `A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBUTION_ACTIVE / ARCHITECT_LOCKED / D001_STREAK_1`; attribution task `01a03f3f-34e5-7032-9944-3509d3cf39cf`; accepted A003 checkpoint remains baseline; all checkboxes unchanged |
+| Attempt state | `A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_PENDING / D001_STREAK_1`; attribution task `01a03f3f-34e5-7032-9944-3509d3cf39cf`; accepted A003 checkpoint remains baseline; all checkboxes unchanged |
 | Attempt ID | `A005` |
 | Attempt goal | identify the largest retained D001 residual on the restored accepted A003 source, bind exact cause/owner/complete call path from both current target profiles plus current graph/source, then open one fresh visible A005 Architect without reusing A004 direction |
 | Active parent benchmark row / checklist item | `B1-P1A-OP001` / unchecked `resolution` parent item |
@@ -218,10 +218,10 @@ This is the living Planner refresh surface for the one implementation slice. Pla
 | Remaining child queue | `B2-P2A-A001-D002..D017`, all unchecked and ordered by descending same-run elapsed time |
 | Current benchmark authority | accepted A003 values remain separate: Cheapapp D001/parent/analyzer/process `3.447846300 / 20.472602300 / 93.531974900 / 95.630648200 s`, `calls=27890; files=887`; Restaurant `9.401585300 / 20.850792800 / 98.020546700 / 101.096911900 s`, `calls=86030; files=1234`. A004 values are rejected-candidate evidence and cannot be promoted or averaged |
 | Consecutive unsuccessful attempts at current child baseline | `1`; A004 `NO_KEEP` incremented `0 -> 1`; accepted baseline remains A003 |
-| Selected child exact cause / owner / complete call path | pending `E2-P2A-A005ATTRIB1`; responsible visible read-only attribution lane must use fresh Anvien graph plus both A004 target CPU profiles and current restored source. A004 export-evidence ordering direction is rejected and cannot be reused as A005 |
-| Fresh Architect decision | missing/locked until exact A005 cause, owner, and complete call path are durable |
+| Selected child exact cause / owner / complete call path | `E2-P2A-A005ATTRIB1`; eager record-time `ResolutionOutcome` JSON serialization in `internal/resolution/outcome.go::(*resolutionOutcomeCollector).record -> marshalResolutionOutcome`, including resolved-path bytes whose return is discarded, followed by serialization again in `projectResolutionOutcomes`. Complete path runs `analyze.Run -> PhaseResolution -> ResolveBoundInto -> resolveCall -> resolved/unresolved/TypeScript outcome recorders -> collector.record -> marshalResolutionOutcome -> json.Marshal -> finalize -> projectResolutionOutcomes -> relationship/reference/diagnostic carriers -> analyze.Result -> Ladybug/Graph JSON/CLI consumers` |
+| Fresh Architect decision | pending; exact attribution packet/report is durable and releases one fresh visible A005 Architect to decide the record-time encoding/failure-timing/final-projection boundary |
 | Planner refresh evidence | missing/locked until fresh A005 Architect returns |
-| Transition authority | `E2-P2A-A004REVIEW1/DECISION1/ROLLBACK1`; only bounded A005 residual attribution may start now. No Architect from an incomplete packet and no Coder before Architect -> Planner |
+| Transition authority | `E2-P2A-A004REVIEW1/DECISION1/ROLLBACK1`, `E2-P2A-A005CURRENT1/ATTRIB1`; one fresh A005 Architect may open now. No Planner/Coder before its decision |
 | Future pre-edit Anvien gate | unbound until A005 Architect/Planner names exact allowed helpers; any future Coder repeats fresh graph/file-detail/impact immediately before edit |
 | Allowed production/test surfaces | none yet; all production/test files are read-only during attribution and Architect remains locked |
 | Production algorithm | unbound; must be materially distinct from rejected A004 and accepted A001-A003 directions |
@@ -233,7 +233,7 @@ This is the living Planner refresh surface for the one implementation slice. Pla
 | Exact rollback | A004 rollback is complete: production/test paths equal current HEAD with hashes `4BFE1976766FBF2E2257102070FF43CAC6D757E32E71DD583F8824781EAB6A8E` and `AD3DCA9E82EACFB31137560636B59D426A063AEB967613E724D5EE3017AD5812` |
 | Mandatory STOP | no source/test edit, Architect, Planner, Coder, measurement, Supervisor, detect, stage, or commit before exact A005 attribution packet is complete; D002-D017/P3/Child 07 remain closed |
 | Coder status | none; A004 Coder rollback complete |
-| Next action | monitor read-only attribution task `01a03f3f-34e5-7032-9944-3509d3cf39cf`; after exact cause/owner/complete call path is durable, open one fresh visible A005 Architect |
+| Next action | open one fresh visible A005 Architect with the complete attribution packet, preserved A003 basis, A004 rejection evidence, exact source/graph blast radius, and no predetermined implementation |
 
 ### A004 PLAN1 Export-Binding Evidence Ordering Execution Authority
 

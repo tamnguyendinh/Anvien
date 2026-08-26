@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBUTION_ACTIVE / ARCHITECT_LOCKED / D001_STREAK_1`; A004 values remain rejected evidence; accepted A003 baselines remain current
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_PENDING / D001_STREAK_1`; A004 values remain rejected evidence; accepted A003 baselines remain current; attribution creates no benchmark value
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -614,7 +614,7 @@ P3-A/P3-B/P3-C are final review, cleanup, detect, commit, and handoff operations
 ## Non-Benchmarkable Notes
 
 - `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1/COMMIT1` records the confirmed `--force` stale-generation correctness bug, exact four-file fix, `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`, and checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`. It is not an optimization attempt, benchmark, profile, A003 rerun, streak change, or checklist transition.
-- `E2-P2A-A004REVIEW1/DECISION1/ROLLBACK1` record correctness PASS, Main `NO_KEEP`, and exact baseline restoration. A004 values remain objective rejected-candidate evidence; A003 values stay accepted and are the A005 current basis. Current cursor: `A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED / D001_STREAK_1`.
+- `E2-P2A-A005ATTRIB1` records causal CPU/source/graph attribution only and creates no elapsed value. A003 values stay accepted; A004 values stay rejected. Current cursor: `A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_PENDING / D001_STREAK_1`.
 
 - P6-D commit identity, Architect decisions, Planner refreshes, source/test/build results, Supervisor verdicts, cleanup, detect, commit, and handoff are evidence rather than measurements.
 - `E2-P2A-A001CONSISTENCY1` records the completed Owner-required consistency/Main transition and sole Coder pre-edit identity; it is not a benchmark observation and changes none of the 17 child values or their order.

@@ -2,7 +2,7 @@
 
 Title: Child 06A Accelerate Analyze Without Sacrificing Accuracy
 Date: 2026-08-24
-Status: P0-A Complete / P1-A Complete / A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_SUPERVISOR_PASS / A004_NO_KEEP / A004_ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBUTION_ACTIVE / ARCHITECT_LOCKED / D001_STREAK_1 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / Target-Separated Measurements Preserved
+Status: P0-A Complete / P1-A Complete / A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_SUPERVISOR_PASS / A004_NO_KEEP / A004_ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_PENDING / D001_STREAK_1 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / Target-Separated Measurements Preserved
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 Companion plan rules: [plan-rules.md](plan-rules.md)
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -19,7 +19,7 @@ This file records the current measured/control state of Child 06A without duplic
 
 Elapsed wall-clock time is the controlling metric. Benchmark ranks by current absolute elapsed time; CPU/RAM/allocation/GC/I/O/wait/call/byte evidence is secondary and cannot select a bottleneck or prove optimization.
 
-Current truth: A004 `NO_KEEP` rollback is complete; A003 remains accepted. A005 attribution task `01a03f3f-34e5-7032-9944-3509d3cf39cf` is active read-only; Architect remains locked pending its exact cause/owner/complete call path. D001 streak is `1`; checkboxes/queue unchanged.
+Current truth: A004 rollback is complete and A003 remains accepted. `E2-P2A-A005ATTRIB1` proves eager record-time outcome serialization plus final re-serialization, exact owner, and complete call path. One fresh A005 Architect may now open; Planner/Coder remain locked. D001 streak is `1`; checkboxes/queue unchanged.
 
 ## Freshness / Refresh Rules
 
@@ -166,7 +166,7 @@ This section contains control pointers only; benchmark owns elapsed-time numbers
 | build-before-use | PASS: `pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File E:\Anvien\scripts\full-build.ps1`, exit `0`, HEAD `8df19258fbcb18e14841bf0dae036400aa9b22a3` | runtime `1.2.8`, SHA-256 `62920CBF15921EF8A6D2FAC671776BAA3C312EFEA1BEED53B721C4AFF5E1B6C5`; `700.1712706 s` is full-build validation elapsed only, not build elapsed and not benchmark data |
 | comparability / output equivalence | instrumented capture exit `0`; phase/stderr/persistence failure boundaries valid; exact workload/output mismatches versus immutable reference recorded | no same-HEAD uninstrumented pair, so arithmetic deltas are not overhead/speed evidence; future P2 comparisons retain the carried instrumentation state |
 | instrumentation disposition | terminal `CARRY_TO_FIRST_P2A_REFRESH` | exact `+349/-53` instrumentation ownership remains until a later accepted plan boundary changes it |
-| next exact action | `A004_ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBUTION_ACTIVE / ARCHITECT_LOCKED / D001_STREAK_1` | monitor task `01a03f3f-34e5-7032-9944-3509d3cf39cf`; then fresh A005 Architect |
+| next exact action | `A004_ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_PENDING / D001_STREAK_1` | open one fresh visible A005 Architect; no Planner/Coder early |
 
 P1-A and A001 acceptance remain recorded; the proven pre-existing package golden stays preserve-only. A002 and A003 checkpoints remain complete with target baselines separate. WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004 architecture and Planner translation are complete; Main owns independent verification and any later separate Coder release.
 
@@ -325,6 +325,7 @@ The transition continues to apply to selected child `B2-P2A-A001-D001 resolve_ca
 | R66 | 2026-08-27 | Cheapapp task `01a03f0a-8a2c-71a3-a889-428daf219ba7`; Restaurant task `01a03f0b-1eba-78b1-8845-9ca92bb58d29`; one launch/exit 0 each; complete `30/30`, `17/17`, conservation, target identities, and exact output/order equality | two separate A004 measurement packets | `CHEAPAPP/RESTAURANT_MEASUREMENT_ACTIVE -> BOTH_TARGET_MEASUREMENTS_RECORDED / SUPERVISOR_PENDING`; D001+parent lower on both, analyzer+process higher on both; values unpromoted; streak/checklist/queue unchanged | `E2-P2A-A004CHEAPAPP1/RESTAURANT1` | open exactly one A004 Supervisor; no early disposition |
 | R67 | 2026-08-27 | Supervisor task `01a03f21-63a6-7c53-a793-bb7cd459b858`; report `rp_supervisor_260827_by_gpt-5_child06a_a004_export_evidence_ordering.md`; fresh graph `2248/766/0`, `124309/171237`; exact candidate/packet identities | A004 correctness PASS and measured Main disposition | `A004_SUPERVISOR_ACTIVE / D001_STREAK_0 -> SUPERVISOR_A004_PASS / NO_KEEP / ROLLBACK_ACTIVE / D001_STREAK_1`; A003 baselines retained, A004 values unpromoted, all checkboxes/queues unchanged | `E2-P2A-A004REVIEW1/DECISION1` | surgical exact rollback; no passed gate rerun; then fresh A005 Architect |
 | R68 | 2026-08-27 | same Coder exact reverse patch; source hashes `4BFE19...B6A8E` / `AD3DCA...5812`; zero diff against HEAD; frozen/raw evidence untouched | A004 exact rollback and A005 accepted current basis | `ROLLBACK_ACTIVE -> A004_ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED / D001_STREAK_1`; A003 values remain accepted, all checkboxes/queues unchanged | `E2-P2A-A004ROLLBACK1/A005CURRENT1` | visible read-only A005 attribution from both current profiles and restored source; Architect only after full packet |
+| R69 | 2026-08-27 | attribution task `01a03f3f-34e5-7032-9944-3509d3cf39cf`; report `rp_child06a_a005_residual_attribution.md`; fresh graph `2249/766/0`, `124165/171031`; four profile identities | A005 residual cause, exact owner, and complete call path | `RESIDUAL_ATTRIBUTION_ACTIVE / ARCHITECT_LOCKED -> A005_ATTRIBUTION_COMPLETE / ARCHITECT_PENDING`; eager record-time outcome serialization and final re-serialization bound to `outcome.go::record/marshalResolutionOutcome`; values/checklists/streak unchanged | `E2-P2A-A005ATTRIB1` | open one fresh visible A005 Architect; no Planner/Coder early |
 
 ## Phase Touch Map
 
@@ -487,4 +488,4 @@ Choose one:
 
 Decision note:
 
-P0/P1-A, A003 checkpoint, and WAL checkpoint remain complete. P2-A, parent, and child checkboxes remain unchanged; D001 streak is `1`; D002-D017 remain queued. Current cursor is `A004_ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED`. Next owner is the visible read-only attribution lane, then A005 Architect.
+P0/P1-A, A003 checkpoint, and WAL checkpoint remain complete. P2-A, parent, and child checkboxes remain unchanged; D001 streak is `1`; D002-D017 remain queued. Current cursor is `A004_ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_PENDING`. Next owner is a fresh visible A005 Architect.
