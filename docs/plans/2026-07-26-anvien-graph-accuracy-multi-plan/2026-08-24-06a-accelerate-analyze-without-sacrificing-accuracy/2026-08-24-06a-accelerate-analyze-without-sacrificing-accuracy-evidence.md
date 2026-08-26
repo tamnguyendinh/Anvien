@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_COMPLETE / A004_BOTH_TARGET_MEASUREMENTS_RECORDED / A004_SUPERVISOR_ACTIVE / D001_STREAK_0`; sole Supervisor task `01a03f21-63a6-7c53-a793-bb7cd459b858`; accepted A003/WAL/checklist/queue state remains valid
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_ACTIVE / D001_STREAK_1`; accepted A003 remains baseline; parent/D001 unchecked and D002-D017 queued
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -1035,6 +1035,16 @@ Status: `BOTH_TARGET_MEASUREMENTS_RECORDED / SUPERVISOR_PENDING`; numbers are un
 - Resource observations remain separate: Cheapapp end allocation and max observed system memory fall; Restaurant end allocation falls while max observed system memory rises. Secondary resources cannot override elapsed disposition.
 - No target is averaged or used to subsidize the other. No Supervisor verdict or disposition exists yet; accepted A003 baselines and D001 streak `0` remain unchanged.
 - Sole fresh Supervisor task `01a03f21-63a6-7c53-a793-bb7cd459b858` is active for exact A004 candidate correctness/equivalence/output/lifecycle only. It cannot decide performance disposition.
+
+### `E2-P2A-A004REVIEW1/DECISION1` — Supervisor PASS And Main NO_KEEP
+
+Status: `SUPERVISOR_A004_PASS / NO_KEEP / ROLLBACK_ACTIVE / D001_STREAK_1`.
+
+- Supervisor task/report: `01a03f21-63a6-7c53-a793-bb7cd459b858`; `E:\Anvien\reports\Supervisor\rp_supervisor_260827_by_gpt-5_child06a_a004_export_evidence_ordering.md`; exact verdict `SUPERVISOR_A004_PASS` for correctness/equivalence/output/lifecycle only.
+- Fresh review graph `2248/766/0`, `124309/171237`; file HIGH; current impacts append/merge/sort CRITICAL and extractor LOW. Source/test/frozen/packet identities and staged-empty boundary match exactly.
+- Main disposition is `NO_KEEP`: the plan requires lower selected child, parent, and process elapsed on each target plus Supervisor PASS. A004 lowers D001 and parent on both targets but process increases Cheapapp `+49.345324200 s` and Restaurant `+34.472577200 s`; analyzer is also higher on both. No A004 exception or tolerance exists.
+- Accepted A003 target-separated values remain current; A004 values are not promoted. D001 consecutive unsuccessful-attempt streak changes `0 -> 1`; P2-A, parent, D001, D002-D017, and every checkbox remain unchanged.
+- Exact rollback owns only the `+18/-4` A004 production hunk and `+477/-0` A004 test bytes. Passed build/test/measurement/Supervisor gates remain valid evidence and must not be rerun solely for rollback identity.
 
 | From | Required evidence | To / next owner |
 |------|-------------------|-----------------|

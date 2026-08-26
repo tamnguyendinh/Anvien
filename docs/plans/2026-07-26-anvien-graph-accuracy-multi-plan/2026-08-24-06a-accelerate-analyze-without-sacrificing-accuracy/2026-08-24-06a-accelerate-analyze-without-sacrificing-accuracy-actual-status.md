@@ -2,7 +2,7 @@
 
 Title: Child 06A Accelerate Analyze Without Sacrificing Accuracy
 Date: 2026-08-24
-Status: P0-A Complete / P1-A Complete / A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_BOTH_TARGET_MEASUREMENTS_RECORDED / A004_SUPERVISOR_ACTIVE / D001_STREAK_0 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / Target-Separated Measurements Preserved
+Status: P0-A Complete / P1-A Complete / A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_SUPERVISOR_PASS / A004_NO_KEEP / A004_ROLLBACK_ACTIVE / D001_STREAK_1 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / Target-Separated Measurements Preserved
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 Companion plan rules: [plan-rules.md](plan-rules.md)
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -19,7 +19,7 @@ This file records the current measured/control state of Child 06A without duplic
 
 Elapsed wall-clock time is the controlling metric. Benchmark ranks by current absolute elapsed time; CPU/RAM/allocation/GC/I/O/wait/call/byte evidence is secondary and cannot select a bottleneck or prove optimization.
 
-Current truth: both target-separated A004 packets are complete and unpromoted under `E2-P2A-A004CHEAPAPP1/RESTAURANT1`. D001 and parent improve on both targets; analyzer and process are higher on both targets. Exact same-work/output/full ordered Evidence equivalence passes independently. P2-A, parent, and all child checkboxes remain unchecked; D001 streak is `0`; D002-D017 stay queued; accepted A003 baselines remain unchanged pending Supervisor and Main disposition.
+Current truth: A004 correctness/equivalence passed, but Main records `NO_KEEP` because process is higher on both targets despite lower D001/parent. A003 remains accepted; exact A004 rollback is active; D001 streak is `1`; P2-A, parent, D001, and all child checkboxes remain unchecked; D002-D017 stay queued.
 
 ## Freshness / Refresh Rules
 
@@ -166,7 +166,7 @@ This section contains control pointers only; benchmark owns elapsed-time numbers
 | build-before-use | PASS: `pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File E:\Anvien\scripts\full-build.ps1`, exit `0`, HEAD `8df19258fbcb18e14841bf0dae036400aa9b22a3` | runtime `1.2.8`, SHA-256 `62920CBF15921EF8A6D2FAC671776BAA3C312EFEA1BEED53B721C4AFF5E1B6C5`; `700.1712706 s` is full-build validation elapsed only, not build elapsed and not benchmark data |
 | comparability / output equivalence | instrumented capture exit `0`; phase/stderr/persistence failure boundaries valid; exact workload/output mismatches versus immutable reference recorded | no same-HEAD uninstrumented pair, so arithmetic deltas are not overhead/speed evidence; future P2 comparisons retain the carried instrumentation state |
 | instrumentation disposition | terminal `CARRY_TO_FIRST_P2A_REFRESH` | exact `+349/-53` instrumentation ownership remains until a later accepted plan boundary changes it |
-| next exact action | `A004_BOTH_TARGET_MEASUREMENTS_RECORDED / A004_SUPERVISOR_ACTIVE / D001_STREAK_0` | monitor task `01a03f21-63a6-7c53-a793-bb7cd459b858`; Main records disposition only after verdict |
+| next exact action | `A004_SUPERVISOR_PASS / NO_KEEP / ROLLBACK_ACTIVE / D001_STREAK_1` | reverse exact A004 source/test bytes only, verify HEAD identity, then open fresh A005 Architect on retained A003 basis |
 
 P1-A and A001 acceptance remain recorded; the proven pre-existing package golden stays preserve-only. A002 and A003 checkpoints remain complete with target baselines separate. WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004 architecture and Planner translation are complete; Main owns independent verification and any later separate Coder release.
 
@@ -323,6 +323,7 @@ The transition continues to apply to selected child `B2-P2A-A001-D001 resolve_ca
 | R64 | 2026-08-26 | Coder task `01a03ee4-3c2a-72d0-afe7-08be98fe982e`; exact two-file `+495/-4`; canonical full build PASS; focused suites PASS; full resolution only identical known golden; Main handoff report PASS; staged empty | source/build/test-valid A004 candidate ready for measurement | `A004_CODER_ACTIVE -> A004_CODER_COMPLETE / A004_MEASUREMENT_READY`; source/test remain uncommitted; no metric, accepted baseline, streak, checkbox, or queue changes | `E2-P2A-A004IMPACT1/SRC1/BUILD1/TEST1` | freeze candidate once and run Cheapapp/Restaurant measurements independently; no post-measurement Supervisor until both packets |
 | R65 | 2026-08-27 | frozen executable `6D3194...5352C`, DLL `20CBD8...DB7`, provenance `4EBF87...A20D`; build invocation `1`, mappings/candidates/native `2/4/3`; target tasks `01a03f0a-8a2c-71a3-a889-428daf219ba7` and `01a03f0b-1eba-78b1-8845-9ca92bb58d29` | frozen A004 identity and two independent one-launch measurements | `A004_MEASUREMENT_READY -> A004_FROZEN_PACKET_READY / CHEAPAPP_MEASUREMENT_ACTIVE / RESTAURANT_MEASUREMENT_ACTIVE`; accepted A003 values, baseline, streak, checklist, and queue unchanged | `E2-P2A-A004PACKET1` | wait for both valid target packets, then open exactly one fresh A004 Supervisor |
 | R66 | 2026-08-27 | Cheapapp task `01a03f0a-8a2c-71a3-a889-428daf219ba7`; Restaurant task `01a03f0b-1eba-78b1-8845-9ca92bb58d29`; one launch/exit 0 each; complete `30/30`, `17/17`, conservation, target identities, and exact output/order equality | two separate A004 measurement packets | `CHEAPAPP/RESTAURANT_MEASUREMENT_ACTIVE -> BOTH_TARGET_MEASUREMENTS_RECORDED / SUPERVISOR_PENDING`; D001+parent lower on both, analyzer+process higher on both; values unpromoted; streak/checklist/queue unchanged | `E2-P2A-A004CHEAPAPP1/RESTAURANT1` | open exactly one A004 Supervisor; no early disposition |
+| R67 | 2026-08-27 | Supervisor task `01a03f21-63a6-7c53-a793-bb7cd459b858`; report `rp_supervisor_260827_by_gpt-5_child06a_a004_export_evidence_ordering.md`; fresh graph `2248/766/0`, `124309/171237`; exact candidate/packet identities | A004 correctness PASS and measured Main disposition | `A004_SUPERVISOR_ACTIVE / D001_STREAK_0 -> SUPERVISOR_A004_PASS / NO_KEEP / ROLLBACK_ACTIVE / D001_STREAK_1`; A003 baselines retained, A004 values unpromoted, all checkboxes/queues unchanged | `E2-P2A-A004REVIEW1/DECISION1` | surgical exact rollback; no passed gate rerun; then fresh A005 Architect |
 
 ## Phase Touch Map
 
