@@ -7,7 +7,7 @@ Next owner: Main Orchestration
 
 ## Result
 
-Owner's A003-only decision is now `SUPERVISOR_A003_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_PENDING / A004 ARCHITECT_PENDING / D001_STREAK_0`. Independent restore-lane verification found current source/test already equal the exact final A003 hashes. P2-A, parent, D001, and D002-D017 checkboxes are unchanged.
+Owner's A003-only decision is now `SUPERVISOR_A003_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / A004 ARCHITECT_PENDING / D001_STREAK_0`; checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`. Independent restore-lane verification found current source/test already equal the exact final A003 hashes. P2-A, parent, D001, and D002-D017 checkboxes are unchanged.
 
 Measured truth remains target-separated and exact:
 
