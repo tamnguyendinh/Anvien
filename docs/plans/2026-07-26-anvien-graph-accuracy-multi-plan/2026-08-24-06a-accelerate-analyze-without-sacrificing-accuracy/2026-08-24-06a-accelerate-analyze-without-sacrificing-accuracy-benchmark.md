@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / A005_ARCHITECT_COMPLETE / A005_PLAN_COMPLETE / A005_MAIN_VERIFIED / CODER_A005_READY_FOR_MEASUREMENT_HANDOFF / MAIN_HANDOFF_PASS / A005_FROZEN_PACKET_READY / TWO_TARGET_MEASUREMENTS_PENDING / D001_STREAK_1`; A004 values remain rejected evidence; accepted A003 baselines remain current; frozen packet creates no benchmark value
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / A005_ARCHITECT_COMPLETE / A005_PLAN_COMPLETE / A005_MAIN_VERIFIED / CODER_A005_READY_FOR_MEASUREMENT_HANDOFF / MAIN_HANDOFF_PASS / A005_FROZEN_PACKET_READY / A005_TWO_TARGET_MEASUREMENTS_RECORDED / SUPERVISOR_A005_PASS / A005_NO_KEEP / A005_ROLLBACK_COMPLETE / A006_ARCHITECT_PENDING / D001_STREAK_2`; A004/A005 values remain rejected evidence; accepted A003 baselines remain current
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -588,6 +588,17 @@ Cheapapp conservation is parent/child-sum/residual `20.472602300 / 20.449866500 
 
 ### Supporting Resource Measurements
 
+### A005 Two-Target Candidate Measurement — Supervisor Pending
+
+Both corrected packets use each target's own accepted A003 value as `before`; they are not averaged or promoted. The corrected executions overlapped as permitted by the parallel target measurement contract, so analyzer/process wall values are recorded objectively and carried to Supervisor/Main without an early comparability or disposition conclusion.
+
+| Target | D001 A003 -> A005 | Parent A003 -> A005 | Analyzer A003 -> A005 | Process A003 -> A005 | Denominator / packet | Current effect |
+|---|---:|---:|---:|---:|---|---|
+| `E:\cheapapp.org` | `3.447846300 -> 3.036901000 s` (`-0.410945300 s`, `-11.918898%`) | `20.472602300 -> 18.160962900 s` (`-2.311639400 s`, `-11.291380%`) | `93.531974900 -> 95.376559900 s` (`+1.844585000 s`, `+1.972144%`) | `95.630648200 -> 203.598831900 s` (`+107.968183700 s`, `+112.901236%`) | `calls=27890; files=887`; `2675` intervals/0 overlap; `E2-P2A-A005CHEAPAPP1` | `SUPERVISOR_A005_PASS`; `NO_KEEP`; rollback complete |
+| `E:\Restaurant_manager` | `9.401585300 -> 9.142619400 s` (`-0.258965900 s`, `-2.754492%`) | `20.850792800 -> 19.678482100 s` (`-1.172310700 s`, `-5.622380%`) | `98.020546700 -> 122.900035100 s` (`+24.879488400 s`, `+25.381911%`) | `101.096911900 -> 162.290202200 s` (`+61.193290300 s`, `+60.529337%`) | `calls=86030; files=1234`; `3716` intervals/0 overlap; `E2-P2A-A005RESTAURANT1` | `SUPERVISOR_A005_PASS`; `NO_KEEP`; rollback complete |
+
+Both packets pass `30/30`, `17/17`, denominator, conservation/zero overlap, full ordered evidence, canonical Graph JSON, stdout/stderr, graph/DB, file/parser, resolution-counter and non-timing semantic parity. Resource totals are exposed; the private `O(U+B)` canonical-payload lifecycle field is `NOT EXPOSED`. The initial missing-profile-env launches produced no benchmark and create no numeric row, attempt, streak, or disposition.
+
 Append only metrics needed to explain an active elapsed-time cost or validate its resource boundary. A002 residual profile rows are causal attribution only; candidate allocation/resource values remain pending.
 
 | Measurement ID | Attempt / control row | Metric | Unit | Current before | Candidate after | Delta | Accepted-state effect | Evidence ID |
@@ -605,7 +616,7 @@ Append only metrics needed to explain an active elapsed-time cost or validate it
 
 | Benchmark ID | Workload denominator | Initial total | Final accepted total | Absolute delta | Percent delta | Parent checklist checked / measured | Child checklist checked / measured | Unchecked blocked rows | Final disposition | Evidence ID |
 |--------------|----------------------|---------------|----------------------|----------------|---------------|-------------------------------------|------------------------------------|------------------------|-------------------|-------------|
-| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `0/30` | `0/17`; active child `B2-P2A-A001-D001` | none from A005 frozen packet; it creates no benchmark value | A001/A002/A003 `KEEP`; A003 and WAL checkpoints complete; A004 `NO_KEEP / ROLLBACK_COMPLETE`; `A005_FROZEN_PACKET_READY / TWO_TARGET_MEASUREMENTS_PENDING / D001_STREAK_1` | `E2-P2A-A003CURRENT1/ATTRIB1/ARCH1/PLAN2/IMPACT1/SRC1/BUILD1/TEST1/PACKET1/CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1/OWNERKEEP1/COMMIT1`, `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1/COMMIT1`, `E2-P2A-A004ARCH1/PLAN1/REVIEW1/DECISION1/ROLLBACK1`, `E2-P2A-A005CURRENT1/ATTRIB1/ARCH1/PLAN1/MAINVERIFY1/IMPACT1/SRC1/BUILD1/TEST1/BUILDFAIL1/PACKET1`; final evidence pending |
+| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `0/30` | `0/17`; active child `B2-P2A-A001-D001` | A005 candidate values rejected/unpromoted | A001/A002/A003 `KEEP`; A003 and WAL checkpoints complete; A004/A005 `NO_KEEP / ROLLBACK_COMPLETE`; `A006_ARCHITECT_PENDING / D001_STREAK_2` | `E2-P2A-A003CURRENT1/ATTRIB1/ARCH1/PLAN2/IMPACT1/SRC1/BUILD1/TEST1/PACKET1/CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1/OWNERKEEP1/COMMIT1`, `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1/COMMIT1`, `E2-P2A-A004ARCH1/PLAN1/REVIEW1/DECISION1/ROLLBACK1`, `E2-P2A-A005CURRENT1/ATTRIB1/ARCH1/PLAN1/MAINVERIFY1/IMPACT1/SRC1/BUILD1/TEST1/BUILDFAIL1/PACKET1/CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1`; final evidence pending |
 
 ## B3 - P3 Benchmarks
 
@@ -614,7 +625,7 @@ P3-A/P3-B/P3-C are final review, cleanup, detect, commit, and handoff operations
 ## Non-Benchmarkable Notes
 
 - `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1/COMMIT1` records the confirmed `--force` stale-generation correctness bug, exact four-file fix, `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`, and checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`. It is not an optimization attempt, benchmark, profile, A003 rerun, streak change, or checklist transition.
-- `E2-P2A-A005ATTRIB1/ARCH1/PLAN1/MAINVERIFY1/IMPACT1/SRC1/BUILD1/TEST1/BUILDFAIL1/PACKET1` create no performance value. The frozen packet is identity/build evidence only. A003 values stay accepted; A004 values stay rejected. Current cursor: `A005_FROZEN_PACKET_READY / TWO_TARGET_MEASUREMENTS_PENDING / D001_STREAK_1`.
+- `E2-P2A-A005ATTRIB1/ARCH1/PLAN1/MAINVERIFY1/IMPACT1/SRC1/BUILD1/TEST1/BUILDFAIL1/PACKET1` are architecture/implementation/build identity evidence. `E2-P2A-A005CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1` record rejected/unpromoted candidate measurements, Supervisor correctness PASS, Main NO_KEEP, and exact restoration. A003 values stay accepted; A004/A005 values stay rejected. Current cursor: `A005_ROLLBACK_COMPLETE / A006_ARCHITECT_PENDING / D001_STREAK_2`.
 
 - P6-D commit identity, Architect decisions, Planner refreshes, source/test/build results, Supervisor verdicts, cleanup, detect, commit, and handoff are evidence rather than measurements.
 - `E2-P2A-A001CONSISTENCY1` records the completed Owner-required consistency/Main transition and sole Coder pre-edit identity; it is not a benchmark observation and changes none of the 17 child values or their order.
