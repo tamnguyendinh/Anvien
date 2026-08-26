@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_COMPLETE / A004_MEASUREMENT_READY / D001_STREAK_0`; checkpoints `b6bf45bce95323aa6b53b182edfea8628bd8b463` and `0f3a572331dd23d17688886fcbfebeb7d37ee35d`; all A003 measurements, disposition, queues, and checkboxes remain unchanged. A004 source/build/test completion creates no benchmark value
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_COMPLETE / A004_FROZEN_PACKET_READY / A004_CHEAPAPP_MEASUREMENT_ACTIVE / A004_RESTAURANT_MEASUREMENT_ACTIVE / D001_STREAK_0`; checkpoints `b6bf45bce95323aa6b53b182edfea8628bd8b463` and `0f3a572331dd23d17688886fcbfebeb7d37ee35d`; accepted A003 values remain unchanged until both A004 packets return
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -613,7 +613,7 @@ P3-A/P3-B/P3-C are final review, cleanup, detect, commit, and handoff operations
 ## Non-Benchmarkable Notes
 
 - `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1/COMMIT1` records the confirmed `--force` stale-generation correctness bug, exact four-file fix, `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`, and checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`. It is not an optimization attempt, benchmark, profile, A003 rerun, streak change, or checklist transition.
-- `E2-P2A-A004ARCH1/PLAN1/MAINVERIFY1/IMPACT1/SRC1/BUILD1/TEST1` record the Owner-approved architecture, exact translation, Main verification, and valid uncommitted source/build/test candidate. They create no A004 measurement, speed claim, accepted-state change, streak, checkbox, or queue transition. Current cursor: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_COMPLETE / A004_MEASUREMENT_READY / D001_STREAK_0`.
+- `E2-P2A-A004ARCH1/PLAN1/MAINVERIFY1/IMPACT1/SRC1/BUILD1/TEST1/PACKET1` record the valid uncommitted candidate and frozen measurement identity. No A004 value or speed claim exists until the active Cheapapp and Restaurant packets return separately. Current cursor: `A004_FROZEN_PACKET_READY / A004_CHEAPAPP_MEASUREMENT_ACTIVE / A004_RESTAURANT_MEASUREMENT_ACTIVE / D001_STREAK_0`.
 
 - P6-D commit identity, Architect decisions, Planner refreshes, source/test/build results, Supervisor verdicts, cleanup, detect, commit, and handoff are evidence rather than measurements.
 - `E2-P2A-A001CONSISTENCY1` records the completed Owner-required consistency/Main transition and sole Coder pre-edit identity; it is not a benchmark observation and changes none of the 17 child values or their order.

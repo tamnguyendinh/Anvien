@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_COMPLETE / A004_MEASUREMENT_READY / D001_STREAK_0`; A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`, WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`, P2-A/parent/D001 unchecked state, D002-D017 queue, target-separated A003 benchmark bases, and all accepted gates remain valid
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_COMPLETE / A004_FROZEN_PACKET_READY / A004_CHEAPAPP_MEASUREMENT_ACTIVE / A004_RESTAURANT_MEASUREMENT_ACTIVE / D001_STREAK_0`; A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`, WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`, P2-A/parent/D001 unchecked state, D002-D017 queue, target-separated A003 benchmark bases, and all accepted gates remain valid
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -1013,6 +1013,17 @@ Status: `CODER_A004_READY_FOR_MEASUREMENT_HANDOFF / MAIN_HANDOFF_PASS / A004_MEA
 - `A004BUILD1`: holder preflight found no proven build-output holder; canonical `scripts/full-build.ps1` PASS before tests; runtime SHA-256 `7C077F8555ABDD9D1A76ED19931B448B208622A3B13F170BB71131A463E826F6`; maintenance analyze `2243/766/0`, graph `124258/171186`.
 - `A004TEST1`: A004 differential/export-binding, focused call/access/outcome, graphhealth/Graph JSON, and analyzer carriage suites PASS. Full `internal/resolution` truthfully exits `1` only on the identical recorded `TestProofBasedCallAccessGoldenCorpus`; no new failure and no golden edit.
 - Main verification report `E:\Anvien\reports\Supervisor\rp_supervisor_260826_235532_by_gpt-5_child06a_a004_coder_handoff.md` returns PASS for measurement handoff only. Candidate remains uncommitted/unstaged; target measurement, Supervisor disposition, detect, and implementation commit remain pending.
+
+### `E2-P2A-A004PACKET1` — Frozen Candidate And Independent Measurement Launches
+
+Status: `A004_FROZEN_PACKET_READY / CHEAPAPP_MEASUREMENT_ACTIVE / RESTAURANT_MEASUREMENT_ACTIVE`.
+
+- Build report: `E:\Anvien\reports\Investigation\rp_child06a_a004_frozen_candidate_build.md`; reusable script ran exactly once, exit `0`, marker `A00X_BENCHMARK_BUILD_COMPLETE`; no target analyze occurred in the build lane.
+- Frozen executable `E:\Anvien\.tmp\child06a_a004_a00x_benchmark_build\anvien-a004-benchmark.exe`: `73,825,280` bytes, SHA-256 `6D319467D198B8BBA2375339CDF6BD7634FA97E7C503D3DFC0C8C315D965352C`, version `1.2.8`.
+- Frozen DLL SHA-256 `20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7`; provenance SHA-256 `4EBF871D0008B6BB1A7FDB433DE07CE437F859DFB34221C94D360E866711A20D`, schema/attempt/mappings/candidates/native/exit `1/A004/2/4/3/0`; all expected/actual hashes match.
+- Cheapapp one-launch task `01a03f0a-8a2c-71a3-a889-428daf219ba7` owns only `E:\cheapapp.org`, raw root `E:\Anvien\.tmp\child06a_a004_cheapapp_frozen_17child_20260827`, and report `reports/Investigation/rp_child06a_a004_cheapapp_benchmark_frozen_17child.md`.
+- Restaurant one-launch task `01a03f0b-1eba-78b1-8845-9ca92bb58d29` owns only `E:\Restaurant_manager`, raw root `E:\Anvien\.tmp\child06a_a004_restaurant_manager_frozen_17child_20260827`, and report `reports/Investigation/rp_child06a_a004_restaurant_manager_benchmark_frozen_17child.md`.
+- Each lane preserves its own accepted A003 before packet and cannot retry, average targets, decide disposition, edit ledgers/source/test, run Supervisor/detect, stage, or commit. Post-measurement Supervisor remains locked until both valid packets exist.
 
 | From | Required evidence | To / next owner |
 |------|-------------------|-----------------|

@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Status: `P0-A complete / P1-A complete / A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_COMPLETE / A004_MEASUREMENT_READY / D001_STREAK_0 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / repo-specific measurements preserved separately`
+- Status: `P0-A complete / P1-A complete / A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_COMPLETE / A004_FROZEN_PACKET_READY / A004_CHEAPAPP_MEASUREMENT_ACTIVE / A004_RESTAURANT_MEASUREMENT_ACTIVE / D001_STREAK_0 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / repo-specific measurements preserved separately`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -209,7 +209,7 @@ This is the living Planner refresh surface for the one implementation slice. Pla
 
 | Field | Current value |
 |-------|---------------|
-| Attempt state | `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_COMPLETE / A004_MEASUREMENT_READY / D001_STREAK_0`; A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`, WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`, and all checkboxes/metrics remain valid and unchanged |
+| Attempt state | `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_COMPLETE / A004_FROZEN_PACKET_READY / A004_CHEAPAPP_MEASUREMENT_ACTIVE / A004_RESTAURANT_MEASUREMENT_ACTIVE / D001_STREAK_0`; A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`, WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`, and all checkboxes/metrics remain valid and unchanged |
 | Attempt ID | `A004` |
 | Attempt goal | reduce elapsed wall time for active D001 `resolve_calls`, its `resolution` parent, and total process on Cheapapp and Restaurant Manager independently by eliminating repeated export-binding evidence order-key JSON decoding and the redundant projection pre-sort, while returning byte/order-identical `[]graph.Evidence` and preserving every accepted invariant |
 | Active parent benchmark row / checklist item | `B1-P1A-OP001` / unchecked `resolution` parent item |
@@ -233,7 +233,7 @@ This is the living Planner refresh surface for the one implementation slice. Pla
 | Exact rollback | remove only the A004 ordering/merge hunk plus private transient helper/type in `export_binding_proof.go` and A004-appended bytes in `export_binding_proof_test.go`; preserve every A001-A003/WAL byte and unrelated/protected work |
 | Mandatory STOP | return to Owner if another production file, changed signature/public `graph.Evidence`, alternate key authority, retained cache/concurrency, persistence/reader/instrumentation/A003 change, comparator JSON decode, more than one final projected-evidence sort, malformed-evidence rewrite/drop, D002-D017 scope, unavailable independent two-target evidence, or unprovable exact parity is required |
 | Coder status | `COMPLETE`; task `01a03ee4-3c2a-72d0-afe7-08be98fe982e`, report `reports/coder/rp_coder_260826_by_gpt-5_child06a_a004_export_evidence_ordering.md`, `E2-P2A-A004IMPACT1/SRC1/BUILD1/TEST1`; Main handoff verdict PASS |
-| Next action | freeze one identifiable A004 candidate with the unchanged A00x contract, then measure Cheapapp and Restaurant Manager independently against their own accepted A003 bases; post-measurement Supervisor/disposition/detect/stage/commit remain locked |
+| Next action | monitor independent Cheapapp task `01a03f0a-8a2c-71a3-a889-428daf219ba7` and Restaurant task `01a03f0b-1eba-78b1-8845-9ca92bb58d29`, each one launch against its own A003 basis; post-measurement Supervisor/disposition/detect/stage/commit remain locked until both valid packets exist |
 
 ### A004 PLAN1 Export-Binding Evidence Ordering Execution Authority
 
