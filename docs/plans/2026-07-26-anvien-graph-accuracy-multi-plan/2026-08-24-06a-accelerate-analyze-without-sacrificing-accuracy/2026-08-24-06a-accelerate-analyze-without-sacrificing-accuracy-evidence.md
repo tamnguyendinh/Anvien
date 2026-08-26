@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / A005_ARCHITECT_COMPLETE / A005_PLAN_COMPLETE / A005_MAIN_VERIFIED / CODER_A005_READY_FOR_MEASUREMENT_HANDOFF / MAIN_HANDOFF_PASS / A005_MEASUREMENT_READY / D001_STREAK_1`; Coder task `01a03fa8-680f-7400-9ba6-f0d1db5c59dd`; accepted A003 remains baseline
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / A005_ARCHITECT_COMPLETE / A005_PLAN_COMPLETE / A005_MAIN_VERIFIED / CODER_A005_READY_FOR_MEASUREMENT_HANDOFF / MAIN_HANDOFF_PASS / A005_FROZEN_BUILD_FAILED / OVERLAY_BUNDLE_ADAPTATION_RECOVERY_READY / MEASUREMENT_LOCKED / D001_STREAK_1`; accepted A003 remains baseline
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -258,7 +258,7 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-AnnnSYSTEM1` | only on third consecutive unsuccessful child attempt: exact parent/child rows, denominator, retained child/parent times, three attempts/reasons, terminal child `SYSTEM_CHARACTERISTIC`, and matching child checklist check |
 | `E2-P2A-AnnnRANK1` | accepted-state child/parent/full-pipeline timing refresh, complete child/top-level list update, and exact next unchecked child/parent pointer |
 
-Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. A003 checkpoint is `b6bf45bce95323aa6b53b182edfea8628bd8b463`; accepted Cheapapp and Restaurant Manager values remain separate. WAL fix checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004 is `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; its values remain rejected-candidate evidence. D001 remains active/unchecked with streak `1`; parent and all children remain unchecked; D002-D017 remain queued. A005 attribution/architecture/plan/Main verification and exact Coder source/build/test evidence are recorded under `E2-P2A-A005ATTRIB1/ARCH1/PLAN1/MAINVERIFY1/IMPACT1/SRC1/BUILD1/TEST1`; state is `CODER_A005_READY_FOR_MEASUREMENT_HANDOFF / MAIN_HANDOFF_PASS / A005_MEASUREMENT_READY`.
+Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. A003 checkpoint is `b6bf45bce95323aa6b53b182edfea8628bd8b463`; accepted Cheapapp and Restaurant Manager values remain separate. WAL fix checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004 is `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; its values remain rejected-candidate evidence. D001 remains active/unchecked with streak `1`; parent and all children remain unchecked; D002-D017 remain queued. A005 source/build/test remains valid; frozen build invocation 1 produced no candidate because the copied 17-child overlay still passed the new private finalized bundle into two slice-denominator calls and `len`. State is `A005_FROZEN_BUILD_FAILED / OVERLAY_BUNDLE_ADAPTATION_RECOVERY_READY / MEASUREMENT_LOCKED` with no benchmark/streak/checklist effect.
 
 ### `E2-P2A-A001DRILL1` — Complete OP001 Resolution Child Measurement
 
@@ -1157,6 +1157,15 @@ Status: `CODER_A005_READY_FOR_MEASUREMENT_HANDOFF / MAIN_HANDOFF_PASS / A005_MEA
 - `A005TEST1`: exact focused A005 plus nine named P6B/P6C3/P6D/Graph JSON/Ladybug regressions exited `0`; `internal/graphhealth`, `internal/analyze`, `internal/lbugload`, and `internal/lbugnative` exit `0`. Full `internal/resolution` truthfully exits `1` only on unchanged `TestProofBasedCallAccessGoldenCorpus`; the package is not called PASS and golden blob remains exact HEAD `00d0ae042f109cd7d3c8aeadf855d192a5aa8172`.
 - Main source/diff/report verification `E:\Anvien\reports\Supervisor\rp_supervisor_260827_034025_by_gpt-5_child06a_a005_coder_handoff.md` returns `PASS` for frozen-candidate/measurement handoff only. Candidate remains uncommitted/unstaged; no target measurement, per-attempt Supervisor disposition, detect, stage, or implementation commit exists.
 - Next owner: one exact frozen-candidate builder using the unchanged A00x script and A005 overlay/hash inputs. It must not run target analyze.
+
+### `E2-P2A-A005BUILDFAIL1` — Frozen Overlay Bundle Compile Mismatch
+
+Status: `A005_FROZEN_BUILD_FAILED / OVERLAY_BUNDLE_ADAPTATION_RECOVERY_READY / MEASUREMENT_LOCKED`.
+
+- Initial builder task `01a03fd6-6a2d-7573-85b8-a503d67cd299` copied the accepted overlay then stopped before build because Main’s first patch pattern omitted the existing line context. Resume task `01a03fd9-7029-7ee3-bd2e-4a94b5ef0296` completed the intended two public-result `outcomes.values` substitutions, verified overlay/manifest hashes `90FAA949...BA13E` / `FD555BCE...EA53`, and ran the first actual script invocation exactly once.
+- Build invocation 1 exited `1` and emitted no `A00X_BENCHMARK_BUILD_COMPLETE`. Exact compile errors are copied overlay `resolve.go` lines `226/232`, where `resolutionOutcomeProjectionDenominators` still receives private `finalizedResolutionOutcomes`, and line `260`, where `len(outcomes)` targets that bundle rather than its slice. No binary, valid provenance packet, target analyze, measurement, benchmark value, disposition, streak, checklist, detect, stage, or commit was created.
+- Exact narrow recovery: preserve the failed root; change only both `resolutionOutcomeProjectionDenominators(..., outcomes)` calls to `outcomes.values` and only the `resolutionChildAssembleResolutionResult` count from `len(outcomes)` to `len(outcomes.values)`. Do not change the separate helper-local `len(outcomes)` at line `561`, whose parameter remains a slice. Recovered overlay SHA-256 must equal `304F65E40629AE9B32803BA3D61ECD093022481381C948D8CF0B09AD75BFF788`; manifest/types remain unchanged.
+- Recovery uses a new output root and one invocation of the unchanged accepted script. This is a generated-input compatibility correction under binding plan rules, not a production attempt, no-KEEP result, source defect, script audit, or permission to edit production/tests/scripts.
 
 `REWORK` and `ROLLBACK` never authorize Coder directly. They describe the failed attempt's disposition; any next production edit starts a new attempt at Visible Architect.
 
