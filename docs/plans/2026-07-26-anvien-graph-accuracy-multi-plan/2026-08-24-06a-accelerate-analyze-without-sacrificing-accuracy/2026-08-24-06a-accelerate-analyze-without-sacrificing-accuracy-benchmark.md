@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / A004 ARCHITECT_PENDING / D001_STREAK_0 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED`; checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`; exact A003 source/test hashes are materialized, all target-separated measurements remain unchanged, and all checkboxes remain unchanged
+- Current state: `A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_READY_FOR_CODER / D001_STREAK_0`; checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`; all A003 measurements, disposition, queues, and checkboxes remain unchanged. The WAL force bug is a correctness blocker and creates no benchmark value
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -31,7 +31,7 @@
 - Supervisor `REJECT`, no retainable child/parent/end-to-end improvement, `REWORK`, or `ROLLBACK` without `KEEP` leaves accepted values unchanged and increments the selected child's consecutive unsuccessful-attempt count. Rejected candidate numbers remain only in attempt history and never drive ranking.
 - Every further production edit is a new attempt with a new Architect decision, Planner refresh, Coder result, measurements, and Supervisor check. Benchmark does not reuse a prior attempt's decision or candidate value.
 - `KEEP` resets only the selected child's consecutive unsuccessful-attempt count to `0`, promotes the accepted baseline, and keeps that child active. Remeasure child/parent/end-to-end and continue attempts on the same child until terminal.
-- A003-only Owner disposition is governed by the narrow exception in `plan-rules.md`: the exact positive Cheapapp D001/parent deltas remain objective benchmark truth, while Owner accepts A003 in the context of both process gains, Restaurant child/parent gains, and `SUPERVISOR_A003_PASS`. This creates no fixed tolerance or automatic A004+ rule. Exact A003 identity is restored; checkpoint creation is pending.
+- A003-only Owner disposition remains unchanged and checkpointed. The WAL force bug is correctness-only, creates no performance value, and pauses A004 without changing any metric, streak, checkbox, or queue.
 - On the third consecutive attempt without `KEEP` at one accepted baseline, preserve accepted child/parent/total values, cite all three attempt rows/evidence, and set only the child to terminal `SYSTEM_CHARACTERISTIC`.
 - `SYSTEM_CHARACTERISTIC` is not a speedup, accuracy waiver, acceptance of a rejected candidate, or parent completion. It checks off only that child; the largest remaining unchecked child of the same parent is next.
 - A parent is processed only after every measured child is terminal and checked. Then remeasure parent/full pipeline, refresh the complete top-level list, check the parent, and select the largest remaining unchecked parent.
@@ -604,13 +604,15 @@ Append only metrics needed to explain an active elapsed-time cost or validate it
 
 | Benchmark ID | Workload denominator | Initial total | Final accepted total | Absolute delta | Percent delta | Parent checklist checked / measured | Child checklist checked / measured | Unchecked blocked rows | Final disposition | Evidence ID |
 |--------------|----------------------|---------------|----------------------|----------------|---------------|-------------------------------------|------------------------------------|------------------------|-------------------|-------------|
-| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `0/30` | `0/17`; active child `B2-P2A-A001-D001` | none; later parent/child work remains open | A001/A002/A003 `KEEP`; A003 `RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE`; A004 Architect pending | `E2-P2A-A003CURRENT1/ATTRIB1/ARCH1/PLAN2/IMPACT1/SRC1/BUILD1/TEST1/PACKET1/CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1/OWNERKEEP1/COMMIT1`; `E2-P2A-FINALTIME1`, `E2-P2A-EXHAUST1` pending |
+| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `0/30` | `0/17`; active child `B2-P2A-A001-D001` | WAL force correctness blocker; no benchmark value | A001/A002/A003 `KEEP`; A003 checkpoint complete; `A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_READY_FOR_CODER` | `E2-P2A-A003CURRENT1/ATTRIB1/ARCH1/PLAN2/IMPACT1/SRC1/BUILD1/TEST1/PACKET1/CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1/OWNERKEEP1/COMMIT1`, `E2-P2A-WALFORCEPLAN1`; final evidence pending |
 
 ## B3 - P3 Benchmarks
 
 P3-A/P3-B/P3-C are final review, cleanup, detect, commit, and handoff operations. They add no product-performance metric. Their pass/fail and one-commit boundary belong in evidence.
 
 ## Non-Benchmarkable Notes
+
+- `E2-P2A-WALFORCEPLAN1` records the confirmed `--force` stale-WAL correctness blocker and narrow fix contract. It is not an optimization attempt, benchmark, profile, A003 rerun, streak change, or checklist transition. Current cursor: `A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_READY_FOR_CODER / D001_STREAK_0`.
 
 - P6-D commit identity, Architect decisions, Planner refreshes, source/test/build results, Supervisor verdicts, cleanup, detect, commit, and handoff are evidence rather than measurements.
 - `E2-P2A-A001CONSISTENCY1` records the completed Owner-required consistency/Main transition and sole Coder pre-edit identity; it is not a benchmark observation and changes none of the 17 child values or their order.

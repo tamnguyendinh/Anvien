@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / A004 ARCHITECT_PENDING / D001_STREAK_0`; checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`; current files independently equal exact final A003 hashes. P2-A/parent/D001 remain unchecked and D002-D017 remain queued
+- Current state: `A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_READY_FOR_CODER / D001_STREAK_0`; A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463` and docs sync `2ea8c9486ad629f86f36fc5f4ce17574fdcb65c8` remain valid. P2-A/parent/D001 remain unchecked, D002-D017 remain queued, and no A003 gate is invalidated
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -258,7 +258,7 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-AnnnSYSTEM1` | only on third consecutive unsuccessful child attempt: exact parent/child rows, denominator, retained child/parent times, three attempts/reasons, terminal child `SYSTEM_CHARACTERISTIC`, and matching child checklist check |
 | `E2-P2A-AnnnRANK1` | accepted-state child/parent/full-pipeline timing refresh, complete child/top-level list update, and exact next unchecked child/parent pointer |
 
-Current attempt basis: A001/A002 evidence and checkpoints remain complete history. A003 `CURRENT1/ATTRIB1/ARCH1/PLAN2/IMPACT1/SRC1/BUILD1/TEST1/PACKET1/CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1/OWNERKEEP1` bind both separate measurements, exact `SUPERVISOR_A003_PASS`, historical rollback, Owner `KEEP`, and restored final hashes. D001 remains active/unchecked with streak `0`; parent and all children remain unchecked; D002-D017 remain queued; A003 checkpoint and A004 Architect are pending in that order.
+Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. A003 checkpoint is `b6bf45bce95323aa6b53b182edfea8628bd8b463`; docs sync is `2ea8c9486ad629f86f36fc5f4ce17574fdcb65c8`. D001 remains active/unchecked with streak `0`; parent and all children remain unchecked; D002-D017 remain queued. A004 is Owner-paused by the confirmed WAL force bug; `E2-P2A-WALFORCEPLAN1` is ready for Coder.
 
 ### `E2-P2A-A001DRILL1` — Complete OP001 Resolution Child Measurement
 
@@ -923,7 +923,7 @@ Status: `HISTORICAL NO_KEEP / ROLLBACK_COMPLETE / SUPERSEDED_BY_OWNER_KEEP`.
 
 ### `E2-P2A-A003OWNERKEEP1/COMMIT1` — Owner KEEP, Exact Restoration, And Accepted Checkpoint
 
-Status: `OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / A004 ARCHITECT_PENDING / D001_STREAK_0`.
+Status: `A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_READY_FOR_CODER / D001_STREAK_0`.
 
 - Owner authority is A003-specific: `lệch tầm 1s thì ko phải là con số đáng kể. keep được rồi`. This does not replace or weaken the measurements. Cheapapp D001 `3.090914200 -> 3.447846300 s` (`+0.356932100 s`) and parent `19.040468000 -> 20.472602300 s` (`+1.432134300 s`) remain objective measured variation, not absence, error, or automatically labeled noise.
 - Contextual evidence for this one disposition remains target-separated: Cheapapp analyzer/process improve `100.843249000 -> 93.531974900 / 136.729876000 -> 95.630648200 s`; Restaurant D001/parent/analyzer/process improve `9.909636600 -> 9.401585300 / 21.242055400 -> 20.850792800 / 109.339859600 -> 98.020546700 / 145.066210900 -> 101.096911900 s`; exact independent verdict is `SUPERVISOR_A003_PASS`.
@@ -933,9 +933,18 @@ Status: `OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / A004 ARCHITE
 - Exact final identity is materialized: `diagnostics.go=6DE54D97A1B95E877B686DC3459238598F6060D28CE6329357A80BD7FC376D30`; `diagnostics_test.go=06677DBA4FE9EDA4FE8651E08B93ABC8659129A61355E34BFFA10380AE429371`.
 - `E2-P2A-A003COMMIT1`: full build exited `0`, including canonical maintenance analyze `2237/766/0` and graph `123997/170823`; detect exited `0`; exact nine-path commit is `b6bf45bce95323aa6b53b182edfea8628bd8b463` with subject `perf(graphhealth): checkpoint accepted A003 canonical decoder`.
 - Gate reuse: exact identity and checkpoint passed; do not rerun build, tests, benchmark, profile, target measurement, or Supervisor.
-- Next owner: Main opens fresh A004 Architect on the same unchecked D001 and stops after Architect direction for Owner discussion.
+- Next owner: Main opens one visible WAL-fix Coder. A004 does not resume until the bug fix has Supervisor `PASS` and an accepted commit.
 
 ### Attempt State Machine
+
+### `E2-P2A-WALFORCEPLAN1` — Confirmed `--force` WAL-Sidecar Cleanup Fix Contract
+
+- Reproduced twice on current code: `anvien analyze --force` failed `lbug_database_init failed with state 1` after lock/process clearance. Isolated stale DB/WAL repro under `E:\Anvien\.tmp\lbug-force-repro` also exited `1` and left both `lbug` and `lbug.wal`; the no-stale-WAL control under `E:\Anvien\.tmp\lbug-force-control` succeeded.
+- Root cause: `internal/analyze/analyze.go::prepareStorage` force branch removes only the main Ladybug path and Graph JSON; existing `lbugruntime.RemoveWALSidecars` owns sibling `.wal`/`.lock` cleanup.
+- Exact fix: production only in `prepareStorage`, call `lbugruntime.RemoveWALSidecars(paths.LbugPath)` after main `lbug` removal and propagate error. Test only after production: extend `TestRunForceRemovesPreviousLbugOutput` in `internal/analyze/analyze_test.go` to seed/assert removal of `.wal` and `.lock` while preserving existing DB/graph cleanup assertions.
+- Coder validation order and STOP boundary are bound in the current plan card. Generic native state-1 error plumbing and `RunWithWALRecovery` matching remain a later residual, not this fix.
+- Safe recovery/full-build evidence from Main is preserved: protected root `E:\Anvien\.tmp\lbug-recovery-20260826-a003`; canonical full build PASS including maintenance analyze `2237/766/0`, graph `123997/170823`.
+- Current cursor: `A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_READY_FOR_CODER / D001_STREAK_0`. Next owner: Main opens one visible WAL-fix Coder; A004 does not resume.
 
 | From | Required evidence | To / next owner |
 |------|-------------------|-----------------|
