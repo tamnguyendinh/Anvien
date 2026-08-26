@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / A005_ARCHITECT_COMPLETE / A005_PLAN_COMPLETE / A005_MAIN_VERIFIED / CODER_A005_READY_FOR_MEASUREMENT_HANDOFF / MAIN_HANDOFF_PASS / A005_FROZEN_PACKET_READY / A005_TWO_TARGET_MEASUREMENTS_RECORDED / SUPERVISOR_A005_PASS / A005_NO_KEEP / A005_ROLLBACK_COMPLETE / A006_ARCHITECT_PENDING / D001_STREAK_2`; accepted A003 remains baseline
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A006_ARCHITECT_NEEDS_MEASUREMENT_INPUT / A006_M1_PENDING / D001_STREAK_2`; accepted A003 remains baseline
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -1197,6 +1197,14 @@ Status: `A005_TWO_TARGET_MEASUREMENTS_RECORDED / A005_SUPERVISOR_PENDING / D001_
 - Exact rollback is pending. The rollback owner must restore tracked baselines `outcome.go 02092F9FE7DA2A4BDB49E13056FBA3C97DC24F416141E7F27866EE80F60C1F7E`, `resolve.go 8CEEDBA1883314EE8883320D3647C25DEF6F19F043D57881A893FBA73BA210D9`, and `p6c3_structured_outcome_test.go 6AB9F10B004FC5292C16F8CAECBC8673BC6DC20721BCA6C1A6C118DBD2DFD1FA`; remove only new `outcome_serialization_test.go`; preserve reports/ledgers/packets and every accepted/protected byte. No build/test/target/Supervisor rerun is required because rollback returns exactly to accepted HEAD/A003.
 - `E2-P2A-A005ROLLBACK1`: rollback task/report `01a04033-ce8c-7d71-b5be-53527e3935e5`; `E:\Anvien\reports\coder\rp_coder_260827_by_gpt-5_child06a_a005_exact_rollback.md`; SHA-256 `8AC5976E804DEC2925621B9A5DECCBC1D8B31EDB85B151E6ADA033B07C3AE14D`. Exact apply-patch reversal restores tracked hashes `02092F9F...C1F7E`, `8CEEDBA1...10D9`, and `6AB9F10B...D1FA`; new `outcome_serialization_test.go` is absent; four-path diff and diff-check are empty; staged set is empty. No build/test/graph/target/detect/commit reran.
 - Status is `A005_ROLLBACK_COMPLETE / A006_ARCHITECT_PENDING / D001_STREAK_2`. Next owner is one fresh visible A006 Architect on the same D001 and accepted A003 baseline, carrying exact A004/A005 rejection evidence. Coder remains closed until the fresh Architect and visible Planner complete.
+
+### `E2-P2A-A006ARCH1` — Fresh Architect Requires One Measurement-Only Input
+
+- Architect task/report: `01a0403c-8a94-7711-8906-2ede5f217a9e`; `E:\Anvien\reports\system-architect\rp_system-architect_260827_by_gpt-5_child06a_a006_residual_direction.md`; SHA-256 `3D2D2C1B003F8D2659815EBE889A439B55AF37848F030251F538FD720A2EA735`; exact verdict `ARCHITECT_A006_NEEDS_MEASUREMENT_INPUT`.
+- Fresh graph `2261/766/0`, `124365/171231`; current `resolve.go` is HIGH and exact `resolveCall` is CRITICAL with `31` impacted symbols, `13` files, `7` modules, and `32` processes. Complete current call path and accepted A003 target-separated bases are bound.
+- After excluding A001-A005 owners, the largest unattempted retained CPU stack `resolveGoSamePackageFunction` is Restaurant-only; common helpers have small overlapping samples and no exclusive wall/invocation proof. No safe two-target production direction is released; Planner/Coder remain locked and streak stays `2`.
+- Required input `A006-M1-D001-DIRECT-CALLEE-ATTRIBUTION` is measurement-only. It instruments exactly ten non-overlapping caller-side groups in overlay `resolve.go`, carries fixed metric fields only in overlay `types.go`, proves integer-nanosecond conservation and overlap `0`, and runs Cheapapp then Restaurant sequentially with zero competitors and one launch each. It reuses the unchanged A00x build script/17-child/native contract, preserves full output/equivalence/resource identity, does not rerun accepted A003, and is not a production attempt, candidate, Supervisor result, disposition, or streak event.
+- Next owner: one visible A006-M1 measurement executor. After valid packets are recorded, Main returns them to one fresh A006 Architect; no Planner/Coder opens early.
 
 `REWORK` and `ROLLBACK` never authorize Coder directly. They describe the failed attempt's disposition; any next production edit starts a new attempt at Visible Architect.
 
