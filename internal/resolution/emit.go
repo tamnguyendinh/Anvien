@@ -17,6 +17,7 @@ const exportNodeLabel scopeir.NodeLabel = "Export"
 
 type emitter struct {
 	graph                   *graph.Graph
+	diagnosticAppender      func(string, graphhealth.Diagnostic) bool
 	referenceIndex          ReferenceIndex
 	edgeKeys                map[string]graph.Relationship
 	definitionNodesSeen     map[string]graph.Node
@@ -30,6 +31,7 @@ type emitter struct {
 func newEmitter(g *graph.Graph, metrics *Metrics, fileLanguages map[string]scanner.Language) *emitter {
 	return &emitter{
 		graph:               g,
+		diagnosticAppender:  graphhealth.NewDiagnosticAppender(g),
 		referenceIndex:      newReferenceIndex(),
 		edgeKeys:            make(map[string]graph.Relationship),
 		definitionNodesSeen: make(map[string]graph.Node),
@@ -215,7 +217,7 @@ func (e *emitter) emitUnresolvedReference(source defRef, factFamily string, targ
 		Note:             encoded,
 		Source:           e.sourceLabel,
 	}
-	if graphhealth.AppendDiagnosticToNode(e.graph, source.GraphID, diagnostic) {
+	if e.diagnosticAppender(source.GraphID, diagnostic) {
 		e.metrics.UnresolvedReferenceDiagnostics++
 		return
 	}

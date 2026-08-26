@@ -389,7 +389,7 @@ func (e *emitter) emitTypeScriptOutcomeDiagnostic(site typeScriptSourceSite, out
 		Note:             encoded,
 		Source:           outcome.Stage,
 	}
-	if graphhealth.AppendDiagnosticToNode(e.graph, site.sourceGraphID, diagnostic) {
+	if e.diagnosticAppender(site.sourceGraphID, diagnostic) {
 		e.metrics.UnresolvedReferenceDiagnostics++
 		return
 	}

@@ -42,6 +42,51 @@ func AppendDiagnosticToNode(g *graph.Graph, nodeID string, diagnostic Diagnostic
 	return true
 }
 
+type diagnosticAppender struct {
+	graph             *graph.Graph
+	diagnosticsByNode map[string][]Diagnostic
+}
+
+// NewDiagnosticAppender creates a write-through diagnostic appender whose
+// retained state is scoped to the caller's graph run.
+func NewDiagnosticAppender(g *graph.Graph) func(string, Diagnostic) bool {
+	appender := &diagnosticAppender{
+		graph:             g,
+		diagnosticsByNode: make(map[string][]Diagnostic),
+	}
+	return appender.appendToNode
+}
+
+func (appender *diagnosticAppender) appendToNode(nodeID string, diagnostic Diagnostic) bool {
+	if appender.graph == nil || nodeID == "" || diagnostic.Kind == "" {
+		return false
+	}
+	node, ok := appender.graph.GetNode(nodeID)
+	if !ok {
+		return false
+	}
+	if node.Properties == nil {
+		node.Properties = graph.NodeProperties{}
+	}
+	if diagnostic.SourceNodeID == "" {
+		diagnostic.SourceNodeID = nodeID
+	}
+	if diagnostic.Count <= 0 {
+		diagnostic.Count = 1
+	}
+	diagnostic = normalizeDiagnosticMetadata(diagnostic)
+
+	diagnostics, touched := appender.diagnosticsByNode[nodeID]
+	if !touched {
+		diagnostics = diagnosticsFromProperties(node.Properties)
+	}
+	diagnostics = appendNormalizedDiagnostic(diagnostics, diagnostic)
+	appender.diagnosticsByNode[nodeID] = diagnostics
+	node.Properties[DiagnosticPropertyKey] = diagnostics
+	appender.graph.AddNode(node)
+	return true
+}
+
 func SetResolutionMetadata(g *graph.Graph, unresolvedReferences int, sourceBacked int, unattributed int) {
 	if g == nil {
 		return
@@ -90,8 +135,13 @@ func diagnosticsFromProperties(properties graph.NodeProperties) []Diagnostic {
 }
 
 func appendDiagnosticsFromProperties(properties graph.NodeProperties, diagnostic Diagnostic) []Diagnostic {
-	diagnostics := diagnosticsFromProperties(properties)
-	diagnostic = normalizeDiagnosticMetadata(diagnostic)
+	return appendNormalizedDiagnostic(
+		diagnosticsFromProperties(properties),
+		normalizeDiagnosticMetadata(diagnostic),
+	)
+}
+
+func appendNormalizedDiagnostic(diagnostics []Diagnostic, diagnostic Diagnostic) []Diagnostic {
 	for index := range diagnostics {
 		if sameDiagnosticBucket(diagnostics[index], diagnostic) {
 			diagnostics[index].Count += diagnosticCount(diagnostic)
