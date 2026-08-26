@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 PLANNER_READY_FOR_MAIN_HANDOFF / NO CODER ACTIVE / FRESH CODER PENDING AFTER PLANNER HANDOFF`; `E2-P2A-A002REVIEW1/DECISION1/COMMIT1` record Supervisor PASS, Main KEEP, separate promotion, and checkpoint `ecf825d709b761390a5df4a2147b6ed6eec04499`. `E2-P2A-A003CURRENT1/ATTRIB1/ARCH1/PLAN2` record the accepted basis, retained cause/call path, canonical architecture, and visible Planner-authored execution authority. P2-A/parent/D001 remain unchecked, D001 streak is `0`, D002-D017 remain queued, `PLAN1` is a superseded Main-authored draft, and no A003 source/build/test/measurement/Supervisor/disposition/detect/stage/commit exists
+- Current state: `A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A004 ARCHITECT_PENDING / D001_STREAK_1`; `E2-P2A-A002REVIEW1/DECISION1/COMMIT1` preserve the accepted A002 baselines/checkpoint. `E2-P2A-A003CURRENT1..ROLLBACK1` record the complete A003 result and exact restoration. P2-A/parent/D001 remain unchecked, D002-D017 remain queued, and no A003 detect/stage/commit exists
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -258,7 +258,7 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-AnnnSYSTEM1` | only on third consecutive unsuccessful child attempt: exact parent/child rows, denominator, retained child/parent times, three attempts/reasons, terminal child `SYSTEM_CHARACTERISTIC`, and matching child checklist check |
 | `E2-P2A-AnnnRANK1` | accepted-state child/parent/full-pipeline timing refresh, complete child/top-level list update, and exact next unchecked child/parent pointer |
 
-Current attempt basis: A001 evidence/commit remains complete. A002 `ARCH1/PLAN1/IMPACT1/SRC1/BUILD1/TEST1/SCRIPTBUILD1/CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/COMMIT1` bind the accepted candidate, two independent packets, Supervisor PASS, Main KEEP, and checkpoint `ecf825d709b761390a5df4a2147b6ed6eec04499`. A002 values remain separate accepted current baselines; D001 remains active/unchecked and its streak resets/remains `0`; parent and all children remain unchecked; D002-D017 remain queued. `E2-P2A-A003CURRENT1/ATTRIB1/ARCH1/PLAN2` record the current basis, retained residual facts, canonical direction, and Planner-authored execution authority. `PLAN1` remains a superseded Main-authored draft. No Coder is active; Main opens a fresh visible Coder only after accepting the PLAN2 handoff.
+Current attempt basis: A001 evidence/commit remains complete. A002 `ARCH1/PLAN1/IMPACT1/SRC1/BUILD1/TEST1/SCRIPTBUILD1/CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/COMMIT1` bind the accepted candidate, two independent packets, Supervisor PASS, Main KEEP, and checkpoint `ecf825d709b761390a5df4a2147b6ed6eec04499`. A002 values remain separate accepted current baselines; D001 remains active/unchecked and its streak resets/remains `0`; parent and all children remain unchecked; D002-D017 remain queued. A003 `CURRENT1/ATTRIB1/ARCH1/PLAN2/IMPACT1/SRC1/BUILD1/TEST1/PACKET1/CHEAPAPP1/RESTAURANT1` bind the current basis through both separate measurements. The fresh A003 Supervisor is pending.
 
 ### `E2-P2A-A001DRILL1` — Complete OP001 Resolution Child Measurement
 
@@ -869,6 +869,57 @@ Status: `PLANNER_READY_FOR_MAIN_HANDOFF / NO CODER ACTIVE / FRESH CODER PENDING 
 - STOP: second decoder/path/direction; another owner/file/shared/public contract/cache/emitter/policy/Authority decoder/persistence/reader/instrumentation/D002-D017 surface; weakened fail-closed semantics; new validation failure; denominator/workload mismatch; inability to prove parity; or unavailable independent two-target evidence.
 - Lane state: task `01a03d17-45f5-7831-8e84-3ca8181d69c6` was archived before graph/source/test/build/edit activity because it carried stale pre-PLAN2 context; it is not inspected, resumed, or reused. Main opens one fresh visible Coder from checkpoint `ecf825d7` plus PLAN2.
 - Durable Planner report: `E:\Anvien\reports\planner\rp_planner_260826_by_gpt-5_child06a_a003_canonical_decoder.md`. Next owner is Main Orchestration for handoff acceptance and fresh-Coder creation.
+
+### `E2-P2A-A003IMPACT1/SRC1/BUILD1/TEST1/PACKET1` — Coder And Frozen Candidate Complete
+
+Status: `CODER_A003_SOURCE_BUILD_COMPLETE / CANDIDATE_PACKET_READY / BOTH_TARGET_MEASUREMENTS_RECORDED / SUPERVISOR_PENDING`.
+
+- Fresh visible Coder task `01a03d34-b740-7982-8ff7-c2fec47940a6` used PLAN2 only. Fresh analyze passed at clean HEAD `90edf7fe99cd9600b99c1947c2483f8c5fe2c67c`: `2231` scanned / `766` parsed / `0` failed, graph `123887 / 170645`. `diagnostics.go` is HIGH; exact upstream `decodeStructuredResolutionOutcome` impact is LOW with `7` impacted symbols, `1` direct caller, `1` module, `0` processes.
+- Source is exactly `internal/graphhealth/diagnostics.go +109/-7` and `internal/graphhealth/diagnostics_test.go +182/-0`. One outer-note `json.Decoder` traversal replaces the two full-note decodes; no second production decoder/path or other owner changed. Production preceded the appended 25-case test-local oracle parity test. Source SHA-256 values are `6DE54D97A1B95E877B686DC3459238598F6060D28CE6329357A80BD7FC376D30` and `06677DBA4FE9EDA4FE8651E08B93ABC8659129A61355E34BFFA10380AE429371`; scoped diff-check passed; staged set is empty.
+- Canonical full build passed before tests. Focused graphhealth, focused resolution, and full `internal/graphhealth` passed. Full `internal/resolution` truthfully failed only at unchanged preserve-only `TestProofBasedCallAccessGoldenCorpus` with the documented `unclassified/review` payload; it is not called package PASS and its owner remains untouched.
+- Coder report: `E:\Anvien\reports\coder\rp_coder_260826_by_gpt-5_child06a_a003_canonical_decoder.md`; verdicts `CODER_A003_SOURCE_BUILD_READY_FOR_MAIN` and `CODER_A003_CANDIDATE_PACKET_READY_FOR_MAIN`.
+- Frozen packet: `E:\Anvien\.tmp\child06a_a003_a00x_benchmark_build`; executable version/bytes/SHA-256 `1.2.8 / 73,823,232 / 2DBBD7AC70C04FB62C3D8AB4A90F50E7F90C51251E82B67883A58B61D42B426B`; DLL SHA-256 `20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7`; provenance SHA-256 `CB91D5F7FC2EB2810E6A02AED36B5C7E0791F3973487356336B67A1BC8A66F76`. Provenance records schema/attempt `1/A003`, build exit `0`, overlay `2/2`, candidate sources `3/3`, and native inputs `3/3`.
+- Main consumed the completed source/build/test handoff once and released both target measurements without rerunning passed Coder gates. `E2-P2A-A003CHEAPAPP1/RESTAURANT1` below record the two separate candidate packets against the accepted A002 baselines. No A003 Supervisor verdict, disposition, checklist/streak change, detect, stage, or commit exists yet.
+
+### `E2-P2A-A003CHEAPAPP1` — Valid Frozen Cheapapp Candidate Measurement
+
+Status: `MEASUREMENT_A003_CHEAPAPP_COMPLETE / MEASUREMENT_ONLY`.
+
+- Finalizer task `01a03d66-baca-7353-958d-b2cefd3ca087` consumed the sole valid launch from raw root `E:\Anvien\.tmp\child06a_a003_cheapapp_frozen_17child_20260826`; launch `1`, PID `15988`, exit `0`, process wall/CPU `95.630648200 / 101.687500000 s`. No rerun occurred.
+- Report: `E:\Anvien\reports\Investigation\rp_child06a_a003_cheapapp_benchmark_frozen_17child.md`.
+- A002 -> A003 D001/parent/analyzer/process: `3.090914200 -> 3.447846300`, `19.040468000 -> 20.472602300`, `100.843249000 -> 93.531974900`, `136.729876000 -> 95.630648200 s`; denominator `calls=27890; files=887`.
+- Packet validity: `30/30` operations, `17/17` children, `2675` exclusive intervals, overlap `0`, parent/child-sum/residual `20.472602300 / 20.449866500 / 0.022735800 s`, nonempty profile, equal denominators/workload/graph/DB/semantic/Graph JSON/stdout/stderr, and unchanged candidate-source/target boundary.
+- Resource before -> candidate: start alloc `1,315,328 -> 1,315,192`; end alloc `1,055,121,264 -> 886,583,856`; max Sys `1,972,115,960 -> 1,995,295,224` bytes.
+- This evidence makes no disposition or baseline promotion claim.
+
+### `E2-P2A-A003RESTAURANT1` — Valid Frozen Restaurant Manager Candidate Measurement
+
+Status: `MEASUREMENT_A003_RESTAURANT_COMPLETE / BOTH_TARGET_MEASUREMENTS_RECORDED / SUPERVISOR_PENDING`.
+
+- Visible task `01a03d8a-d0c3-7040-9b9a-69be2d8b419b` ran exactly one launch from raw root `E:\Anvien\.tmp\child06a_a003_restaurant_manager_frozen_17child_20260826`; PID `9732`, exit `0`, process wall/CPU `101.096911900 / 110.656250000 s`.
+- Report: `E:\Anvien\reports\Investigation\rp_child06a_a003_restaurant_manager_benchmark_frozen_17child.md`.
+- A002 -> A003 D001/parent/analyzer/process: `9.909636600 -> 9.401585300`, `21.242055400 -> 20.850792800`, `109.339859600 -> 98.020546700`, `145.066210900 -> 101.096911900 s`; denominator `calls=86030; files=1234`.
+- Packet validity: `30/30` operations, `17/17` children, `3716` exclusive intervals, overlap `0`, parent/child-sum/residual `20.850792800 / 20.834583800 / 0.016209000 s`, nonempty profile, equal denominators/workload/graph/DB/semantic/Graph JSON/stdout/stderr, and unchanged candidate-source/target boundary.
+- Resource before -> candidate: start alloc `1,475,192 -> 1,474,592`; end alloc `1,119,052,736 -> 1,306,049,888`; max Sys `2,911,591,032 -> 2,634,607,224` bytes.
+- Both packets remain separate and unpromoted. Next owner is one fresh visible A003 per-attempt Supervisor.
+
+### `E2-P2A-A003REVIEW1` — Independent A003 Per-Attempt Supervisor PASS
+
+Status: `SUPERVISOR_A003_PASS`.
+
+- Visible Supervisor task `01a03d9b-db3b-71c2-a637-b6fccf6591ce`; report `E:\Anvien\reports\Supervisor\rp_supervisor_260826_by_gpt-5_child06a_a003_canonical_decoder.md`.
+- Fresh graph `2235/766/0`, `123974/170800`; file HIGH, exact decoder impact LOW with `7` upstream symbols, `1` direct caller/file, `2` communities, `0` processes.
+- Exact two-file candidate/hash/staged boundary passed. One outer-Note decoder, tuple/policy fail-closed parity, nested Authority preservation, A002 appender/write-through/lifecycle, consumed build/test truth, and both separate target equivalence/resource packets passed.
+- Exact verdict: `SUPERVISOR_A003_PASS`. KEEP/no-KEEP and rollback remain Main authority.
+
+### `E2-P2A-A003DECISION1` — Official Main NO_KEEP And Exact Rollback
+
+Status: `NO_KEEP / ROLLBACK_COMPLETE / A004 ARCHITECT_PENDING / D001_STREAK_1`.
+
+- Main accepts `SUPERVISOR_A003_PASS` for accuracy/equivalence, but A003 cannot receive `KEEP`: Cheapapp D001 `3.090914200 -> 3.447846300 s` and parent `19.040468000 -> 20.472602300 s` both worsen. Restaurant improvement and both process improvements cannot override the binding all-target child/parent/process requirement.
+- Candidate values remain unpromoted. Accepted A002 baselines and checkpoint `ecf825d709b761390a5df4a2147b6ed6eec04499` remain authoritative; D001 unsuccessful streak changes `0 -> 1`; P2-A, parent, D001, and D002-D017 checklist states remain unchanged.
+- `E2-P2A-A003ROLLBACK1`: fresh visible rollback task `01a03db2-20ad-7200-9378-716e2f61d49f` surgically removed only A003 decoder/test hunks. Post-hashes are `AEABA8A541D1C293DFA4FE411253A85A26B6AC0DD18047AFA6F9151B4932BEE8` and `58E8CAE2C4EBBF4672D2D338CC5E1419B7CECA9F7389B0E24F51BF2F975A7CEA`; diff against `ecf825d7` is empty, scoped diff-check PASS, staged set empty, and no build/test/benchmark/analyze/detect/commit reran.
+- Next owner is a fresh A004 Architect on the same unchecked D001 with current accepted A002 basis plus A003 no-gain evidence.
 
 ### Attempt State Machine
 
