@@ -15,6 +15,7 @@ import (
 	"github.com/tamnguyendinh/anvien/internal/embeddings"
 	"github.com/tamnguyendinh/anvien/internal/graph"
 	"github.com/tamnguyendinh/anvien/internal/lbugload"
+	"github.com/tamnguyendinh/anvien/internal/lbugruntime"
 	"github.com/tamnguyendinh/anvien/internal/parser"
 	"github.com/tamnguyendinh/anvien/internal/repo"
 	"github.com/tamnguyendinh/anvien/internal/scanner"
@@ -889,8 +890,9 @@ func TestRunForceRemovesPreviousLbugOutput(t *testing.T) {
 		t.Fatalf("ResolveAnalyzePath() error = %v", err)
 	}
 	writeFile(t, dir, "src/main.ts", "export function main() { return 1; }\n")
-	stalePath := filepath.Join(repo.Paths(resolvedDir).LbugPath, "stale.txt")
-	staleGraphPath := repo.Paths(resolvedDir).GraphPath
+	paths := repo.Paths(resolvedDir)
+	stalePath := filepath.Join(paths.LbugPath, "stale.txt")
+	staleGraphPath := paths.GraphPath
 	if err := os.MkdirAll(filepath.Dir(stalePath), 0o755); err != nil {
 		t.Fatalf("mkdir stale lbug: %v", err)
 	}
@@ -899,6 +901,11 @@ func TestRunForceRemovesPreviousLbugOutput(t *testing.T) {
 	}
 	if err := os.WriteFile(staleGraphPath, []byte("stale graph"), 0o644); err != nil {
 		t.Fatalf("write stale graph: %v", err)
+	}
+	for _, sidecar := range lbugruntime.DatabaseSidecarPaths(paths.LbugPath) {
+		if err := os.WriteFile(sidecar, []byte("stale sidecar"), 0o644); err != nil {
+			t.Fatalf("write stale sidecar %s: %v", sidecar, err)
+		}
 	}
 
 	if _, err := Run(context.Background(), dir, Options{Force: true}); err != nil {
@@ -909,6 +916,11 @@ func TestRunForceRemovesPreviousLbugOutput(t *testing.T) {
 	}
 	if _, err := os.Stat(staleGraphPath); !errors.Is(err, os.ErrNotExist) {
 		t.Fatalf("stale graph stat error = %v, want removed", err)
+	}
+	for _, sidecar := range lbugruntime.DatabaseSidecarPaths(paths.LbugPath) {
+		if _, err := os.Stat(sidecar); !errors.Is(err, os.ErrNotExist) {
+			t.Fatalf("stale sidecar %s stat error = %v, want removed", sidecar, err)
+		}
 	}
 }
 

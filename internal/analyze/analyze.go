@@ -635,7 +635,7 @@ func prepareStorage(paths repo.StoragePaths, force bool) error {
 		return err
 	}
 	if force {
-		if err := os.RemoveAll(paths.LbugPath); err != nil {
+		if err := lbugruntime.RemoveDatabaseArtifacts(paths.LbugPath); err != nil {
 			return err
 		}
 		if err := os.Remove(paths.GraphPath); err != nil && !errors.Is(err, os.ErrNotExist) {

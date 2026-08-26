@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_READY_FOR_CODER / D001_STREAK_0`; checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`; all A003 measurements, disposition, queues, and checkboxes remain unchanged. The WAL force bug is a correctness blocker and creates no benchmark value
+- Current state: `A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_PENDING / D001_STREAK_0`; checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`; all A003 measurements, disposition, queues, and checkboxes remain unchanged. The WAL force fix is correctness-only and creates no benchmark value
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -574,16 +574,16 @@ Current rows: none.
 | Parent row | Child row | Current accepted baseline | Work denominator | Retained child elapsed time | Retained parent elapsed time | Attempt 1 / no-KEEP reason | Attempt 2 / no-KEEP reason | Attempt 3 / no-KEEP reason | Terminal child disposition | Plan child checkbox | Evidence ID |
 |------------|-----------|---------------------------|------------------|-----------------------------|------------------------------|----------------------------|----------------------------|----------------------------|----------------------------|---------------------|-------------|
 
-### A003 Two-Target Candidate Measurement — Owner KEEP / Restore Complete / Checkpoint Pending
+### A003 Two-Target Candidate Measurement — Owner KEEP / Restore And Checkpoint Complete
 
-Both packets use each repo's accepted A002 value as its own `before`; targets remain separate. Owner selected A003 for `KEEP`, and exact A003 source/test hashes are materialized. Checkpoint creation is pending.
+Both packets use each repo's accepted A002 value as its own `before`; targets remain separate. Owner selected A003 for `KEEP`, exact A003 source/test hashes are materialized, and checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463` is complete.
 
 | Target | D001 A002 -> A003 | Parent A002 -> A003 | Analyzer A002 -> A003 | Process A002 -> A003 | Denominator / packet | Current effect |
 |---|---:|---:|---:|---:|---|---|
 | `E:\cheapapp.org` | `3.090914200 -> 3.447846300 s` (`+0.356932100 s`, `+11.547784%`) | `19.040468000 -> 20.472602300 s` (`+1.432134300 s`, `+7.521529%`) | `100.843249000 -> 93.531974900 s` (`-7.311274100 s`) | `136.729876000 -> 95.630648200 s` (`-41.099227800 s`) | `calls=27890; files=887`; `2675` intervals/0 overlap; `E2-P2A-A003CHEAPAPP1` | objective measured variation preserved; Owner `KEEP`; restore complete |
 | `E:\Restaurant_manager` | `9.909636600 -> 9.401585300 s` (`-0.508051300 s`) | `21.242055400 -> 20.850792800 s` (`-0.391262600 s`) | `109.339859600 -> 98.020546700 s` (`-11.319312900 s`) | `145.066210900 -> 101.096911900 s` (`-43.969299000 s`) | `calls=86030; files=1234`; `3716` intervals/0 overlap; `E2-P2A-A003RESTAURANT1` | objective measured improvement preserved; Owner `KEEP`; restore complete |
 
-Cheapapp conservation is parent/child-sum/residual `20.472602300 / 20.449866500 / 0.022735800 s`; Restaurant is `20.850792800 / 20.834583800 / 0.016209000 s`. Both packets pass `30/30`, `17/17`, same-work denominators, workload, graph/DB, semantic counters, canonical Graph JSON, stdout/stderr, nonempty profile, and source/target identity. Exact review verdict `SUPERVISOR_A003_PASS`, Owner `KEEP`, and source restoration are complete; checkpoint remains pending.
+Cheapapp conservation is parent/child-sum/residual `20.472602300 / 20.449866500 / 0.022735800 s`; Restaurant is `20.850792800 / 20.834583800 / 0.016209000 s`. Both packets pass `30/30`, `17/17`, same-work denominators, workload, graph/DB, semantic counters, canonical Graph JSON, stdout/stderr, nonempty profile, and source/target identity. Exact review verdict `SUPERVISOR_A003_PASS`, Owner `KEEP`, source restoration, and checkpoint are complete.
 
 ### Supporting Resource Measurements
 
@@ -604,7 +604,7 @@ Append only metrics needed to explain an active elapsed-time cost or validate it
 
 | Benchmark ID | Workload denominator | Initial total | Final accepted total | Absolute delta | Percent delta | Parent checklist checked / measured | Child checklist checked / measured | Unchecked blocked rows | Final disposition | Evidence ID |
 |--------------|----------------------|---------------|----------------------|----------------|---------------|-------------------------------------|------------------------------------|------------------------|-------------------|-------------|
-| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `0/30` | `0/17`; active child `B2-P2A-A001-D001` | WAL force correctness blocker; no benchmark value | A001/A002/A003 `KEEP`; A003 checkpoint complete; `A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_READY_FOR_CODER` | `E2-P2A-A003CURRENT1/ATTRIB1/ARCH1/PLAN2/IMPACT1/SRC1/BUILD1/TEST1/PACKET1/CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1/OWNERKEEP1/COMMIT1`, `E2-P2A-WALFORCEPLAN1`; final evidence pending |
+| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `0/30` | `0/17`; active child `B2-P2A-A001-D001` | none from WAL fix; it creates no benchmark value | A001/A002/A003 `KEEP`; A003 checkpoint complete; `A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_PENDING` | `E2-P2A-A003CURRENT1/ATTRIB1/ARCH1/PLAN2/IMPACT1/SRC1/BUILD1/TEST1/PACKET1/CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1/OWNERKEEP1/COMMIT1`, `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1`; final evidence pending |
 
 ## B3 - P3 Benchmarks
 
@@ -612,7 +612,7 @@ P3-A/P3-B/P3-C are final review, cleanup, detect, commit, and handoff operations
 
 ## Non-Benchmarkable Notes
 
-- `E2-P2A-WALFORCEPLAN1` records the confirmed `--force` stale-WAL correctness blocker and narrow fix contract. It is not an optimization attempt, benchmark, profile, A003 rerun, streak change, or checklist transition. Current cursor: `A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_READY_FOR_CODER / D001_STREAK_0`.
+- `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1` records the confirmed `--force` stale-generation correctness bug, exact four-file fix, and `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`. It is not an optimization attempt, benchmark, profile, A003 rerun, streak change, or checklist transition. Current cursor: `A003_CHECKPOINT_COMPLETE / A004_ARCHITECT_PAUSED_WAL_FORCE_BUG / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_PENDING / D001_STREAK_0`.
 
 - P6-D commit identity, Architect decisions, Planner refreshes, source/test/build results, Supervisor verdicts, cleanup, detect, commit, and handoff are evidence rather than measurements.
 - `E2-P2A-A001CONSISTENCY1` records the completed Owner-required consistency/Main transition and sole Coder pre-edit identity; it is not a benchmark observation and changes none of the 17 child values or their order.

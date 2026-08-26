@@ -122,6 +122,7 @@ func TestIsWALCorruptionErrorMatchesLegacyRecoverySignals(t *testing.T) {
 
 	nonCorruptionErrors := []error{
 		errors.New("database is busy"),
+		errors.New("lbug_database_init failed with state 1"),
 		errors.New("table not found"),
 		nil,
 	}
@@ -195,7 +196,10 @@ func TestExtensionStateReloadsVectorAfterResetAndBusyRetryCleanup(t *testing.T) 
 
 func TestRunWithWALRecoveryRemovesSidecarsAndRetries(t *testing.T) {
 	dbPath := filepath.Join(t.TempDir(), "lbug")
-	for _, sidecar := range WALSidecarPaths(dbPath) {
+	if err := os.WriteFile(dbPath, []byte("database"), 0o644); err != nil {
+		t.Fatalf("write database: %v", err)
+	}
+	for _, sidecar := range DatabaseSidecarPaths(dbPath) {
 		if err := os.WriteFile(sidecar, []byte("stale"), 0o644); err != nil {
 			t.Fatalf("write sidecar %s: %v", sidecar, err)
 		}
@@ -215,9 +219,50 @@ func TestRunWithWALRecoveryRemovesSidecarsAndRetries(t *testing.T) {
 	if attempts != 2 {
 		t.Fatalf("attempts = %d, want 2", attempts)
 	}
-	for _, sidecar := range WALSidecarPaths(dbPath) {
+	if _, err := os.Stat(dbPath); err != nil {
+		t.Fatalf("database stat error = %v, want preserved", err)
+	}
+	for _, sidecar := range DatabaseSidecarPaths(dbPath) {
 		if _, err := os.Stat(sidecar); !errors.Is(err, os.ErrNotExist) {
 			t.Fatalf("sidecar %s stat error = %v, want removed", sidecar, err)
+		}
+	}
+}
+
+func TestDatabaseSidecarPaths(t *testing.T) {
+	dbPath := filepath.Join("storage", "lbug")
+	want := []string{
+		dbPath + ".wal",
+		dbPath + ".lock",
+		dbPath + ".wal.checkpoint",
+		dbPath + ".checkpoint.apply.lock",
+		dbPath + ".checkpoint.intent.lock",
+	}
+	if got := DatabaseSidecarPaths(dbPath); !reflect.DeepEqual(got, want) {
+		t.Fatalf("DatabaseSidecarPaths() = %#v, want %#v", got, want)
+	}
+}
+
+func TestRemoveDatabaseArtifactsRemovesDatabaseAndSidecars(t *testing.T) {
+	dbPath := filepath.Join(t.TempDir(), "lbug")
+	if err := os.MkdirAll(dbPath, 0o755); err != nil {
+		t.Fatalf("mkdir database: %v", err)
+	}
+	if err := os.WriteFile(filepath.Join(dbPath, "stale.txt"), []byte("stale"), 0o644); err != nil {
+		t.Fatalf("write database artifact: %v", err)
+	}
+	for _, sidecar := range DatabaseSidecarPaths(dbPath) {
+		if err := os.WriteFile(sidecar, []byte("stale"), 0o644); err != nil {
+			t.Fatalf("write sidecar %s: %v", sidecar, err)
+		}
+	}
+
+	if err := RemoveDatabaseArtifacts(dbPath); err != nil {
+		t.Fatalf("RemoveDatabaseArtifacts() error = %v", err)
+	}
+	for _, artifact := range append([]string{dbPath}, DatabaseSidecarPaths(dbPath)...) {
+		if _, err := os.Stat(artifact); !errors.Is(err, os.ErrNotExist) {
+			t.Fatalf("artifact %s stat error = %v, want removed", artifact, err)
 		}
 	}
 }
