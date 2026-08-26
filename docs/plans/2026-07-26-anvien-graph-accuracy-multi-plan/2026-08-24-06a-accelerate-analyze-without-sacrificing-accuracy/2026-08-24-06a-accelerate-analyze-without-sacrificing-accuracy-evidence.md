@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED / D001_STREAK_1`; accepted A003 remains baseline; parent/D001 unchecked and D002-D017 queued
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBUTION_ACTIVE / ARCHITECT_LOCKED / D001_STREAK_1`; attribution task `01a03f3f-34e5-7032-9944-3509d3cf39cf`; accepted A003 remains baseline
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -1055,6 +1055,7 @@ Status: `A004_ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBU
 - Frozen and raw A004 artifacts remain preserved as rejected-candidate evidence. No Anvien/build/test/measurement/Supervisor/detect/stage/commit gate was rerun for rollback.
 - A005 current numeric basis is the accepted target-separated A003 row; parent/D001 remain active/unchecked, D002-D017 queued, and streak is `1`.
 - A005 Architect is locked until a separate visible read-only attribution lane proves current residual cause, exact owner, and complete call path from both retained A004 CPU profiles plus current restored graph/source.
+- That sole attribution lane is active as task `01a03f3f-34e5-7032-9944-3509d3cf39cf`; it may write only `reports/Investigation/rp_child06a_a005_residual_attribution.md` and cannot select architecture or edit source/ledgers.
 
 | From | Required evidence | To / next owner |
 |------|-------------------|-----------------|
