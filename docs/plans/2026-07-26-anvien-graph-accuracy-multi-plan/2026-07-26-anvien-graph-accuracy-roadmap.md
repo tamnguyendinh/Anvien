@@ -2,7 +2,7 @@
 
 Date: 2026-07-26
 Last revised: 2026-08-24
-Status: active campaign; Child 01 P0/P1-A/P1-B/P1-C/P1-D/P1-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries; Child 02 P0-A/P2-A/P2-B/P2-C/P2-D/P2-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries and closed at `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`; Child 03 P0-A through P3-B2A retain their accepted isolated boundaries; P3-C closes at `656a0445ff3e25b6225b994cdaf7cf1b35eb665c`; P3-C2 closes at `8784c6c21da842b188f136b95ec97ab8df9f20e8`; aggregate `E3-PNA-REVIEW1` and cleanup `E3-PNB-REVIEW1` are `PASS`; `E3-PNB-COMMIT1` is `0231d7f9cc7cfd05d8d5da4787161a8ec2cd1550`; Child 03 Pn-C closes at `3e25f9ca75c9cb7d59bf228e6cc9aa0b81d738b4`; Child 04 P0-A/P4-A/P4-B/P4-B1/P4-C/P4-C2 retain their accepted isolated commits; P4-C2 closes at `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; aggregate `E4-PNA-REVIEW1` and cleanup `E4-PNB-REVIEW1` are `PASS`; `E4-PNB-DETECT1` is `PASS` and `E4-PNB-COMMIT1` closes at `d1d8eb9002ce9c449c3713de0837ac8216d17a8d`; Child 04 Pn-C closes only the Child 04 plan by the current exact five-document commit boundary, with final commit hash reported externally; Child 05 transition occurs after that commit; Child 06 P6-D closes at isolated commit `81163e39718b94a509e41114cada224e8f269e36`, and P6-E is the sole open Child 06 slice
+Status: active campaign; Child 01 P0/P1-A/P1-B/P1-C/P1-D/P1-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries; Child 02 P0-A/P2-A/P2-B/P2-C/P2-D/P2-E/Pn-A/Pn-B/Pn-C accepted at isolated commit boundaries and closed at `181b8cb800f5fe34fa6fe85ddd359f514ead9fb0`; Child 03 P0-A through P3-B2A retain their accepted isolated boundaries; P3-C closes at `656a0445ff3e25b6225b994cdaf7cf1b35eb665c`; P3-C2 closes at `8784c6c21da842b188f136b95ec97ab8df9f20e8`; aggregate `E3-PNA-REVIEW1` and cleanup `E3-PNB-REVIEW1` are `PASS`; `E3-PNB-COMMIT1` is `0231d7f9cc7cfd05d8d5da4787161a8ec2cd1550`; Child 03 Pn-C closes at `3e25f9ca75c9cb7d59bf228e6cc9aa0b81d738b4`; Child 04 P0-A/P4-A/P4-B/P4-B1/P4-C/P4-C2 retain their accepted isolated commits; P4-C2 closes at `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; aggregate `E4-PNA-REVIEW1` and cleanup `E4-PNB-REVIEW1` are `PASS`; `E4-PNB-DETECT1` is `PASS` and `E4-PNB-COMMIT1` closes at `d1d8eb9002ce9c449c3713de0837ac8216d17a8d`; Child 04 Pn-C closes only the Child 04 plan by the current exact five-document commit boundary, with final commit hash reported externally; Child 05 transition occurs after that commit; Child 06 closes at accepted P6-D commit `81163e39718b94a509e41114cada224e8f269e36`; Child 06A independently owns the transferred analyze-performance work and is the direct predecessor of Child 07
 
 Multi-plan root: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/`
 
@@ -42,9 +42,10 @@ The report at `reports/problem/2026-07-26-tinh-chinh-cac-van-de-cua-anvien` is t
 | 03 | TypeScript binding-pattern extraction | 7 | recursive declaration bindings and `6/6` bounded downstream correctness |
 | 04 | TypeScript export semantics | 5 | direct/default/alias/type-only/star/namespace/re-export facts and `21/21` direct exports |
 | 05 | module export and re-export resolution | 4 | export table and terminal resolution with `2/2` bounded calls |
-| 06 | ambient/external resolution, diagnostics, and end-to-end analyze runtime performance | 7 | evidence-backed declaration authority, structured outcomes, `3/3` bounded ambient sites, and faster end-to-end `anviens analyze` runtime with exact accuracy, semantic, graph, determinism, freshness, failure/publication, and persistence/reader parity |
+| 06 | ambient/external resolution and diagnostics | 6 | evidence-backed declaration authority, structured outcomes, `3/3` bounded ambient sites, accepted runtime/readers, and isolated P6-D closure |
+| 06A | end-to-end analyze runtime performance | 1 | P1-A measures/ranks the real pipeline; one P2-A dynamic implementation slice reduces current measured bottlenecks with per-attempt Architect/Planner/Supervisor gates; P3 closes with one final whole-candidate Supervisor and one implementation commit |
 | 07 | cross-surface acceptance and target validation | 3 | deterministic, parity-valid, runtime-validated closure of all five oracles |
-| **Total** |  | **36** | **seven accepted Child closures** |
+| **Total** |  | **36** | **eight Child closure boundaries** |
 
 ## Child plan inventory
 
@@ -55,12 +56,13 @@ The report at `reports/problem/2026-07-26-tinh-chinh-cac-van-de-cua-anvien` is t
 | 03 | [TypeScript binding-pattern extraction](2026-07-28-03-typescript-binding-pattern-extraction/2026-07-28-03-typescript-binding-pattern-extraction-plan.md) | binding-pattern defect only | all seven slices, aggregate review, cleanup, Pn-B commit, and Pn-C handoff/detect are closed at isolated Pn-C commit `3e25f9ca75c9cb7d59bf228e6cc9aa0b81d738b4` |
 | 04 | [TypeScript export semantics](2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md) | export-fact defect only | P0-A/P4-A/P4-B/P4-B1/P4-C retain their recorded isolated commits; P4-C2 closes at `03f09b43f652b9a14b3e49774dc805c0dfd24a27`; aggregate Pn-A and cleanup review are `PASS`; Pn-B detect/isolated commit closes at `d1d8eb9002ce9c449c3713de0837ac8216d17a8d`; Pn-C closes the plan by the current exact five-document boundary with final hash external |
 | 05 | [module export and re-export resolution](2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md) | module/export resolution defect only | dependency-blocked until the Child 04 plan-closure commit succeeds; transition and P5-A opening are the next campaign step, outside Child 04 Pn-C |
-| 06 | [ambient/external resolution and diagnostics](2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-plan.md) | ambient/external correctness plus end-to-end `anviens analyze` runtime speedup after correctness closure | P6-D is closed at isolated commit `81163e39718b94a509e41114cada224e8f269e36` after independent Supervisor `PASS`, fresh detect `PASS`, exact `1,883/1,883` staged equality, and protected outside boundary `25/25`. Post-commit graph is current at `2,170/765/0`, `122,649/169,300`, file projection `20,351/479`. P6-E is exactly one U1-U4 slice and is now the sole open Child 06 slice; no implementation or speedup result is claimed yet |
-| 07 | [cross-surface acceptance and target validation](2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-plan.md) | acceptance only; no production repair | dependency-blocked |
+| 06 | [ambient/external resolution and diagnostics](2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-plan.md) | ambient/external correctness, accepted runtime/readers, and target proof | CLOSED at isolated P6-D commit `81163e39718b94a509e41114cada224e8f269e36` after independent Supervisor `PASS`, fresh detect `PASS`, exact `1,883/1,883` staged equality, and protected outside boundary `25/25`; no pending Pn gate remains |
+| 06A | [accelerate analyze without sacrificing accuracy](2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md) | transferred P6-E intent: P1-A detailed measurement, one P2-A dynamic implementation slice, P3-A/P3-B/P3-C closure | P0 current truth recorded; implementation not started; no current detailed timing map, ordered bottleneck list, production attempt, accepted speedup, or implementation commit |
+| 07 | [cross-surface acceptance and target validation](2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-plan.md) | acceptance only; no production repair | dependency-blocked until Child 06A closure commit |
 
 ## Standard file inventory
 
-Each Child owns one plan, one evidence ledger, one benchmark ledger, and one actual-status ledger. Together with this roadmap, the contract, and the four-file correction plan, the active authority contains 34 documents. P6-E is added inside the existing Child 06 four-file authority, so the active-document count remains 34.
+Each Child owns one plan, one evidence ledger, one benchmark ledger, and one actual-status ledger. Together with this roadmap, the contract, and the four-file correction plan, the active authority contains 39 documents. Child 06A adds one independent standard four-file set plus the auxiliary `plan-rules.md` readability split; the auxiliary is not a fifth ledger.
 
 | Child | Plan | Evidence | Benchmark | Actual status |
 |-------|------|----------|-----------|---------------|
@@ -70,6 +72,7 @@ Each Child owns one plan, one evidence ledger, one benchmark ledger, and one act
 | 04 | [plan](2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-plan.md) | [evidence](2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-evidence.md) | [benchmark](2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-benchmark.md) | [actual status](2026-07-28-04-typescript-export-semantics/2026-07-28-04-typescript-export-semantics-actual-status.md) |
 | 05 | [plan](2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-plan.md) | [evidence](2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-evidence.md) | [benchmark](2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-benchmark.md) | [actual status](2026-07-28-05-module-export-and-reexport-resolution/2026-07-28-05-module-export-and-reexport-resolution-actual-status.md) |
 | 06 | [plan](2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-plan.md) | [evidence](2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-evidence.md) | [benchmark](2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-benchmark.md) | [actual status](2026-07-28-06-ambient-external-resolution-and-diagnostics/2026-07-28-06-ambient-external-resolution-and-diagnostics-actual-status.md) |
+| 06A | [plan](2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md) | [evidence](2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md) | [benchmark](2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-benchmark.md) | [actual status](2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-actual-status.md) |
 | 07 | [plan](2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-plan.md) | [evidence](2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-evidence.md) | [benchmark](2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-benchmark.md) | [actual status](2026-07-28-07-cross-surface-acceptance-and-target-validation/2026-07-28-07-cross-surface-acceptance-and-target-validation-actual-status.md) |
 
 ## Ordered implementation and handoffs
@@ -79,8 +82,9 @@ Each Child owns one plan, one evidence ledger, one benchmark ledger, and one act
 3. Child 03 repairs recursive TypeScript binding-pattern extraction.
 4. Child 04 records TypeScript module export semantics independently from access visibility.
 5. Child 05 resolves module export surfaces and re-export chains to terminal symbols.
-6. Child 06 supplies evidence-backed ambient/external authority and structured resolution outcomes, projects them truthfully to graph health, recovers the canonical current-runtime path from the durable LadybugDB bundle plus the checked-in standard-vendor/CGO-overlay/one-patch authority under unique lane-owned derived roots, then executes exactly one P6-E slice containing ordered units U1-U4 while preserving accuracy, semantic completeness, graph correctness, deterministic output, freshness, failure/publication behavior, and persistence/reader parity.
-7. Child 07 runs final acceptance; each failure is returned to its owning Child.
+6. Child 06 supplies evidence-backed ambient/external authority and structured resolution outcomes, projects them truthfully to graph health, recovers the canonical current-runtime path from the durable LadybugDB bundle plus the checked-in standard-vendor/CGO-overlay/one-patch authority under unique lane-owned derived roots, and closes at accepted P6-D commit `81163e39718b94a509e41114cada224e8f269e36`.
+7. Child 06A first measures and ranks the real pipeline in P1-A, then executes exactly one dynamic P2-A implementation slice selected from the current benchmark list. Every production attempt uses a fresh Architect decision, Planner refresh, build/remeasure, and accuracy/equivalence Supervisor; three consecutive attempts without KEEP terminalize that remaining cost as `SYSTEM_CHARACTERISTIC`. P3 owns final whole-candidate review, exact cleanup, one detect, and one implementation commit.
+8. Child 07 runs final acceptance only after the Child 06A closure commit; each failure is returned to its owning Child.
 
 Each non-terminal Child closes only after its ledgers identify the accepted output contract and refresh the successor's actual status. A handoff communicates facts and evidence; it does not force the successor to preserve an implementation detail that its own source audit disproves.
 
@@ -94,6 +98,9 @@ Each non-terminal Child closes only after its ledgers identify the accepted outp
 | `reports/QA/child04-p4c2/oracle/<oracle_id>/` source-only oracle bundle | clean-context P4-C2 Oracle Authoring lane; Main routes seal identities | born durable; exactly 21 positive + 11 negative rows; QA consumes read-only after seal verification; analyzer/QA output cannot author expected values |
 | module export table/result contract | Child 05 | Child 06 inspects; Child 07 validates |
 | structured external-resolution outcome | Child 06 | Child 07 validates |
+| `E:\Anvien\reports\Investigation\rp_main_260824_204615_child06a_optimization_method_discussion.md` | active binding Child 06A method | measurement-owned ordered benchmark list, per-attempt Architect -> Planner -> Coder -> remeasure -> Supervisor, three-no-KEEP terminal rule, and P1/P2/P3 topology |
+| `E:\Anvien\reports\Investigation\rp_huong_dan_lam_viec_de_slice_p6e_tien_hanh_nhanh_hon.md` | required Child 06A provenance/handoff path | every handoff names the exact path without reviving superseded fixed workflow or report-audit controls |
+| real ordered bottleneck list, dynamic attempt measurements, final equivalence, and closure commit | Child 06A | benchmark is the only optimization queue; Child 07 consumes only the accepted Child 06A closure handoff; legacy Child 06 P6-E IDs remain provenance |
 | `third_party/ladybugdb/v0.19.1/windows-x86_64` native input bundle | Child 06 P6-D | repository-owned durable `{lbug.h, lbug_shared.lib, lbug_shared.dll}` authority; `.tmp\ladybug-native` is not an accepted input, cache, recovery source, or reproducibility dependency |
 | root `vendor/` plus `third_party/go-vendor` closure authority | Child 06 P6-D | deterministic standard baseline, checksum-derived complete-root CGO overlay, exactly one guarded reviewed patch, manifest contract v2, licenses `45/45`, and dual-shell verifier; cache/network fallback is forbidden |
 | campaign order and closure state | this roadmap | each Child updates only its own status/handoff row |
@@ -120,19 +127,22 @@ Each non-terminal Child closes only after its ledgers identify the accepted outp
 
 ## Active plan integrity gate
 
-- all 34 active documents resolve to the paths declared by this roadmap;
-- the seven Child plans declare exactly 36 implementation slices in the phase-map counts above;
+- all 38 active documents resolve to the paths declared by this roadmap;
+- the eight Child plans declare exactly 36 implementation slices in the phase-map counts above;
 - every checklist slice has exact evidence IDs declared in its own evidence ledger;
 - no evidence row remains for a removed slice;
-- actual-status P0 checkboxes match their pending gates and `Related File Count` values count files;
+- actual-status P0 checkboxes match their pending gates and `Related File Count` values either count files from valid evidence or explicitly remain pending until the required fresh graph gate;
 - each Child contains only its assigned semantic responsibility;
 - no document treats the initial analyze implementation as fixed or invents unproven write/reader behavior;
 - no active document treats the DRAFT architecture recommendations as approved source authority;
 - no active document treats `.tmp` as an oracle/evidence path, recovery source, promotion route, or reproducibility dependency;
 - P6-D's canonical `scripts/full-build.ps1` path and every affected helper/package/launcher call site consume the repository-owned LadybugDB bundle and explicit unique lane-owned cache/runtime roots; no `.tmp\ladybug-native` shared authority remains;
 - P6-D's Go source authority proves standard baseline `2/2`, machine-derived supplemental fixed-point `2/2`, reviewed patch cardinality exactly `1`, final tree `2/2`, unchanged `go.mod`/`go.sum`, and offline compile closure before target access;
-- P6-E remains one checklist slice and one commit boundary; U1-U4 are ordered internal units, never separate slices or commits;
-- link, forbidden-concept, slice, evidence, diff, fresh-analyze, and Supervisor gates all pass before production implementation opens.
+- Child 06 is closed at P6-D commit `81163e39718b94a509e41114cada224e8f269e36` with no pending Pn-A/Pn-B/Pn-C blocker;
+- Child 06A uses measurement-only P1-A, exactly one dynamic P2-A implementation slice, per-production-attempt fresh Architect/Planner/Coder/remeasure/Supervisor gates, and the three-no-KEEP `SYSTEM_CHARACTERISTIC` rule; P3-A is the final whole-candidate Supervisor, P3-B cleanup opens no review, and P3-C owns one detect/one implementation commit/Child 07 handoff;
+- legacy `P6-E`, `E6-P6E-*`, dependent `E6-PNA/PNB/PNC-*`, and `B6-P6E-*` map losslessly to the Child 06A IDs declared in its evidence/benchmark ledgers;
+- direct order is Child 06 -> Child 06A -> Child 07, and Child 07 cannot open directly from Child 06;
+- link, forbidden-concept, slice, evidence, diff, fresh-analyze, and final Supervisor gates all pass before the corresponding production transition.
 
 ## Child 03 Pn-B/Pn-C Closure Checkpoint
 
@@ -169,7 +179,7 @@ Each non-terminal Child closes only after its ledgers identify the accepted outp
 
 ## Campaign completion definition
 
-The campaign is complete only when all 36 implementation slices have their required source/build/runtime/behavior evidence and isolated commits; all five target oracles pass; corrected-field Graph JSON/Ladybug and affected-reader parity pass; repeated analyze is deterministic for the accepted facts; P6-E proves faster end-to-end `anviens analyze` runtime against a comparable baseline while preserving accuracy, semantic completeness, graph correctness, deterministic output, freshness, failure/publication behavior, and persistence/native-reader parity; every Child cleanup and Supervisor gate passes; and this roadmap records the final accepted handoffs with no blocker.
+The campaign is complete only when all 36 implementation slices have their required source/build/runtime/behavior evidence and required isolated commits; all five target oracles pass; corrected-field Graph JSON/Ladybug and affected-reader parity pass; repeated analyze is deterministic for the accepted facts; Child 06A proves faster end-to-end `anviens analyze` runtime against a comparable baseline while preserving accuracy, semantic completeness, graph correctness, deterministic output, freshness, failure/publication behavior, and persistence/native-reader parity; Child 06A has exactly one final effective Supervisor and one implementation commit; every Child closure gate passes; and this roadmap records the final accepted handoffs with no blocker.
 
 ## Child 04 P4-B Acceptance Checkpoint
 
@@ -249,4 +259,4 @@ The campaign is complete only when all 36 implementation slices have their requi
 - `E6-P6D-COMMIT1` closes at isolated implementation commit `81163e39718b94a509e41114cada224e8f269e36`, parent `741335f7efa5ad215ec28361d88c462f431565ab`, tree `b6bc216172886d5de9ef80f82c0da3ed28880f13`, with exactly `1,883` paths (`1,871` added / `12` modified), `5,866,720` insertions, and `314` deletions.
 - Pre-commit staged equality was exact `1,883/1,883`, missing/extra `0/0`; all `25` outside-boundary rows remained unstaged, including Owner deletion `CONTRIBUTING.md`, sixteen Main handoffs, the Microsoft artifact, the P6-E-only Supervisor report, and six superseded retry outputs. No push occurred.
 - Post-commit branch/index/state verification reports HEAD `81163e39718b94a509e41114cada224e8f269e36`, empty index, and exactly the same `25` protected outside-boundary rows. Fresh post-commit `anvien analyze --force` exits `0` at `2,170/765/0`, graph `122,649/169,300`, file projection `20,351` dependency edges / `479` unresolved; `anvien status` reports indexed/current `81163e3` and up-to-date.
-- P6-D is closed. P6-E is now the sole open Child 06 slice, still exactly one commit boundary containing ordered U1-U4 units. No P6-E implementation, A/A baseline, A/B result, or speedup is claimed by this transition.
+- P6-D and Child 06 are closed. Child 06A is the direct successor and independently owns the former P6-E performance boundary. Current truth is no detailed real timing map, mandatory ordered bottleneck list, P2-A production attempt, accepted speedup, or implementation commit; P1-A detailed measurement is the next action.
