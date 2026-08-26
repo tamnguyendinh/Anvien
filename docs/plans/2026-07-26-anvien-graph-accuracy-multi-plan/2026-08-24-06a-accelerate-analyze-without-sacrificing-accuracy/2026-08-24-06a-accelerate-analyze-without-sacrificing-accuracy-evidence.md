@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / A005_ARCHITECT_COMPLETE / A005_PLAN_COMPLETE / A005_MAIN_VERIFIED / CODER_RELEASE_PENDING / D001_STREAK_1`; Architect task `01a03f5e-b844-7ac3-b23b-b9c9cdc0374d`; Planner task `01a03f86-cd96-7573-97b1-52d9548768fb`; accepted A003 remains baseline
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / A005_ARCHITECT_COMPLETE / A005_PLAN_COMPLETE / A005_MAIN_VERIFIED / CODER_A005_READY_FOR_MEASUREMENT_HANDOFF / MAIN_HANDOFF_PASS / A005_MEASUREMENT_READY / D001_STREAK_1`; Coder task `01a03fa8-680f-7400-9ba6-f0d1db5c59dd`; accepted A003 remains baseline
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -258,7 +258,7 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-AnnnSYSTEM1` | only on third consecutive unsuccessful child attempt: exact parent/child rows, denominator, retained child/parent times, three attempts/reasons, terminal child `SYSTEM_CHARACTERISTIC`, and matching child checklist check |
 | `E2-P2A-AnnnRANK1` | accepted-state child/parent/full-pipeline timing refresh, complete child/top-level list update, and exact next unchecked child/parent pointer |
 
-Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. A003 checkpoint is `b6bf45bce95323aa6b53b182edfea8628bd8b463`; accepted Cheapapp and Restaurant Manager values remain separate. WAL fix checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004 is `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; its values remain rejected-candidate evidence. D001 remains active/unchecked with streak `1`; parent and all children remain unchecked; D002-D017 remain queued. A005 attribution, architecture, exact Planner translation, and Main verification are recorded under `E2-P2A-A005ATTRIB1/ARCH1/PLAN1/MAINVERIFY1`; state is `A005_PLAN_COMPLETE / A005_MAIN_VERIFIED / CODER_RELEASE_PENDING`.
+Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. A003 checkpoint is `b6bf45bce95323aa6b53b182edfea8628bd8b463`; accepted Cheapapp and Restaurant Manager values remain separate. WAL fix checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004 is `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; its values remain rejected-candidate evidence. D001 remains active/unchecked with streak `1`; parent and all children remain unchecked; D002-D017 remain queued. A005 attribution/architecture/plan/Main verification and exact Coder source/build/test evidence are recorded under `E2-P2A-A005ATTRIB1/ARCH1/PLAN1/MAINVERIFY1/IMPACT1/SRC1/BUILD1/TEST1`; state is `CODER_A005_READY_FOR_MEASUREMENT_HANDOFF / MAIN_HANDOFF_PASS / A005_MEASUREMENT_READY`.
 
 ### `E2-P2A-A001DRILL1` — Complete OP001 Resolution Child Measurement
 
@@ -1140,10 +1140,23 @@ Status: `A005_PLAN_COMPLETE / A005_MAIN_VERIFIED / CODER_RELEASE_PENDING`.
 | A005 attribution and architecture complete | `E2-P2A-A005ATTRIB1/ARCH1`; exact record/projection cause, owner/call path, canonical-byte architecture, Main handoff verification `PASS` | one visible Planner translates exactly; Coder remains locked |
 | A005 Planner translation complete | `E2-P2A-A005PLAN1`; living attempt card, concrete P2-A steps, four-ledger pointers, and Planner report are current | `A005_PLAN_READY_FOR_MAIN_VERIFY / CODER_LOCKED`; Main independently verifies the five Planner-owned artifacts and alone decides a separate future Coder release |
 | A005 Main verification PASS | `E2-P2A-A005MAINVERIFY1`; exact five-artifact diff/scope/state checks and Supervisor-protocol report | `A005_PLAN_COMPLETE / A005_MAIN_VERIFIED / CODER_RELEASE_PENDING`; open exactly one visible Coder, then require its fresh pre-edit gate |
+| A005 Coder and Main handoff PASS | `E2-P2A-A005IMPACT1/SRC1/BUILD1/TEST1`; exact source/test/build/test/report identities | `A005_MEASUREMENT_READY`; build one frozen candidate, then launch separate target measurement lanes only from its accepted packet |
 | Supervisor `REJECT` or no retainable gain | `AnnnREVIEW1`, `AnnnDECISION1`, `AnnnRESTORE1` | increment unsuccessful streak; rejected candidate is not ranked |
 | unsuccessful child streak `1` or `2` | restored accepted state plus rejection/no-gain packet | new attempt records current parent/child basis before a new Visible Architect for the same child |
 | unsuccessful child streak `3` | three full attempt families plus `AnnnSYSTEM1` and accepted `AnnnRANK1` refresh | child `SYSTEM_CHARACTERISTIC`; remeasure accepted child/parent/E2E, refresh both ordered lists, check only that child, and select the largest remaining unchecked child of the same parent |
 | all active-parent children checked | complete child ledger/checklist plus accepted parent/full-pipeline remeasurement | check parent, refresh top-level list, select largest remaining unchecked parent |
+
+### `E2-P2A-A005IMPACT1/SRC1/BUILD1/TEST1` — Coder Candidate Ready For Measurement
+
+Status: `CODER_A005_READY_FOR_MEASUREMENT_HANDOFF / MAIN_HANDOFF_PASS / A005_MEASUREMENT_READY`.
+
+- Coder task/report: `01a03fa8-680f-7400-9ba6-f0d1db5c59dd`; `E:\Anvien\reports\coder\rp_coder_260827_by_gpt-5_child06a_a005_outcome_serialization.md`; report SHA-256 `26360A4BEAE5304ADF261CE5FFC444DBA09FA2E61F7262AE81F7D10BBF841EC8`.
+- `A005IMPACT1`: clean base HEAD `cf230eeee87e2cc212c42639c8c7e99eba084bc7`; one fresh graph `2254/766/0`, `124251/171117`; both production files HIGH/current/non-stale; exact collector/init/record/finalize/projection/ResolveBoundInto impacts CRITICAL with complete counts in the Coder report.
+- `A005SRC1`: exact production/test boundary only. `outcome.go +43/-24`, SHA-256 `18203DFAB9A227B526F8F7478B516AE6673F635BABC02D9463975E428A3983AF`; `resolve.go +2/-2`, SHA-256 `76B7B62A060B36EE2438E76689E858544358AD681DB42F6A4FC47D271F1749A1`; new `outcome_serialization_test.go +652/-0`, SHA-256 `89B168B2764B9A9B8EACDAB37A071BE0E1C51A8F791FE158B111651E9640C957`; P6C3 adaptation `+8/-5`, SHA-256 `E561280B3F8420D2288001179431A37FC39E6E2B8564863C9AD644EEE005A2E6`; total `+705/-31`; diff-check/gofmt clean; staged empty.
+- `A005BUILD1`: holder/process preflight found no proven build-output holder; canonical `scripts/full-build.ps1` exited `0` before tests; vendor `1798/0/0/0`; runtime SHA-256 `CFDDA72DBB448AB9BE20FC58A7C20A883353E7F0B3EE7DF60A6DDD0968163AC7`; maintenance analyze `2255/767/0`, graph `124463/171506`.
+- `A005TEST1`: exact focused A005 plus nine named P6B/P6C3/P6D/Graph JSON/Ladybug regressions exited `0`; `internal/graphhealth`, `internal/analyze`, `internal/lbugload`, and `internal/lbugnative` exit `0`. Full `internal/resolution` truthfully exits `1` only on unchanged `TestProofBasedCallAccessGoldenCorpus`; the package is not called PASS and golden blob remains exact HEAD `00d0ae042f109cd7d3c8aeadf855d192a5aa8172`.
+- Main source/diff/report verification `E:\Anvien\reports\Supervisor\rp_supervisor_260827_034025_by_gpt-5_child06a_a005_coder_handoff.md` returns `PASS` for frozen-candidate/measurement handoff only. Candidate remains uncommitted/unstaged; no target measurement, per-attempt Supervisor disposition, detect, stage, or implementation commit exists.
+- Next owner: one exact frozen-candidate builder using the unchanged A00x script and A005 overlay/hash inputs. It must not run target analyze.
 
 `REWORK` and `ROLLBACK` never authorize Coder directly. They describe the failed attempt's disposition; any next production edit starts a new attempt at Visible Architect.
 
