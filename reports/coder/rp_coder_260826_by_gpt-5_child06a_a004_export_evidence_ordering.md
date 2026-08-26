@@ -175,3 +175,17 @@ E2E verification:
 Candidate is ready for Main's independent source/build/test verification and later target-separated A004 measurement ownership. Coder stops here and does not open or direct measurement, Supervisor, disposition, detect, staging, commit, P3, or Child 07 lanes.
 
 `CODER_A004_READY_FOR_MEASUREMENT_HANDOFF`
+
+## A004 Rollback Result
+
+- Official review/disposition: `SUPERVISOR_A004_PASS`; Main `NO_KEEP / ROLLBACK_ACTIVE / D001_STREAK_1` because process elapsed increased on both targets.
+- Rollback basis: docs HEAD `57bbd15eaad383d5d4f105f6f9d08688275ff36e`.
+- Starting A004 candidate SHA-256: `export_binding_proof.go` `36D41BC7336A5A04B4C77D1EE9DEB45DE4E5E2BA120EEFBF98419BD2D846C4D2`; `export_binding_proof_test.go` `99C6F6FC5FD0AE4D1BFDFE547D5F67C958544AA61FFD89895DC0BAC79C839BBC`.
+- Exact reversal: mechanically reversed only the A004 production `+18/-4` hunk and appended test `+477/-0` bytes through `apply_patch`; no checkout, reset, restore, stash, or whole-file overwrite was used.
+- Final accepted-baseline SHA-256: `export_binding_proof.go` `4BFE1976766FBF2E2257102070FF43CAC6D757E32E71DD583F8824781EAB6A8E`; `export_binding_proof_test.go` `AD3DCA9E82EACFB31137560636B59D426A063AEB967613E724D5EE3017AD5812`.
+- Identity verification: `git diff --exit-code HEAD -- internal/resolution/export_binding_proof.go internal/resolution/export_binding_proof_test.go` exited `0`; both code paths have zero diff against current HEAD. The staged set was empty, and the worktree was empty before this report-only append.
+- Preserved evidence: every frozen candidate, raw target packet, measurement artifact, and accepted evidence artifact remains unchanged and present; no cleanup or deletion ran.
+- No gate rerun: no Anvien command, build, test, target measurement, Supervisor, detect-changes, staging, or commit ran during rollback.
+- Next owner: Main Orchestration for independent rollback-state verification and governed continuation on active D001 with streak `1`.
+
+`CODER_A004_ROLLBACK_COMPLETE`

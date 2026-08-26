@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_ACTIVE / D001_STREAK_1`; accepted A003 remains baseline; parent/D001 unchecked and D002-D017 queued
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED / D001_STREAK_1`; accepted A003 remains baseline; parent/D001 unchecked and D002-D017 queued
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -1045,6 +1045,16 @@ Status: `SUPERVISOR_A004_PASS / NO_KEEP / ROLLBACK_ACTIVE / D001_STREAK_1`.
 - Main disposition is `NO_KEEP`: the plan requires lower selected child, parent, and process elapsed on each target plus Supervisor PASS. A004 lowers D001 and parent on both targets but process increases Cheapapp `+49.345324200 s` and Restaurant `+34.472577200 s`; analyzer is also higher on both. No A004 exception or tolerance exists.
 - Accepted A003 target-separated values remain current; A004 values are not promoted. D001 consecutive unsuccessful-attempt streak changes `0 -> 1`; P2-A, parent, D001, D002-D017, and every checkbox remain unchanged.
 - Exact rollback owns only the `+18/-4` A004 production hunk and `+477/-0` A004 test bytes. Passed build/test/measurement/Supervisor gates remain valid evidence and must not be rerun solely for rollback identity.
+
+### `E2-P2A-A004ROLLBACK1/A005CURRENT1` — Accepted Baseline Restored And Next Basis Locked
+
+Status: `A004_ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED / D001_STREAK_1`.
+
+- Same Coder task `01a03ee4-3c2a-72d0-afe7-08be98fe982e` mechanically reversed only A004 production/test bytes with `apply_patch`; no checkout/reset/restore/stash/whole-file overwrite.
+- Final `internal/resolution/export_binding_proof.go` SHA-256 `4BFE1976766FBF2E2257102070FF43CAC6D757E32E71DD583F8824781EAB6A8E`; final `internal/resolution/export_binding_proof_test.go` SHA-256 `AD3DCA9E82EACFB31137560636B59D426A063AEB967613E724D5EE3017AD5812`; both have zero diff against HEAD. Coder report appendix SHA-256 `2C93A4A5A2CC0240DE2EFF7F3F413C03EB15DCCF424DB59174990595019A7D59`.
+- Frozen and raw A004 artifacts remain preserved as rejected-candidate evidence. No Anvien/build/test/measurement/Supervisor/detect/stage/commit gate was rerun for rollback.
+- A005 current numeric basis is the accepted target-separated A003 row; parent/D001 remain active/unchecked, D002-D017 queued, and streak is `1`.
+- A005 Architect is locked until a separate visible read-only attribution lane proves current residual cause, exact owner, and complete call path from both retained A004 CPU profiles plus current restored graph/source.
 
 | From | Required evidence | To / next owner |
 |------|-------------------|-----------------|
