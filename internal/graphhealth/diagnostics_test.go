@@ -3,6 +3,7 @@ package graphhealth
 import (
 	"encoding/json"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/tamnguyendinh/anvien/internal/graph"
@@ -298,4 +299,185 @@ func graphJSON(t *testing.T, g *graph.Graph) string {
 		t.Fatalf("marshal graph: %v", err)
 	}
 	return string(encoded)
+}
+
+func TestDecodeStructuredResolutionOutcomeCanonicalSingleInterpretationParity(t *testing.T) {
+	base := Diagnostic{
+		Kind:             DiagnosticUnresolvedReference,
+		FactFamily:       "call",
+		TargetText:       "Widget",
+		ResolutionSource: structuredResolutionStageRepository,
+		FilePath:         "src/widget.go",
+		FileHash:         "hash-widget",
+		StartLine:        7,
+		StartCol:         2,
+		EndLine:          7,
+		EndCol:           9,
+		SourceSiteID:     "SourceSite:src/widget.go#call#Widget#7#2#7#9",
+		SourceSiteStatus: structuredResolutionStatusUnresolved,
+		ProofKind:        "scope-resolution",
+		Source:           structuredResolutionStageRepository,
+	}
+
+	fields := func() map[string]any {
+		return map[string]any{
+			"schemaVersion":    structuredResolutionOutcomeSchemaVersion,
+			"sourceSiteId":     base.SourceSiteID,
+			"status":           structuredResolutionStatusUnresolved,
+			"stage":            structuredResolutionStageRepository,
+			"siteKind":         base.FactFamily,
+			"filePath":         base.FilePath,
+			"fileHash":         base.FileHash,
+			"range":            map[string]any{"startLine": base.StartLine, "startCol": base.StartCol, "endLine": base.EndLine, "endCol": base.EndCol},
+			"requestedName":    base.TargetText,
+			"requestedMeaning": "value",
+			"language":         "go",
+			"reason":           "repository target unresolved",
+			"proof":            map[string]any{"kind": base.ProofKind},
+		}
+	}
+	encode := func(value any) string {
+		t.Helper()
+		encoded, err := json.Marshal(value)
+		if err != nil {
+			t.Fatalf("marshal test note: %v", err)
+		}
+		return string(encoded)
+	}
+	encodeIndented := func(value any) string {
+		t.Helper()
+		encoded, err := json.MarshalIndent(value, "", "  ")
+		if err != nil {
+			t.Fatalf("marshal indented test note: %v", err)
+		}
+		return " \n" + string(encoded) + "\n "
+	}
+	withNote := func(diagnostic Diagnostic, note string) Diagnostic {
+		diagnostic.Note = note
+		return diagnostic
+	}
+
+	canonicalNote := encode(fields())
+	markerlessFields := fields()
+	markerlessFields["SchemaVersion"] = markerlessFields["schemaVersion"]
+	markerlessFields["Status"] = markerlessFields["status"]
+	delete(markerlessFields, "schemaVersion")
+	delete(markerlessFields, "status")
+	markerlessNote := encode(markerlessFields)
+
+	exactMarkerOnly := base
+	exactMarkerOnly.SourceSiteStatus = ""
+	unstructured := base
+	unstructured.SourceSiteStatus = ""
+
+	missingMarkers := fields()
+	delete(missingMarkers, "schemaVersion")
+	delete(missingMarkers, "status")
+	missingSchema := fields()
+	delete(missingSchema, "schemaVersion")
+	typedRange := fields()
+	typedRange["range"] = "not-an-object"
+	unknownField := fields()
+	unknownField["futureContract"] = map[string]any{"nested": true, "version": 2}
+	conflictingStatus := fields()
+	conflictingStatus["status"] = structuredResolutionStatusCapabilityUnavailable
+	invalidProof := fields()
+	invalidProof["proof"] = map[string]any{"kind": "conflicting-proof"}
+	invalidAuthority := fields()
+	invalidAuthority["authority"] = map[string]any{"status": "invalid", "catalogProofState": "rejected"}
+
+	testCases := []struct {
+		name       string
+		diagnostic Diagnostic
+	}{
+		{name: "status evidence", diagnostic: withNote(base, `{"message":"legacy-shaped"}`)},
+		{name: "exact marker evidence", diagnostic: withNote(exactMarkerOnly, canonicalNote)},
+		{name: "both evidence sources and exact markers", diagnostic: withNote(base, canonicalNote)},
+		{name: "valid markerless structured note", diagnostic: withNote(base, markerlessNote)},
+		{name: "unstructured object", diagnostic: withNote(unstructured, `{"message":"legacy-shaped","Status":"not-structured"}`)},
+		{name: "empty note with status evidence", diagnostic: withNote(base, " \t\n")},
+		{name: "malformed JSON without status evidence", diagnostic: withNote(unstructured, `{"schemaVersion":1,"status":`)},
+		{name: "malformed JSON with status evidence", diagnostic: withNote(base, `{"schemaVersion":1,"status":`)},
+		{name: "non-object without status evidence", diagnostic: withNote(unstructured, `[1,2,3]`)},
+		{name: "non-object with status evidence", diagnostic: withNote(base, `"structured-looking"`)},
+		{name: "null without status evidence", diagnostic: withNote(unstructured, `null`)},
+		{name: "null with status evidence", diagnostic: withNote(base, `null`)},
+		{name: "typed top-level field error", diagnostic: withNote(base, `{"schemaVersion":"one","status":"unresolved"}`)},
+		{name: "typed nested field error before later marker", diagnostic: withNote(base, encode(typedRange))},
+		{name: "missing both exact markers", diagnostic: withNote(unstructured, encode(missingMarkers))},
+		{name: "missing required schema with exact status", diagnostic: withNote(base, encode(missingSchema))},
+		{name: "case-variant markers without status evidence", diagnostic: withNote(unstructured, markerlessNote)},
+		{name: "duplicate status last valid", diagnostic: withNote(base, `{"status":"capability_unavailable",`+canonicalNote[1:])},
+		{name: "duplicate status last conflicting", diagnostic: withNote(base, canonicalNote[:len(canonicalNote)-1]+`,"status":"capability_unavailable"}`)},
+		{name: "duplicate typed error remains invalid", diagnostic: withNote(base, `{"schemaVersion":"one",`+canonicalNote[1:])},
+		{name: "unknown fields", diagnostic: withNote(base, encode(unknownField))},
+		{name: "conflicting status evidence", diagnostic: withNote(base, encode(conflictingStatus))},
+		{name: "invalid proof", diagnostic: withNote(base, encode(invalidProof))},
+		{name: "invalid authority", diagnostic: withNote(base, encode(invalidAuthority))},
+		{name: "outer and nested whitespace", diagnostic: withNote(base, encodeIndented(fields()))},
+	}
+
+	preA003Decode := func(diagnostic Diagnostic) (structuredResolutionOutcome, bool, bool) {
+		statusMarker := isStructuredResolutionStatus(strings.TrimSpace(diagnostic.SourceSiteStatus))
+		note := strings.TrimSpace(diagnostic.Note)
+		if note == "" {
+			return structuredResolutionOutcome{}, statusMarker, false
+		}
+
+		var envelope map[string]json.RawMessage
+		if err := json.Unmarshal([]byte(note), &envelope); err != nil {
+			return structuredResolutionOutcome{}, statusMarker, false
+		}
+		_, hasSchemaVersion := envelope["schemaVersion"]
+		_, hasStatus := envelope["status"]
+		structured := statusMarker || hasSchemaVersion || hasStatus
+		if !structured {
+			return structuredResolutionOutcome{}, false, false
+		}
+
+		var outcome structuredResolutionOutcome
+		if err := json.Unmarshal([]byte(note), &outcome); err != nil {
+			return structuredResolutionOutcome{}, true, false
+		}
+		return outcome, true, validStructuredResolutionDiagnostic(diagnostic, outcome)
+	}
+	preA003Policy := func(diagnostic Diagnostic) (string, string, bool) {
+		outcome, structured, valid := preA003Decode(diagnostic)
+		if !structured {
+			return "", "", false
+		}
+		if !valid {
+			return DiagnosticClassificationUnclassified, DiagnosticActionabilityReview, true
+		}
+		switch outcome.Status {
+		case structuredResolutionStatusUnresolved:
+			switch outcome.Stage {
+			case structuredResolutionStageRepository:
+				return DiagnosticClassificationInRepoUnresolved, DiagnosticActionabilityAnalyzerGap, true
+			case structuredResolutionStageTypeScriptStandardLib:
+				return DiagnosticClassificationStandardLibrary, DiagnosticActionabilityNonActionable, true
+			}
+		case structuredResolutionStatusCapabilityUnavailable:
+			if outcome.Stage == structuredResolutionStageTypeScriptStandardLib {
+				return DiagnosticClassificationStandardLibrary, DiagnosticActionabilityNonActionable, true
+			}
+		}
+		return DiagnosticClassificationUnclassified, DiagnosticActionabilityReview, true
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			wantOutcome, wantStructured, wantValid := preA003Decode(testCase.diagnostic)
+			gotOutcome, gotStructured, gotValid := decodeStructuredResolutionOutcome(testCase.diagnostic)
+			if !reflect.DeepEqual(gotOutcome, wantOutcome) || gotStructured != wantStructured || gotValid != wantValid {
+				t.Fatalf("decode tuple mismatch\nwant: (%#v, %t, %t)\ngot:  (%#v, %t, %t)", wantOutcome, wantStructured, wantValid, gotOutcome, gotStructured, gotValid)
+			}
+
+			wantClassification, wantActionability, wantHandled := preA003Policy(testCase.diagnostic)
+			gotClassification, gotActionability, gotHandled := structuredResolutionDiagnosticPolicy(testCase.diagnostic)
+			if gotClassification != wantClassification || gotActionability != wantActionability || gotHandled != wantHandled {
+				t.Fatalf("policy tuple mismatch\nwant: (%q, %q, %t)\ngot:  (%q, %q, %t)", wantClassification, wantActionability, wantHandled, gotClassification, gotActionability, gotHandled)
+			}
+		})
+	}
 }

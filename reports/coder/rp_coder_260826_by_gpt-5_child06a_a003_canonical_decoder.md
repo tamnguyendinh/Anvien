@@ -130,3 +130,13 @@ CODER_A003_CANDIDATE_PACKET_READY_FOR_MAIN
 - No build, test, benchmark, profile, analyze, detect, stage, commit, or candidate-packet cleanup was performed. Next owner: Main Orchestration.
 
 CODER_A003_ROLLBACK_COMPLETE
+
+## A003 Owner KEEP Exact Restore
+
+- Starting SHA-256 matched accepted A002 exactly: `diagnostics.go=AEABA8A541D1C293DFA4FE411253A85A26B6AC0DD18047AFA6F9151B4932BEE8`; `diagnostics_test.go=58E8CAE2C4EBBF4672D2D338CC5E1419B7CECA9F7389B0E24F51BF2F975A7CEA`.
+- Reapplied the original `apply_patch` payloads from rollout lines `433`, `461`, and `489`, in that exact order; no code was reconstructed or redesigned.
+- Final SHA-256 matches the already-built/measured/`SUPERVISOR_A003_PASS` candidate exactly: `diagnostics.go=6DE54D97A1B95E877B686DC3459238598F6060D28CE6329357A80BD7FC376D30`; `diagnostics_test.go=06677DBA4FE9EDA4FE8651E08B93ABC8659129A61355E34BFFA10380AE429371`.
+- Scoped `git diff --check` PASS; numstat is `diagnostics.go +109/-7`, `diagnostics_test.go +182/-0`; staged set empty.
+- No passed gate was rerun: no Anvien, build, test, benchmark, profile, Supervisor, target, detect, stage, commit, cleanup, ledger, or plan action. Next owner: Main Orchestration.
+
+CODER_A003_OWNER_KEEP_RESTORE_COMPLETE

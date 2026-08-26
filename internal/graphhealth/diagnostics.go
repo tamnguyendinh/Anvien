@@ -2,6 +2,7 @@ package graphhealth
 
 import (
 	"encoding/json"
+	"io"
 	"sort"
 	"strings"
 
@@ -381,19 +382,120 @@ func decodeStructuredResolutionOutcome(diagnostic Diagnostic) (structuredResolut
 		return structuredResolutionOutcome{}, statusMarker, false
 	}
 
-	var envelope map[string]json.RawMessage
-	if err := json.Unmarshal([]byte(note), &envelope); err != nil {
+	decoder := json.NewDecoder(strings.NewReader(note))
+	token, err := decoder.Token()
+	if err != nil || token == nil {
 		return structuredResolutionOutcome{}, statusMarker, false
 	}
-	_, hasSchemaVersion := envelope["schemaVersion"]
-	_, hasStatus := envelope["status"]
+	delimiter, ok := token.(json.Delim)
+	if !ok || delimiter != '{' {
+		return structuredResolutionOutcome{}, statusMarker, false
+	}
+
+	var outcome structuredResolutionOutcome
+	var hasSchemaVersion bool
+	var hasStatus bool
+	var typedInvalid bool
+	for decoder.More() {
+		token, err = decoder.Token()
+		if err != nil {
+			return structuredResolutionOutcome{}, statusMarker, false
+		}
+		key, ok := token.(string)
+		if !ok {
+			return structuredResolutionOutcome{}, statusMarker, false
+		}
+		hasSchemaVersion = hasSchemaVersion || key == "schemaVersion"
+		hasStatus = hasStatus || key == "status"
+
+		var destination any
+		switch key {
+		case "schemaVersion":
+			destination = &outcome.SchemaVersion
+		case "sourceSiteId":
+			destination = &outcome.SourceSiteID
+		case "status":
+			destination = &outcome.Status
+		case "stage":
+			destination = &outcome.Stage
+		case "siteKind":
+			destination = &outcome.SiteKind
+		case "filePath":
+			destination = &outcome.FilePath
+		case "fileHash":
+			destination = &outcome.FileHash
+		case "range":
+			destination = &outcome.Range
+		case "requestedName":
+			destination = &outcome.RequestedName
+		case "requestedMeaning":
+			destination = &outcome.RequestedMeaning
+		case "language":
+			destination = &outcome.Language
+		case "target":
+			destination = &outcome.Target
+		case "reason":
+			destination = &outcome.Reason
+		case "proof":
+			destination = &outcome.Proof
+		case "authority":
+			destination = &outcome.Authority
+		default:
+			switch {
+			case strings.EqualFold(key, "schemaVersion"):
+				destination = &outcome.SchemaVersion
+			case strings.EqualFold(key, "sourceSiteId"):
+				destination = &outcome.SourceSiteID
+			case strings.EqualFold(key, "status"):
+				destination = &outcome.Status
+			case strings.EqualFold(key, "stage"):
+				destination = &outcome.Stage
+			case strings.EqualFold(key, "siteKind"):
+				destination = &outcome.SiteKind
+			case strings.EqualFold(key, "filePath"):
+				destination = &outcome.FilePath
+			case strings.EqualFold(key, "fileHash"):
+				destination = &outcome.FileHash
+			case strings.EqualFold(key, "range"):
+				destination = &outcome.Range
+			case strings.EqualFold(key, "requestedName"):
+				destination = &outcome.RequestedName
+			case strings.EqualFold(key, "requestedMeaning"):
+				destination = &outcome.RequestedMeaning
+			case strings.EqualFold(key, "language"):
+				destination = &outcome.Language
+			case strings.EqualFold(key, "target"):
+				destination = &outcome.Target
+			case strings.EqualFold(key, "reason"):
+				destination = &outcome.Reason
+			case strings.EqualFold(key, "proof"):
+				destination = &outcome.Proof
+			case strings.EqualFold(key, "authority"):
+				destination = &outcome.Authority
+			default:
+				destination = new(json.RawMessage)
+			}
+		}
+
+		if err = decoder.Decode(destination); err != nil {
+			if _, ok := err.(*json.UnmarshalTypeError); !ok {
+				return structuredResolutionOutcome{}, statusMarker, false
+			}
+			typedInvalid = true
+		}
+	}
+	if token, err = decoder.Token(); err != nil || token != json.Delim('}') {
+		return structuredResolutionOutcome{}, statusMarker, false
+	}
+	if err = decoder.Decode(new(json.RawMessage)); err != io.EOF {
+		return structuredResolutionOutcome{}, statusMarker, false
+	}
+
 	structured := statusMarker || hasSchemaVersion || hasStatus
 	if !structured {
 		return structuredResolutionOutcome{}, false, false
 	}
-
-	var outcome structuredResolutionOutcome
-	if err := json.Unmarshal([]byte(note), &outcome); err != nil {
+	if typedInvalid {
 		return structuredResolutionOutcome{}, true, false
 	}
 	return outcome, true, validStructuredResolutionDiagnostic(diagnostic, outcome)
