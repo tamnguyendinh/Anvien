@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A006_ARCHITECT_NEEDS_MEASUREMENT_INPUT / A006_M1_PENDING / D001_STREAK_2`; accepted A003 remains baseline
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A006_ARCHITECT_NEEDS_MEASUREMENT_INPUT / A006_M1_BUILD_INPUT_RECOVERY_READY / D001_STREAK_2`; accepted A003 remains baseline
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -1205,6 +1205,12 @@ Status: `A005_TWO_TARGET_MEASUREMENTS_RECORDED / A005_SUPERVISOR_PENDING / D001_
 - After excluding A001-A005 owners, the largest unattempted retained CPU stack `resolveGoSamePackageFunction` is Restaurant-only; common helpers have small overlapping samples and no exclusive wall/invocation proof. No safe two-target production direction is released; Planner/Coder remain locked and streak stays `2`.
 - Required input `A006-M1-D001-DIRECT-CALLEE-ATTRIBUTION` is measurement-only. It instruments exactly ten non-overlapping caller-side groups in overlay `resolve.go`, carries fixed metric fields only in overlay `types.go`, proves integer-nanosecond conservation and overlap `0`, and runs Cheapapp then Restaurant sequentially with zero competitors and one launch each. It reuses the unchanged A00x build script/17-child/native contract, preserves full output/equivalence/resource identity, does not rerun accepted A003, and is not a production attempt, candidate, Supervisor result, disposition, or streak event.
 - Next owner: one visible A006-M1 measurement executor. After valid packets are recorded, Main returns them to one fresh A006 Architect; no Planner/Coder opens early.
+
+### `E2-P2A-A006M1BUILDFAIL1` — Builder Attempt-ID Input Mismatch
+
+- Measurement task/report: `01a04061-02fe-7f02-9c4c-f9caa6c0413c`; `E:\Anvien\reports\Investigation\rp_child06a_a006_m1_direct_callee_attribution.md`. Static overlay coverage/non-overlap passes; overlay hashes are resolve `6B77B550...B8A61`, types `8F5F8E7B...F4E2D`, manifest `D9ED3E5B...8AB98`.
+- The sole builder invocation used `AttemptId=A006-M1` and exited `1` before creating executable/DLL/provenance. The accepted builder guard requires `^A[0-9]{3}$`; its error template contains unescaped regex braces, so the surface error is a string-format exception. No target launch or numeric packet exists.
+- Recovery changes no overlay or script: invoke the unchanged builder once at `frozen-build-retry1` with builder provenance `AttemptId=A006`, then continue the original sequential target contract only after packet validation. This is measurement-support recovery, not production work, a retry of target evidence, or a streak/disposition event.
 
 `REWORK` and `ROLLBACK` never authorize Coder directly. They describe the failed attempt's disposition; any next production edit starts a new attempt at Visible Architect.
 

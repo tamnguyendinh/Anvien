@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Status: `P0-A complete / P1-A complete / A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / A005_ARCHITECT_COMPLETE / A005_PLAN_COMPLETE / A005_MAIN_VERIFIED / CODER_A005_READY_FOR_MEASUREMENT_HANDOFF / MAIN_HANDOFF_PASS / A005_FROZEN_PACKET_READY / A005_TWO_TARGET_MEASUREMENTS_RECORDED / SUPERVISOR_A005_PASS / A005_NO_KEEP / A005_ROLLBACK_COMPLETE / A006_ARCHITECT_NEEDS_MEASUREMENT_INPUT / A006_M1_PENDING / D001_STREAK_2 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / repo-specific measurements preserved separately`
+- Status: `P0-A complete / P1-A complete / A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR PASS / NO_KEEP / ROLLBACK_COMPLETE / A005 SUPERVISOR PASS / NO_KEEP / ROLLBACK_COMPLETE / A006_ARCHITECT_NEEDS_MEASUREMENT_INPUT / A006_M1_BUILD_INPUT_RECOVERY_READY / D001_STREAK_2 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / repo-specific measurements preserved separately`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -209,7 +209,7 @@ This is the living Planner refresh surface for the one implementation slice. Pla
 
 | Field | Current value |
 |-------|---------------|
-| Attempt state | `A004/A005 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A006_ARCHITECT_NEEDS_MEASUREMENT_INPUT / A006_M1_PENDING / D001_STREAK_2`; accepted A003 checkpoint remains baseline; all checkboxes unchanged; Planner/Coder locked |
+| Attempt state | `A004/A005 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A006_ARCHITECT_NEEDS_MEASUREMENT_INPUT / A006_M1_BUILD_INPUT_RECOVERY_READY / D001_STREAK_2`; accepted A003 checkpoint remains baseline; all checkboxes unchanged; Planner/Coder locked |
 | Attempt ID | `A006-M1` measurement input; not an A006 production attempt and does not change streak |
 | Attempt goal | obtain target-separated, non-overlapping direct-callee elapsed attribution inside `resolveCall`, with exact D001 conservation and zero overlap, so a fresh A006 Architect can select or reject one materially new two-target direction without guessing |
 | Active parent benchmark row / checklist item | `B1-P1A-OP001` / unchecked `resolution` parent item |
@@ -226,14 +226,14 @@ This is the living Planner refresh surface for the one implementation slice. Pla
 | Allowed production/test surfaces | none. Measurement-only overlay copies of `internal/resolution/resolve.go` direct call sites and `internal/resolution/types.go` metric fields; canonical production/tests/scripts remain untouched |
 | Production algorithm | none authorized |
 | Test contract | no production/test edit or test gate; equivalence is proved by target packet identity against accepted A003 |
-| Build/test contract | reuse unchanged `scripts/build-a00x-benchmark.ps1` to build one measurement-only overlay executable; do not run canonical build/tests or change the script/interface |
+| Build/test contract | unchanged builder accepts only `AttemptId=A###`; failed input `A006-M1` created no output. Recovery reuses the identical overlay/script with builder provenance `AttemptId=A006` at new output root `frozen-build-retry1`, one invocation only; no canonical build/tests or script edit |
 | Measurement contract | `A006-M1-D001-DIRECT-CALLEE-ATTRIBUTION`: ten mutually exclusive groups `source_context`, `binding_receiver`, `scoped_same_file`, `member_import`, `go_same_package`, `global_lookup`, `typescript_lookup_record`, `evidence_emission`, `direct_site_identity`, and `resolve_call_residual`; record caller-side elapsed nanoseconds plus invocation counts, exact sum to D001 and overlap `0`; then one Cheapapp and one Restaurant capture sequentially with zero competitor, one launch each, full `30/30`, `17/17`, denominator/output/graph/DB/semantic/resource parity; accepted A003 is not rerun |
 | Post-measurement Supervisor | none. A006-M1 returns to one fresh A006 Architect; it is not a candidate, production attempt, Supervisor input, disposition, or streak event |
 | Resource/invariant boundary | fixed-size run-local counters/durations merged once; no per-call log/event list/unbounded map/global state/concurrency/I/O side channel; preserve every accepted output and A001-A005/WAL boundary |
 | Exact rollback | remove only invalid A006-M1 overlay additions and its assigned `.tmp` packet/report; production source remains untouched |
 | Mandatory STOP | stop on any canonical production/test/plan/ledger/script/target edit, owner beyond overlay `resolve.go`/`types.go`, overlap/non-conservation, changed command/denominator/output/graph/DB/semantics, competitor/overlapping captures, failed launch, missing packet field, retry need, prior-gate audit, or D002-D017/P3/Child 07 opening |
 | Coder status | locked; A006-M1 owner is a visible measurement executor, not Planner or Coder |
-| Next action | one visible A006-M1 executor builds the measurement-only overlay and runs Cheapapp then Restaurant sequentially; Main records both packets and returns them to a fresh A006 Architect |
+| Next action | same visible A006-M1 executor invokes the unchanged builder once with `AttemptId=A006` and new output root, then runs Cheapapp followed by Restaurant sequentially if and only if the build packet passes |
 
 ### A005 PLAN1 Canonical Outcome-Byte Ownership Execution Authority
 
