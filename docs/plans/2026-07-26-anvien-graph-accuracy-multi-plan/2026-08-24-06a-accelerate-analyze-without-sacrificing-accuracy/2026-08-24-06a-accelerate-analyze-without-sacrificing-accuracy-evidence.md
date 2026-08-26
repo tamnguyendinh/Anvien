@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_PENDING / D001_STREAK_1`; accepted A003 remains baseline
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_ACTIVE / D001_STREAK_1`; Architect task `01a03f5e-b844-7ac3-b23b-b9c9cdc0374d`; accepted A003 remains baseline
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -1059,7 +1059,7 @@ Status: `A004_ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / RESIDUAL_ATTRIBU
 
 ### `E2-P2A-A005ATTRIB1` — Record-Time Outcome Serialization Residual
 
-Status: `A005_ATTRIBUTION_COMPLETE / ARCHITECT_PENDING`.
+Status: `A005_ATTRIBUTION_COMPLETE / ARCHITECT_ACTIVE`.
 
 - Attribution task/report: `01a03f3f-34e5-7032-9944-3509d3cf39cf`; `E:\Anvien\reports\Investigation\rp_child06a_a005_residual_attribution.md`; clean authoritative HEAD `6ee70e29`; one fresh graph `2249/766/0`, `124165/171031`.
 - Selected cause: `(*resolutionOutcomeCollector).record` eagerly calls `marshalResolutionOutcome/json.Marshal` for every accepted outcome. Repository-resolved callers discard the returned encoded bytes; resolved-external TypeScript may also not consume them; later `projectResolutionOutcomes` serializes every finalized retained outcome again for canonical graph/reference/diagnostic carriers.
@@ -1069,6 +1069,7 @@ Status: `A005_ATTRIBUTION_COMPLETE / ARCHITECT_PENDING`.
 - Current graph: containing file HIGH (`119` symbols, `87` inbound, `122` outbound, `11` linked flows, `23` linked tests); file impact CRITICAL (`177` symbols, `55` files). Method `record` CRITICAL (`5` impacted, `5` direct, `10` processes, `2` files). Helper `marshalResolutionOutcome` CRITICAL (`127` impacted, `3` direct, `48` files, `25` modules, `52` processes). These are warnings, not edit permission.
 - Architect boundary: decide ownership/lifecycle of record-time encoded bytes versus immediate unresolved/non-resolved diagnostic needs and final projection serialization; preserve clone/validation/conflict/error timing, SourceSiteID/order, byte-identical Diagnostic/Evidence Notes, exact graph/output/persistence/readers, and bounded private resources. Attribution chooses no implementation.
 - A004 direction is excluded: it passed correctness but failed process elapsed on both targets, was `NO_KEEP`, and was rolled back. A001-A003 remain accepted preserve-only directions.
+- Fresh visible Architect task `01a03f5e-b844-7ac3-b23b-b9c9cdc0374d` owns only the A005 direction; Planner/Coder remain locked.
 
 | From | Required evidence | To / next owner |
 |------|-------------------|-----------------|

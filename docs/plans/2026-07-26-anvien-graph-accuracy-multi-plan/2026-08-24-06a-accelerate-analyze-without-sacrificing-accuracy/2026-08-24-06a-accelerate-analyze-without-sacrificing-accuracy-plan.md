@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Status: `P0-A complete / P1-A complete / A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_PENDING / D001_STREAK_1 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / repo-specific measurements preserved separately`
+- Status: `P0-A complete / P1-A complete / A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_ACTIVE / D001_STREAK_1 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / repo-specific measurements preserved separately`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -209,7 +209,7 @@ This is the living Planner refresh surface for the one implementation slice. Pla
 
 | Field | Current value |
 |-------|---------------|
-| Attempt state | `A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_PENDING / D001_STREAK_1`; attribution task `01a03f3f-34e5-7032-9944-3509d3cf39cf`; accepted A003 checkpoint remains baseline; all checkboxes unchanged |
+| Attempt state | `A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_ACTIVE / D001_STREAK_1`; Architect task `01a03f5e-b844-7ac3-b23b-b9c9cdc0374d`; accepted A003 checkpoint remains baseline; all checkboxes unchanged |
 | Attempt ID | `A005` |
 | Attempt goal | identify the largest retained D001 residual on the restored accepted A003 source, bind exact cause/owner/complete call path from both current target profiles plus current graph/source, then open one fresh visible A005 Architect without reusing A004 direction |
 | Active parent benchmark row / checklist item | `B1-P1A-OP001` / unchecked `resolution` parent item |
@@ -233,7 +233,7 @@ This is the living Planner refresh surface for the one implementation slice. Pla
 | Exact rollback | A004 rollback is complete: production/test paths equal current HEAD with hashes `4BFE1976766FBF2E2257102070FF43CAC6D757E32E71DD583F8824781EAB6A8E` and `AD3DCA9E82EACFB31137560636B59D426A063AEB967613E724D5EE3017AD5812` |
 | Mandatory STOP | no source/test edit, Architect, Planner, Coder, measurement, Supervisor, detect, stage, or commit before exact A005 attribution packet is complete; D002-D017/P3/Child 07 remain closed |
 | Coder status | none; A004 Coder rollback complete |
-| Next action | open one fresh visible A005 Architect with the complete attribution packet, preserved A003 basis, A004 rejection evidence, exact source/graph blast radius, and no predetermined implementation |
+| Next action | monitor Architect task `01a03f5e-b844-7ac3-b23b-b9c9cdc0374d`; Planner/Coder remain locked until its exact direction and Main verification |
 
 ### A004 PLAN1 Export-Binding Evidence Ordering Execution Authority
 
