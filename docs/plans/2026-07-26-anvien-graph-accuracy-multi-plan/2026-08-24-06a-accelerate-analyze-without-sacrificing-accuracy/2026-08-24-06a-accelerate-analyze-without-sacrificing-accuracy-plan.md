@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Status: `P0-A complete / P1-A complete / A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_ACTIVE / D001_STREAK_1 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / repo-specific measurements preserved separately`
+- Status: `P0-A complete / P1-A complete / A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR_PASS / OWNER_KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_COMPLETE / A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / A005_ARCHITECT_COMPLETE / PLANNER_PENDING / CODER_LOCKED / D001_STREAK_1 / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / repo-specific measurements preserved separately`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -141,7 +141,7 @@ Preserve/validate boundary:
 
 This is the living execution checklist requested for the bottlenecks discovered by measurement. It mirrors exact benchmark row IDs and real operation names so an executor can see and mark what has been processed; it never copies elapsed-time values or replaces benchmark ordering.
 
-Current checklist entries: `30` top-level parent items plus `17` nested child items under active parent `B1-P1A-OP001`. The child items exactly match `B2-P2A-A001-D001..D017` and remain unchecked. `B2-P2A-A001-D001` (`resolve_calls`) remains active with streak `1`; the parent/D001 remain unchecked and D002-D017 remain queued/unopened. A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463` remains the accepted target-separated baseline. A004 is `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; its measurements remain rejected-candidate evidence only. A005 has only its current accepted basis recorded and is locked pending exact residual cause/owner/complete call path.
+Current checklist entries: `30` top-level parent items plus `17` nested child items under active parent `B1-P1A-OP001`. The child items exactly match `B2-P2A-A001-D001..D017` and remain unchecked. `B2-P2A-A001-D001` (`resolve_calls`) remains active with streak `1`; the parent/D001 remain unchecked and D002-D017 remain queued/unopened. A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463` remains the accepted target-separated baseline. A004 is `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; its measurements remain rejected-candidate evidence only. A005 attribution and fresh architecture are complete; one visible Planner must translate that exact direction before any Coder release.
 
 - [ ] `B1-P1A-OP001` — `resolution`
   - [ ] `B2-P2A-A001-D001` — `resolve_calls`
@@ -209,9 +209,9 @@ This is the living Planner refresh surface for the one implementation slice. Pla
 
 | Field | Current value |
 |-------|---------------|
-| Attempt state | `A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / ARCHITECT_ACTIVE / D001_STREAK_1`; Architect task `01a03f5e-b844-7ac3-b23b-b9c9cdc0374d`; accepted A003 checkpoint remains baseline; all checkboxes unchanged |
+| Attempt state | `A004 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A005_CURRENT_BASIS_RECORDED / A005_ATTRIBUTION_COMPLETE / A005_ARCHITECT_COMPLETE / PLANNER_PENDING / CODER_LOCKED / D001_STREAK_1`; Architect task `01a03f5e-b844-7ac3-b23b-b9c9cdc0374d`; accepted A003 checkpoint remains baseline; all checkboxes unchanged |
 | Attempt ID | `A005` |
-| Attempt goal | identify the largest retained D001 residual on the restored accepted A003 source, bind exact cause/owner/complete call path from both current target profiles plus current graph/source, then open one fresh visible A005 Architect without reusing A004 direction |
+| Attempt goal | translate the completed A005 canonical-byte ownership architecture into the living attempt before any production/test edit |
 | Active parent benchmark row / checklist item | `B1-P1A-OP001` / unchecked `resolution` parent item |
 | Complete parent child list | `17/17` rows `B2-P2A-A001-D001..D017` are recorded independently for both targets and exactly `17` nested checklist items remain unchecked; D002-D017 remain queued/unopened and target-specific numbers stay separate in benchmark |
 | Active child benchmark row / checklist item | `B2-P2A-A001-D001` / unchecked `resolve_calls` |
@@ -219,21 +219,21 @@ This is the living Planner refresh surface for the one implementation slice. Pla
 | Current benchmark authority | accepted A003 values remain separate: Cheapapp D001/parent/analyzer/process `3.447846300 / 20.472602300 / 93.531974900 / 95.630648200 s`, `calls=27890; files=887`; Restaurant `9.401585300 / 20.850792800 / 98.020546700 / 101.096911900 s`, `calls=86030; files=1234`. A004 values are rejected-candidate evidence and cannot be promoted or averaged |
 | Consecutive unsuccessful attempts at current child baseline | `1`; A004 `NO_KEEP` incremented `0 -> 1`; accepted baseline remains A003 |
 | Selected child exact cause / owner / complete call path | `E2-P2A-A005ATTRIB1`; eager record-time `ResolutionOutcome` JSON serialization in `internal/resolution/outcome.go::(*resolutionOutcomeCollector).record -> marshalResolutionOutcome`, including resolved-path bytes whose return is discarded, followed by serialization again in `projectResolutionOutcomes`. Complete path runs `analyze.Run -> PhaseResolution -> ResolveBoundInto -> resolveCall -> resolved/unresolved/TypeScript outcome recorders -> collector.record -> marshalResolutionOutcome -> json.Marshal -> finalize -> projectResolutionOutcomes -> relationship/reference/diagnostic carriers -> analyze.Result -> Ladybug/Graph JSON/CLI consumers` |
-| Fresh Architect decision | pending; exact attribution packet/report is durable and releases one fresh visible A005 Architect to decide the record-time encoding/failure-timing/final-projection boundary |
-| Planner refresh evidence | missing/locked until fresh A005 Architect returns |
-| Transition authority | `E2-P2A-A004REVIEW1/DECISION1/ROLLBACK1`, `E2-P2A-A005CURRENT1/ATTRIB1`; one fresh A005 Architect may open now. No Planner/Coder before its decision |
-| Future pre-edit Anvien gate | unbound until A005 Architect/Planner names exact allowed helpers; any future Coder repeats fresh graph/file-detail/impact immediately before edit |
-| Allowed production/test surfaces | none yet; all production/test files are read-only during attribution and Architect remains locked |
-| Production algorithm | unbound; must be materially distinct from rejected A004 and accepted A001-A003 directions |
-| Test contract | unbound until Architect/Planner; exact output/equivalence remains mandatory |
-| Build/test contract | locked; no build/test rerun during attribution |
+| Fresh Architect decision | `E2-P2A-A005ARCH1`; task `01a03f5e-b844-7ac3-b23b-b9c9cdc0374d`, report `reports/system-architect/rp_system-architect_260827_by_gpt-5_child06a_a005_outcome_serialization.md`, verdict `ARCHITECT_A005_READY_FOR_PLANNER`; one canonical record-time encoding per retained SourceSiteID is shared by immediate diagnostics and final projection, with no re-encoding fallback |
+| Planner refresh evidence | pending; exactly one visible A005 Planner owns translation without redesign; Coder remains locked |
+| Transition authority | `E2-P2A-A004REVIEW1/DECISION1/ROLLBACK1`, `E2-P2A-A005CURRENT1/ATTRIB1/ARCH1`; Main handoff verification `PASS` releases Planner only |
+| Future pre-edit Anvien gate | after Planner translation and separate Main release, a future Coder repeats fresh graph/file-detail/impact immediately before any authorized edit |
+| Allowed production/test surfaces | architecture-bound but edit-locked pending Planner: private outcome state/functions in `internal/resolution/outcome.go`; only the existing finalize/project/result wiring block in `internal/resolution/resolve.go`; tests only after production in new `internal/resolution/outcome_serialization_test.go` plus minimal private-call adaptation in `internal/resolution/p6c3_structured_outcome_test.go` |
+| Production algorithm | architecture complete; Planner must translate the exact record-time canonical-byte sidecar and strict projection-consumer direction without redesign |
+| Test contract | architecture complete and pending Planner translation; production remains first and exact byte/order/output/equivalence invariants remain mandatory |
+| Build/test contract | locked until Planner completion and separate Coder release |
 | Measurement contract | future A005 candidate, if authorized, must again use independent Cheapapp/Restaurant packets against accepted A003; no current measurement launch |
 | Post-measurement Supervisor | locked until a future A005 candidate and both target packets exist |
-| Resource/invariant boundary | pending A005 attribution/architecture; all accepted A003 graph/output/persistence/lifecycle contracts remain preserve-only |
+| Resource/invariant boundary | private run-scoped `O(U+B)` sidecar with one canonical payload per retained SourceSiteID; no global/cross-run cache, fallback encoder, public shape change, or A001-A004 boundary change |
 | Exact rollback | A004 rollback is complete: production/test paths equal current HEAD with hashes `4BFE1976766FBF2E2257102070FF43CAC6D757E32E71DD583F8824781EAB6A8E` and `AD3DCA9E82EACFB31137560636B59D426A063AEB967613E724D5EE3017AD5812` |
-| Mandatory STOP | no source/test edit, Architect, Planner, Coder, measurement, Supervisor, detect, stage, or commit before exact A005 attribution packet is complete; D002-D017/P3/Child 07 remain closed |
-| Coder status | none; A004 Coder rollback complete |
-| Next action | monitor Architect task `01a03f5e-b844-7ac3-b23b-b9c9cdc0374d`; Planner/Coder remain locked until its exact direction and Main verification |
+| Mandatory STOP | no source/test edit or Coder release before visible Planner translation and separate Main verification; no redesign, A004 revival, D002-D017/P3/Child 07 opening, measurement, Supervisor, detect, stage, or implementation commit early |
+| Coder status | locked; no A005 Coder exists |
+| Next action | open exactly one visible A005 Planner to translate `E2-P2A-A005ARCH1`; keep Coder locked |
 
 ### A004 PLAN1 Export-Binding Evidence Ordering Execution Authority
 
