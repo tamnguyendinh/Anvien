@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_COMPLETE / A004_FROZEN_PACKET_READY / A004_CHEAPAPP_MEASUREMENT_ACTIVE / A004_RESTAURANT_MEASUREMENT_ACTIVE / D001_STREAK_0`; A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`, WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`, P2-A/parent/D001 unchecked state, D002-D017 queue, target-separated A003 benchmark bases, and all accepted gates remain valid
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004_ARCHITECT_OWNER_APPROVED / A004_PLAN_COMPLETE / A004_MAIN_VERIFIED / A004_CODER_COMPLETE / A004_BOTH_TARGET_MEASUREMENTS_RECORDED / A004_SUPERVISOR_PENDING / D001_STREAK_0`; A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`, WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`, P2-A/parent/D001 unchecked state, D002-D017 queue, target-separated A003 accepted bases, and all accepted gates remain valid
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -1024,6 +1024,16 @@ Status: `A004_FROZEN_PACKET_READY / CHEAPAPP_MEASUREMENT_ACTIVE / RESTAURANT_MEA
 - Cheapapp one-launch task `01a03f0a-8a2c-71a3-a889-428daf219ba7` owns only `E:\cheapapp.org`, raw root `E:\Anvien\.tmp\child06a_a004_cheapapp_frozen_17child_20260827`, and report `reports/Investigation/rp_child06a_a004_cheapapp_benchmark_frozen_17child.md`.
 - Restaurant one-launch task `01a03f0b-1eba-78b1-8845-9ca92bb58d29` owns only `E:\Restaurant_manager`, raw root `E:\Anvien\.tmp\child06a_a004_restaurant_manager_frozen_17child_20260827`, and report `reports/Investigation/rp_child06a_a004_restaurant_manager_benchmark_frozen_17child.md`.
 - Each lane preserves its own accepted A003 before packet and cannot retry, average targets, decide disposition, edit ledgers/source/test, run Supervisor/detect, stage, or commit. Post-measurement Supervisor remains locked until both valid packets exist.
+
+### `E2-P2A-A004CHEAPAPP1/RESTAURANT1` — Complete Separate Target Measurements
+
+Status: `BOTH_TARGET_MEASUREMENTS_RECORDED / SUPERVISOR_PENDING`; numbers are unpromoted measurement input only.
+
+- Cheapapp task/report: `01a03f0a-8a2c-71a3-a889-428daf219ba7`; `E:\Anvien\reports\Investigation\rp_child06a_a004_cheapapp_benchmark_frozen_17child.md`; one launch, exit `0`, `30/30`, `17/17`, `calls=27890; files=887`, exact conservation and output/order equivalence. A003 -> A004: D001 `3.447846300 -> 2.074182500 s` (`-1.373663800 s`, `-39.841213%`); parent `20.472602300 -> 13.265999200 s` (`-7.206603100 s`, `-35.201207%`); analyzer `93.531974900 -> 107.287054400 s` (`+13.755079500 s`, `+14.706286%`); process `95.630648200 -> 144.975972400 s` (`+49.345324200 s`, `+51.599906%`).
+- Restaurant task/report: `01a03f0b-1eba-78b1-8845-9ca92bb58d29`; `E:\Anvien\reports\Investigation\rp_child06a_a004_restaurant_manager_benchmark_frozen_17child.md`; one launch, exit `0`, `30/30`, `17/17`, `calls=86030; files=1234`, exact conservation and output/order equivalence. A003 -> A004: D001 `9.401585300 -> 8.975767700 s` (`-0.425817600 s`, `-4.529211%`); parent `20.850792800 -> 19.416099500 s` (`-1.434693300 s`, `-6.880761%`); analyzer `98.020546700 -> 101.406172300 s` (`+3.385625600 s`, `+3.453996%`); process `101.096911900 -> 135.569489100 s` (`+34.472577200 s`, `+34.098546%`).
+- Both targets preserve exact files/parser/graph/DB/dependency/projection/semantic/diagnostic/outcome identities; canonical graph.json, stdout, and stderr hashes equal each target's accepted A003 packet. Canonical graph byte identity proves full ordered Evidence arrays are unchanged.
+- Resource observations remain separate: Cheapapp end allocation and max observed system memory fall; Restaurant end allocation falls while max observed system memory rises. Secondary resources cannot override elapsed disposition.
+- No target is averaged or used to subsidize the other. No Supervisor verdict or disposition exists yet; accepted A003 baselines and D001 streak `0` remain unchanged.
 
 | From | Required evidence | To / next owner |
 |------|-------------------|-----------------|
