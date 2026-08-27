@@ -2,6 +2,29 @@
 
 All notable changes to anvien will be documented in this file.
 
+## [1.3.0] - 2026-08-28
+
+### Added
+
+- Added complete recursive TypeScript/JavaScript binding-pattern support for variables, parameters, catch clauses, `for-of`, `for-in`, rest, default, and nested patterns.
+- Added first-class TypeScript export semantics that keep export state separate from access visibility and type-only meaning.
+- Added syntax-derived export tables plus alias, star, and re-export traversal with explicit cycle, ambiguity, and terminal-proof handling.
+- Added TypeScript standard-library authority, explicit external-target representation, structured resolution outcomes, Graph Health projection, and runtime-reader carriage.
+
+### Changed
+
+- Strengthened graph identity with exact ranges, lexical ownership, occurrence conservation, and fail-closed Definition collision handling.
+- Preserved corrected graph facts end to end across Graph JSON, Ladybug persistence, affected readers, and repeated analyze runs.
+- Bumped the CLI package version from `1.2.8` to `1.3.0`.
+
+### Fixed
+
+- Fixed `anvien analyze --force` leaving stale Ladybug artifact-family sidecars that could block database initialization.
+
+### Performance
+
+- Added complete pipeline measurement and optimized resolution/diagnostic processing while retaining the accepted graph-accuracy state; comparable end-to-end analyze time improved from `890.314783200 s` to `95.630648200 s` on Cheapapp and from `1178.391336900 s` to `101.096911900 s` on Restaurant Manager.
+
 ## [1.2.8] - 2026-07-16
 
 ### Fixed
