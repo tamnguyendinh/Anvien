@@ -2,7 +2,7 @@
 
 Title: Child 06A Accelerate Analyze Without Sacrificing Accuracy
 Date: 2026-08-24
-Status: P0-A Complete / P1-A Complete / A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005_SUPERVISOR_PASS / A004/A005_NO_KEEP / A004/A005_ROLLBACK_COMPLETE / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_CURRENT_BASIS_RECORDED / D002_RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / Target-Separated Measurements Preserved
+Status: P0-A Complete / P1-A Complete / A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005_SUPERVISOR_PASS / A004/A005_NO_KEEP / A004/A005_ROLLBACK_COMPLETE / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_CURRENT_BASIS_RECORDED / D002_RESIDUAL_ATTRIBUTION_BLOCKED / DISTINCT_COMMON_OWNER_UNAVAILABLE / PRODUCTION_ARCHITECT_LOCKED / EXHAUSTION_ARCHITECT_PENDING / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / Target-Separated Measurements Preserved
 Companion plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 Companion plan rules: [plan-rules.md](plan-rules.md)
 Companion evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -19,7 +19,7 @@ This file records the current measured/control state of Child 06A without duplic
 
 Elapsed wall-clock time is the controlling metric. Benchmark ranks by current absolute elapsed time; CPU/RAM/allocation/GC/I/O/wait/call/byte evidence is secondary and cannot select a bottleneck or prove optimization.
 
-Current truth: accepted A003 remains unchanged. `E2-P2A-A006EXHAUST1` records D001 terminal `EVIDENCE_EXHAUSTED` from `A006ARCH3/A006MAINVERIFY2/A006BLOCK1`; it creates no third attempt, `NO_KEEP`, `SYSTEM_CHARACTERISTIC`, measured value, streak change, or production commit. D001 is checked with streak exactly `2`; parent remains unchecked. D002 is active/unchecked at `D002_CURRENT_BASIS_RECORDED / D002_RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED`; D003-D017 remain queued. Next functional work is one separate visible read-only D002 attribution lane after Main verification.
+Current truth: accepted A003 remains unchanged. `E2-P2A-A006EXHAUST1` records D001 terminal `EVIDENCE_EXHAUSTED` from `A006ARCH3/A006MAINVERIFY2/A006BLOCK1`; it creates no third attempt, `NO_KEEP`, `SYSTEM_CHARACTERISTIC`, measured value, streak change, or production commit. D001 is checked with streak exactly `2`; parent remains unchecked. `E2-P2A-D002ATTRIB1` records D002 active/unchecked at `D002_RESIDUAL_ATTRIBUTION_BLOCKED / DISTINCT_COMMON_OWNER_UNAVAILABLE / PRODUCTION_ARCHITECT_LOCKED / EXHAUSTION_ARCHITECT_PENDING`; D003-D017 remain queued. Next functional work is one fresh visible evidence-disposition Architect after the report/four-ledger checkpoint.
 
 ## Freshness / Refresh Rules
 
@@ -148,6 +148,7 @@ For A005, the visible Planner used checkpoint HEAD `e6ab44705b9abb4d1a55094cfb1a
 | As of | Phase state | Total row | Active parent | Active child | Remaining parent queue | Remaining child queue | Plan checklist | Accepted baseline | Active attempt | Child no-KEEP streak | Current owner | Last disposition | Next exact action | Evidence |
 |-------|-------------|-----------|---------------|--------------|------------------------|-----------------------|----------------|-------------------|----------------|----------------------|---------------|------------------|-------------------|----------|
 | 2026-08-27 | `D001_EVIDENCE_EXHAUSTED_TERMINAL / D002_CURRENT_BASIS_RECORDED / D002_RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED` | accepted A003 target-separated values remain current; no benchmark number changed | parent unchecked | D002 active/unchecked | OP002-OP030 unchanged/unchecked | D003-D017 queued | D001 checked only; checked children `1/17` | A003 accepted checkpoint | no D002 production attempt open | D001 retains `2`; no D002 event | Main verification, then one separate visible read-only D002 attribution lane | D001 `EVIDENCE_EXHAUSTED`; not `SYSTEM_CHARACTERISTIC` or third attempt | verify once, checkpoint docs/report, dispatch D002 attribution; no Architect/Planner/Coder early | `E2-P2A-A006EXHAUST1` |
+| 2026-08-27 | `D002_RESIDUAL_ATTRIBUTION_BLOCKED / DISTINCT_COMMON_OWNER_UNAVAILABLE / PRODUCTION_ARCHITECT_LOCKED / EXHAUSTION_ARCHITECT_PENDING` | accepted A003 target-separated values and every denominator remain current; no benchmark number changed | parent unchecked | D002 active/unchecked | OP002-OP030 unchanged/unchecked | D003-D017 queued | checked children remain `1/17` | A003 accepted checkpoint | no D002 production attempt open | no D002 streak event | one fresh visible evidence-disposition Architect after scoped checkpoint | exact missing fact is one same material synchronous child symbol on both targets outside A002/A003/A004 ownership | no duplicate attribution or production transition; Architect may release only bounded evidence or no-further-measurement decision | `E2-P2A-D002ATTRIB1` |
 
 A001 is closed with `KEEP / A001_COMMIT_COMPLETE`. A002 is closed through `CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/COMMIT1`; its separate target baselines are promoted and accepted bytes are checkpointed at `ecf825d7`. A003 `CURRENT1/ATTRIB1/ARCH1/PLAN2/IMPACT1/SRC1/BUILD1/TEST1/PACKET1/CHEAPAPP1/RESTAURANT1/REVIEW1/OWNERKEEP1/COMMIT1` are complete; PLAN1 is superseded and checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463` remains accepted. A004/A005 are `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`. A006-M1/M2 and the post-M2 no-further-measurement handoff are complete; none is a production attempt or streak event. D001 is checked terminal `EVIDENCE_EXHAUSTED` retaining streak `2`; D002 is active/unchecked attribution-pending; D003-D017 remain queued; parent remains unchecked.
 
@@ -172,7 +173,7 @@ This section contains control pointers only; benchmark owns elapsed-time numbers
 | build-before-use | PASS: `pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File E:\Anvien\scripts\full-build.ps1`, exit `0`, HEAD `8df19258fbcb18e14841bf0dae036400aa9b22a3` | runtime `1.2.8`, SHA-256 `62920CBF15921EF8A6D2FAC671776BAA3C312EFEA1BEED53B721C4AFF5E1B6C5`; `700.1712706 s` is full-build validation elapsed only, not build elapsed and not benchmark data |
 | comparability / output equivalence | instrumented capture exit `0`; phase/stderr/persistence failure boundaries valid; exact workload/output mismatches versus immutable reference recorded | no same-HEAD uninstrumented pair, so arithmetic deltas are not overhead/speed evidence; future P2 comparisons retain the carried instrumentation state |
 | instrumentation disposition | terminal `CARRY_TO_FIRST_P2A_REFRESH` | exact `+349/-53` instrumentation ownership remains until a later accepted plan boundary changes it |
-| next exact action | `D002_CURRENT_BASIS_RECORDED / D002_RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED` | Main verifies once and checkpoints docs/report, then dispatches one separate visible read-only D002 attribution lane; no technical cause is inferred |
+| next exact action | `D002_RESIDUAL_ATTRIBUTION_BLOCKED / DISTINCT_COMMON_OWNER_UNAVAILABLE / PRODUCTION_ARCHITECT_LOCKED / EXHAUSTION_ARCHITECT_PENDING` | checkpoint the sole report/four-ledger state, then open one fresh visible evidence-disposition Architect; no duplicate attribution or production direction |
 
 P1-A and A001 acceptance remain recorded; the proven pre-existing package golden stays preserve-only. A002 and A003 checkpoints remain complete with target baselines separate. WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004/A005 are rejected and rolled back. A006-M1/M2 and post-M2 `NO_FURTHER_MEASUREMENT_JUSTIFIED` evidence are current; D001 is blocked open and no Coder is released.
 
@@ -201,7 +202,7 @@ This section contains references only; benchmark owns all numeric values.
 | complete active-parent child list / checklist | complete separate Cheapapp and Restaurant Manager `B2-P2A-A001-D001..D017` tables and exactly `17` nested unchecked plan items | correct / accepted A001 optimized columns recorded; all items unchecked | preserve exact cardinality and unchecked state; D002-D017 remain queued/unopened |
 | active child / remaining children | D001 checked terminal; D002 active/unchecked; D003-D017 queued | D001 accepted A003 baselines and streak `2` are preserved; existing D002 inventory remains numeric authority | attribute D002 exact current cause/owner/complete call path before Architect |
 | current benchmark authority | existing `E:\Anvien` values superseded | Cheapapp and Restaurant Manager are two independent accepted A003 baselines | keep targets separate; no averaging/combining |
-| current attempt | no D002 production attempt open | `D002_CURRENT_BASIS_RECORDED / D002_RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED` | one separate visible read-only D002 attribution lane after Main verification |
+| current attempt | no D002 production attempt open | `D002_RESIDUAL_ATTRIBUTION_BLOCKED / DISTINCT_COMMON_OWNER_UNAVAILABLE / PRODUCTION_ARCHITECT_LOCKED / EXHAUSTION_ARCHITECT_PENDING` | one fresh visible evidence-disposition Architect after scoped checkpoint |
 | current attempt goal | prove D002 exact current cause, owner, and complete call path | inventory owner/path may be referenced; technical cause remains pending | no Architect/Planner/Coder until attribution is durable |
 | attempt-specific Architect decision | none for D002 | `ARCHITECT_LOCKED` | attribution first, then a later fresh Architect |
 | Planner refresh | `E2-P2A-A006EXHAUST1` | D001 terminal governance transition and D002 cursor only | not D002 production authority |
@@ -247,7 +248,7 @@ The transition continues to apply to selected child `B2-P2A-A001-D001 resolve_ca
 | conditional P1-A instrumentation | capture complete; exact build-valid `+349/-53` ownership retained | one terminal carry/remove disposition and one future instrumentation state for comparisons | correct / terminal `CARRY_TO_FIRST_P2A_REFRESH` | exact owners `analyze.go`, `command.go`, `command_test.go` | complete `E1-P1A-INSTR1` | preserve ownership and state through first refreshed P2-A attempt |
 | top-level timing/list/checklist | both targets have separate complete product boundaries plus `30` operation rows each; optimized columns are accepted A001 baselines; exactly `30` plan parent items remain unchecked | one complete independent accepted table per target with unchanged checklist state | correct / A001 promotion recorded | each target has `21 analyzer_internal`, `1 analyzer_outer`, `8 cli_outer` | both reports; `E2-P2A-A001REVIEW1/DECISION1` | preserve separation; do not combine targets or check parents |
 | active parent child inventory/checklist | both target `OP001 resolution` blocks retain `17` measured rows; checked-child count is `1/17` | complete independent child table per target plus current checklist | correct | `17` child rows per target | `E2-P2A-A006EXHAUST1` | keep OP001 unchecked; D002 active/unchecked; D003-D017 queued |
-| current child/owner | D001 terminal `EVIDENCE_EXHAUSTED`; D002 inventory points to `resolveAccess`, while exact current cause/attributable owner/complete causal path are pending | D002 read-only attribution before Architect | partial / `D002_RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED` | existing inventory only | `E2-P2A-A006EXHAUST1` | dispatch one separate visible read-only D002 attribution lane after Main verification |
+| current child/owner | D001 terminal `EVIDENCE_EXHAUSTED`; D002 broad owner/call paths are proven, but no distinct same material child owner exists on both targets outside A002/A003/A004 ownership | evidence-disposition Architect before any production architecture | blocked / `D002_RESIDUAL_ATTRIBUTION_BLOCKED / PRODUCTION_ARCHITECT_LOCKED` | target-separated retained profiles plus bounded current-source trace | `E2-P2A-D002ATTRIB1` | open one fresh visible evidence-disposition Architect after scoped checkpoint |
 | P2-A attempts | A001/A002/A003 `KEEP`; WAL checkpoint complete; A004/A005 `NO_KEEP / ROLLBACK_COMPLETE`; D001 terminal without an A006 production attempt | D002 current basis and attribution cursor | partial / attribution pending | accepted A003 baselines unchanged; D001 streak `2` preserved | `E2-P2A-A006EXHAUST1` | no Architect/Planner/Coder until D002 attribution is durable |
 | unsuccessful-attempt terminal rule | D001 `EVIDENCE_EXHAUSTED` terminal at preserved streak `2`; D002 active with no streak transfer | KEEP resets active child; third no-KEEP -> child-only `SYSTEM_CHARACTERISTIC`; parent waits for every child | correct / D001 terminal outside the three-attempt rule; D002 has no attempt event | N/A | `E2-P2A-A006EXHAUST1` | complete D002 attribution before any attempt; do not inherit D001 streak |
 | A001 Owner-required consistency review | `ARCHITECT_CONSISTENCY_REVIEW_PASS_READY_FOR_MAIN`; Main accepted and authorized Coder transition | Main-verified four-ledger artifacts independently reviewed by Architect thread, with result returned to Main | correct / complete | four ledgers; Architect changed zero files | `E2-P2A-A001CONSISTENCY1` | no re-review; preserve as planning/architecture evidence only |
@@ -379,7 +380,7 @@ The transition continues to apply to selected child `B2-P2A-A001-D001 resolve_ca
 
 Current state:
 
-A001/A002/A003 remain accepted history, A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463` remains the baseline, and WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` remains complete. A004/A005 are `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`. No A006 production attempt exists. D001 is terminal `EVIDENCE_EXHAUSTED`, checked, and retains streak `2`; D002 is active/unchecked with attribution pending.
+A001/A002/A003 remain accepted history, A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463` remains the baseline, and WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` remains complete. A004/A005 are `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`. No A006 or D002 production attempt exists. D001 is terminal `EVIDENCE_EXHAUSTED`, checked, and retains streak `2`; D002 is active/unchecked with residual attribution blocked on a distinct common owner.
 
 Required state:
 
@@ -414,14 +415,14 @@ A001 KEEP / commit
 -> `A006_M2_RECEIVER_RECHECK_FALSIFIED`
 -> `ARCHITECT_A006_NO_FURTHER_MEASUREMENT_JUSTIFIED`
 -> D001_EVIDENCE_EXHAUSTED_TERMINAL
--> D002_CURRENT_BASIS_RECORDED / D002_RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED
+-> D002_RESIDUAL_ATTRIBUTION_BLOCKED / DISTINCT_COMMON_OWNER_UNAVAILABLE / PRODUCTION_ARCHITECT_LOCKED / EXHAUSTION_ARCHITECT_PENDING
 ```
 
-Classification: A001/A002/A003 `correct / KEEP / checkpoint complete`; WAL `correct`; A004/A005 `correctness PASS / NO_KEEP / rollback complete`; D001 `EVIDENCE_EXHAUSTED` terminal with streak `2`; D002 `partial / attribution pending / Architect locked`.
+Classification: A001/A002/A003 `correct / KEEP / checkpoint complete`; WAL `correct`; A004/A005 `correctness PASS / NO_KEEP / rollback complete`; D001 `EVIDENCE_EXHAUSTED` terminal with streak `2`; D002 `blocked / distinct common owner unavailable / production Architect locked`.
 
-Allowed next action: preserve A003; Main verifies/checkpoints this transition, then one separate visible read-only lane attributes D002's exact current cause, owner, and complete call path.
+Allowed next action: preserve A003; checkpoint the exact report/four-ledger state once, then open one fresh visible evidence-disposition Architect to release either one genuinely bounded evidence action or a no-further-measurement decision.
 
-Forbidden next action: M1/M2 rerun; M3 or another attribution/discovery packet; Planner/Coder/source/test mutation; treating M1/M2/ARCH3 as a production attempt; baseline/streak/checkbox/queue changes; A001-A005/WAL reruns; D002-D017; P3; or Child 07.
+Forbidden next action: duplicate D002 attribution/source audit; inferred production direction; Planner/Coder/source/test mutation; treating D002 attribution as an attempt/streak/disposition; baseline/checkbox/queue changes; A001-A006/WAL reruns; D003-D017; P3; or Child 07.
 
 ### Every correction stays on the active child and returns to Architect before Coder
 
@@ -477,7 +478,7 @@ Classification: D001 terminal is `EVIDENCE_EXHAUSTED`, not the three-attempt `SY
 | Plan Item | Actual Status Finding | Required Status / Next-Action Update |
 |-----------|-----------------------|--------------------------------------|
 | P1-A | instrumented capture, operation integrity/equivalence, terminal carry disposition, `OP001..OP030`, and exact `30`-item parent mirror are complete | keep P1-A checked; preserve the immutable reference and carried same-instrumentation P2 basis; do not rerun accepted work |
-| P2-A | D001 terminal `EVIDENCE_EXHAUSTED` with accepted A003 and streak `2` preserved; checked children `1/17`; D002 active/unchecked | dispatch one separate visible read-only D002 attribution lane; keep Architect/Planner/Coder locked |
+| P2-A | D001 terminal `EVIDENCE_EXHAUSTED` with accepted A003 and streak `2` preserved; checked children `1/17`; D002 active/unchecked with attribution blocked | checkpoint once and open one fresh evidence-disposition Architect; keep production Architect/Planner/Coder locked |
 | P3-A | no stable complete accepted candidate | remain locked; final review supplements per-attempt reviews |
 | P3-B | no P3-A PASS | remain locked; no cleanup review |
 | P3-C | no accepted final state | remain locked; exactly one detect/commit/handoff |
@@ -538,4 +539,4 @@ Choose one:
 
 Decision note:
 
-P0/P1-A, A003 checkpoint, and WAL checkpoint remain complete. D001 is terminal `EVIDENCE_EXHAUSTED`, checked, and retains streak exactly `2`; parent and D002 remain unchecked; D003-D017 remain queued. Current cursor is `D002_CURRENT_BASIS_RECORDED / D002_RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED`. Accepted A003 remains authoritative. Next owner is Main Orchestration, followed by one separate visible read-only D002 attribution lane.
+P0/P1-A, A003 checkpoint, and WAL checkpoint remain complete. D001 is terminal `EVIDENCE_EXHAUSTED`, checked, and retains streak exactly `2`; parent and D002 remain unchecked; D003-D017 remain queued. Current cursor is `D002_RESIDUAL_ATTRIBUTION_BLOCKED / DISTINCT_COMMON_OWNER_UNAVAILABLE / PRODUCTION_ARCHITECT_LOCKED / EXHAUSTION_ARCHITECT_PENDING`. Accepted A003 remains authoritative. Next owner is Main Orchestration for the scoped checkpoint, followed by one fresh visible evidence-disposition Architect.

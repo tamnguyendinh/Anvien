@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR PASS / NO_KEEP / ROLLBACK_COMPLETE / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_CURRENT_BASIS_RECORDED / D002_RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED`; accepted A003 remains baseline
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR PASS / NO_KEEP / ROLLBACK_COMPLETE / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_CURRENT_BASIS_RECORDED / D002_RESIDUAL_ATTRIBUTION_BLOCKED / DISTINCT_COMMON_OWNER_UNAVAILABLE / PRODUCTION_ARCHITECT_LOCKED / EXHAUSTION_ARCHITECT_PENDING`; accepted A003 remains baseline
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -260,7 +260,7 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-A006EXHAUST1` | D001-only governance proof that all binding `EVIDENCE_EXHAUSTED` conditions are met; preserves A003 and streak `2`, creates no production attempt/value/commit, checks only D001, and advances to D002 attribution pending |
 | `E2-P2A-AnnnRANK1` | accepted-state child/parent/full-pipeline timing refresh, complete child/top-level list update, and exact next unchecked child/parent pointer |
 
-Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. A003 checkpoint is `b6bf45bce95323aa6b53b182edfea8628bd8b463`; accepted Cheapapp and Restaurant Manager values remain separate. WAL fix checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004/A005 are `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; their values remain rejected-candidate evidence. `E2-P2A-A006EXHAUST1` terminalizes only D001 while retaining its streak exactly `2`; parent remains unchecked. D002 is active/unchecked at current-basis recorded and residual-attribution pending; D003-D017 remain queued.
+Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. A003 checkpoint is `b6bf45bce95323aa6b53b182edfea8628bd8b463`; accepted Cheapapp and Restaurant Manager values remain separate. WAL fix checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004/A005 are `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; their values remain rejected-candidate evidence. `E2-P2A-A006EXHAUST1` terminalizes only D001 while retaining its streak exactly `2`; parent remains unchecked. D002 is active/unchecked with negative residual attribution recorded at `E2-P2A-D002ATTRIB1`; D003-D017 remain queued.
 
 ### `E2-P2A-A001DRILL1` — Complete OP001 Resolution Child Measurement
 
@@ -1325,6 +1325,19 @@ Status: `D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_CURRENT_BASIS_R
 - Checklist effect: check only `B2-P2A-A001-D001`; keep `B1-P1A-OP001` unchecked; activate unchecked `B2-P2A-A001-D002 resolve_accesses`; keep D003-D017 queued/unopened.
 - D002 inventory points to `internal/resolution/resolve.go::resolveAccess` on `analyze.Run -> runPhase(PhaseResolution) -> ResolveBoundInto -> w.files -> ir.Accesses -> resolveAccess`. Exact current cause, attributable owner, and complete causal call path remain pending; no technical cause is inferred here.
 - Next owner: Main Orchestration verifies this Planner transition once, records the docs/report checkpoint, then dispatches one separate visible read-only D002 attribution lane. Architect/Planner/Coder remain locked until that attribution is durable.
+
+### `E2-P2A-D002ATTRIB1` — D002 Residual Attribution Blocked
+
+Status: `D002_RESIDUAL_ATTRIBUTION_BLOCKED / DISTINCT_COMMON_OWNER_UNAVAILABLE / PRODUCTION_ARCHITECT_LOCKED / EXHAUSTION_ARCHITECT_PENDING`.
+
+- Sole visible replacement attribution task/report: `01a04209-fd65-7142-b17a-ac081fd2bfee`; `E:\Anvien\reports\Investigation\rp_child06a_d002_residual_attribution.md`; exact terminal verdict `D002_RESIDUAL_ATTRIBUTION_BLOCKED`.
+- The prior D002 task `01a04174-06b5-7ff3-92fe-7e65ed0803c1` lost functional authority after a completed turn failed with transport `429` and its continuation stayed empty; it was explicitly stopped. The replacement consumed the completed Anvien/profile/pprof checkpoint and did not rerun those gates.
+- Accepted target-separated wall basis is unchanged: Cheapapp D002/parent/analyzer/process `9.380783200 / 20.472602300 / 93.531974900 / 95.630648200 s`, denominator `accesses=26042; files=887`; Restaurant Manager `2.254679300 / 20.850792800 / 98.020546700 / 101.096911900 s`, denominator `accesses=50554; files=1234`.
+- Exact broad owner is current `internal/resolution/resolve.go::resolveAccess`; retained graph risk is HIGH for the file and CRITICAL for the symbol (`6` symbols, `4` files, `4` modules, `32` processes). The report records complete synchronous resolved, unresolved/diagnostic, TypeScript, export-binding, outcome-finalization, graph, relationship, and reference carrier paths.
+- Exact blocker: retained target-separated profiles do not show one same materially attributed synchronous child symbol on both targets outside accepted A002/A003 diagnostic ownership and rejected A004 export-binding sorting ownership. Cheapapp is dominated by the A004 export-binding route; Restaurant Manager is dominated by the A002/A003 unresolved diagnostic/outcome route. The common `resolveAccess` envelope and access/file counts are not an exact residual cause.
+- No D002 cause, distinct common production owner, algorithm, production Architect direction, candidate, production attempt, streak event, measured value, disposition, checkbox, or queue transition is created. D002 and the parent remain unchecked; D003-D017 remain queued.
+- Main boundary check: sole new path is the authorized report; scoped `git diff --check` passes; staged set is empty. This is Main-owned boundary verification, not a Supervisor acceptance verdict.
+- Next action: checkpoint this report/four-ledger state once, then open exactly one fresh visible evidence-disposition Architect. That Architect may either prove no further bounded measurement is justified and release no production direction, or name one exact bounded missing evidence action; it may not infer a production direction from the blocked attribution or open Planner/Coder.
 
 `REWORK` and `ROLLBACK` never authorize Coder directly. They describe the failed attempt's disposition; any next production edit starts a new attempt at Visible Architect.
 
