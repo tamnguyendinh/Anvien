@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN_16_OF_17_TERMINAL / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_ACTIVE_OPEN / D005-D017_PASS_BY_OWNER_COST_FLOOR / PRODUCTION_ARCHITECT_LOCKED`; accepted A003 values remain current and target-separated
+- Current state: `OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN_16_OF_17_TERMINAL / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_ACTIVE_OPEN / D004_RESIDUAL_ATTRIBUTION_READY / D004_ARCHITECT_PENDING / D005-D017_PASS_BY_OWNER_COST_FLOOR / PRODUCTION_ARCHITECT_LOCKED`; accepted A003 values remain current and target-separated
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -620,7 +620,7 @@ Predicate: both accepted targets contain the row and both controlling wall value
 | `B2-P2A-A001-D001` | `resolve_calls` | `3.447846300 s` | `9.401585300 s` | preserved `EVIDENCE_EXHAUSTED`, streak `2` |
 | `B2-P2A-A001-D002` | `resolve_accesses` | `9.380783200 s` | `2.254679300 s` | preserved `EVIDENCE_EXHAUSTED`, no streak |
 | `B2-P2A-A001-D003` | `resolve_type_annotations` | `2.262894300 s` | `1.835270600 s` | `PASS_BY_OWNER_COST_FLOOR` |
-| `B2-P2A-A001-D004` | `project_resolution_outcomes` | `4.652523600 s` | `5.995737900 s` | `OPEN / ACTIVE` |
+| `B2-P2A-A001-D004` | `project_resolution_outcomes` | `4.652523600 s` | `5.995737900 s` | `OPEN / ATTRIBUTION_READY / ARCHITECT_PENDING` |
 | `B2-P2A-A001-D005` | `emit_definition_nodes` | `0.389693800 s` | `0.657720100 s` | `PASS_BY_OWNER_COST_FLOOR` |
 | `B2-P2A-A001-D006` | `finalize_resolution_outcomes` | `0.156782300 s` | `0.446357000 s` | `PASS_BY_OWNER_COST_FLOOR` |
 | `B2-P2A-A001-D007` | `build_binding_occurrence_index` | `0.077439500 s` | `0.188117900 s` | `PASS_BY_OWNER_COST_FLOOR` |
@@ -733,9 +733,9 @@ Append only metrics needed to explain an active elapsed-time cost or validate it
 
 | Benchmark ID | Workload denominator | Initial total | Final accepted total | Absolute delta | Percent delta | Parent checklist checked / measured | Child checklist checked / measured | Unchecked blocked rows | Final disposition | Evidence ID |
 |--------------|----------------------|---------------|----------------------|----------------|---------------|-------------------------------------|------------------------------------|------------------------|-------------------|-------------|
-| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `25/30` | `16/17`; only D004 remains open under OP001 | open D004 plus top-level OP001-OP005; A004/A005 values remain rejected and A006-M1/M2 attribution-only | `OWNER_COST_FLOOR_APPLIED / D004_ACTIVE_OPEN / PRODUCTION_ARCHITECT_LOCKED`; accepted A003 unchanged | `B2-P2A-OWNERCOSTFLOOR1`, `E2-P2A-OWNERCOSTFLOOR1`; final evidence pending |
+| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `25/30` | `16/17`; only D004 remains open under OP001 | open D004 plus top-level OP001-OP005; A004/A005 values remain rejected and A006-M1/M2 attribution-only | `OWNER_COST_FLOOR_APPLIED / D004_RESIDUAL_ATTRIBUTION_READY / D004_ARCHITECT_PENDING / PRODUCTION_ARCHITECT_LOCKED`; accepted A003 unchanged | `B2-P2A-OWNERCOSTFLOOR1`, `E2-P2A-OWNERCOSTFLOOR1`, `E2-P2A-D004ATTRIB1/D004BOUNDARY1`; final evidence pending |
 
-Current control cursor for this unchanged numeric row: `OWNER_COST_FLOOR_APPLIED / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_ACTIVE_OPEN / D005-D017_PASS_BY_OWNER_COST_FLOOR / PRODUCTION_ARCHITECT_LOCKED`, evidenced by `E2-P2A-OWNERCOSTFLOOR1`. No measured value, denominator, target separation, or Attempt Numeric History row changes.
+Current control cursor for this unchanged numeric row: `OWNER_COST_FLOOR_APPLIED / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_RESIDUAL_ATTRIBUTION_READY / D004_ARCHITECT_PENDING / D005-D017_PASS_BY_OWNER_COST_FLOOR / PRODUCTION_ARCHITECT_LOCKED`, evidenced by `E2-P2A-OWNERCOSTFLOOR1` and non-numeric `E2-P2A-D004ATTRIB1/D004BOUNDARY1`. No measured value, denominator, target separation, or Attempt Numeric History row changes.
 
 ## B3 - P3 Benchmarks
 

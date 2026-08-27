@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN_16_OF_17_TERMINAL / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_ACTIVE_OPEN / D005-D017_PASS_BY_OWNER_COST_FLOOR / PRODUCTION_ARCHITECT_LOCKED`; accepted A003 remains baseline
+- Current state: `OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN_16_OF_17_TERMINAL / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_ACTIVE_OPEN / D004_RESIDUAL_ATTRIBUTION_READY / D004_ARCHITECT_PENDING / D005-D017_PASS_BY_OWNER_COST_FLOOR / PRODUCTION_ARCHITECT_LOCKED`; accepted A003 remains baseline
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -264,9 +264,11 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-D002EXHAUST1` | D002-only governance proof that all binding `EVIDENCE_EXHAUSTED` conditions are met; preserves A003, creates no production attempt/`NO_KEEP`/streak/value/commit, checks only D002, and advances to D003 attribution pending |
 | `E2-P2A-D003CURRENT1` | accepted target-separated D003 values/denominators plus the measured envelope owner/call path; exact residual cause and attributable owner remain pending one read-only attribution lane |
 | `E2-P2A-OWNERCOSTFLOOR1` | exact two-packet `30/30` operation and `17/17` OP001-child mapping; strict threshold classification; preserved D001/D002 history; terminal/checklist counts; D004 next cursor; no production or measurement event |
+| `E2-P2A-D004ATTRIB1` | exact target-separated D004 residual cause, attributable owner, complete synchronous path, A005 non-duplication, full HIGH/CRITICAL scope, evidence limits, and `D004_RESIDUAL_ATTRIBUTION_READY` verdict |
+| `E2-P2A-D004BOUNDARY1` | one Main-owned report/handoff boundary check: exact report path/verdict, target separation, no production direction or state mutation, report-only path set, clean staged set, and no separate Supervisor verdict/report |
 | `E2-P2A-AnnnRANK1` | accepted-state child/parent/full-pipeline timing refresh, complete child/top-level list update, and exact next unchecked child/parent pointer |
 
-Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. Accepted Cheapapp and Restaurant Manager A003 values remain separate. A004/A005 stay rejected-candidate history. `E2-P2A-A006EXHAUST1` and `E2-P2A-D002EXHAUST1` remain unchanged. `E2-P2A-OWNERCOSTFLOOR1` terminalizes D003 and D005-D017 plus top-level OP006-OP030 without changing any accepted number or streak. Parent OP001 remains unchecked; D004 is the sole active/open child.
+Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. Accepted Cheapapp and Restaurant Manager A003 values remain separate. A004/A005 stay rejected-candidate history. `E2-P2A-A006EXHAUST1` and `E2-P2A-D002EXHAUST1` remain unchanged. `E2-P2A-OWNERCOSTFLOOR1` terminalizes D003 and D005-D017 plus top-level OP006-OP030 without changing any accepted number or streak. Parent OP001 remains unchecked; D004 is the sole active/open child, its residual attribution is ready, and one fresh visible Architect is pending before any production authority can exist.
 
 ### `E2-P2A-A001DRILL1` — Complete OP001 Resolution Child Measurement
 
@@ -1452,6 +1454,27 @@ Status: `OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN
 - Mechanical result: top-level floor-PASS `25`, open `5`, checked/remaining `25/5`; OP001 prior terminal `2`, floor-PASS `14`, open `1`, checked/remaining `16/1`. Open parent order remains `OP001 -> OP002 -> OP003 -> OP004 -> OP005`; OP001 stays active and D004 is its only open child.
 - State boundary: accepted A003 values, denominators, target separation, D001 streak `2`, D002 no-streak truth, attempt history, and correctness stay unchanged. No production/test/script/target edit, target analyze, build, test, profile, measurement, Architect, Coder, Supervisor, detect, stage, or commit occurred.
 - The stopped D003 attribution marker `D003_ATTRIBUTION_SUPERSEDED_BY_OWNER_COST_FLOOR` is honored. No partial D003 report is consumed, recreated, or used as authority.
+
+### `E2-P2A-D004ATTRIB1` — D004 Residual Attribution Ready
+
+Status: `D004_RESIDUAL_ATTRIBUTION_READY / D004_ARCHITECT_PENDING / PRODUCTION_ARCHITECT_LOCKED`.
+
+- Sole visible attribution task/turn: `01a04291-3f32-7d33-89d7-4ec737249bf8` / `01a04291-42bc-7cd2-8ad5-610e04b4e338`; exact report `E:\Anvien\reports\Investigation\rp_child06a_d004_residual_attribution.md`; SHA-256 `47C55BC6EB5A73CF0C6877E5F66067A7CBB22012BC61C45259A405E56C156272`; exact verdict `D004_RESIDUAL_ATTRIBUTION_READY`.
+- Accepted wall basis remains target-separated and unchanged: Cheapapp `4.652523600 s`; Restaurant Manager `5.995737900 s`. CPU/profile values are causal only: `resolutionOutcomeDiagnosticSites` cumulative is Cheapapp `2.59 s` and Restaurant `3.81 s`, dominated by JSON unmarshal/marshal `1.99/0.53 s` and `2.77/0.86 s` respectively.
+- Exact residual owner/mechanism: `internal/resolution/outcome.go::resolutionOutcomeDiagnosticSites` scans all graph nodes, marshals each present diagnostic property, unmarshals it to typed diagnostics, then performs exact resolved/unresolved status and canonical-byte parity checks. Complete synchronous path is `internal/cli.newAnalyzeCommand.func1 -> analyze.Run -> runPhase(PhaseResolution) -> resolution.ResolveBoundInto -> projectResolutionOutcomes -> resolutionOutcomeDiagnosticSites -> encoding/json -> parity checks -> return`.
+- Rejected A005 is non-duplication evidence only: its projection-time `marshalResolutionOutcome` sibling disappears, while `resolutionOutcomeDiagnosticSites` remains material at Cheapapp `2.52 s` and Restaurant `3.34 s`. No A005 production direction, candidate, acceptance, or speedup is reused.
+- Fresh Anvien evidence is current/non-stale at HEAD `8a28683e010cf0b00ac4a3099dd2c0d8e4b69d69`: exactly one attribution-lane `anvien analyze --force` reports `2282` scanned / `766` parsed / `0` failed and graph `124599 / 171465`. `internal/resolution/outcome.go` is HIGH; `projectResolutionOutcomes` is CRITICAL with `124` impacted symbols, `50` files, `26` modules, and `42` processes. This is scope warning only and releases no edit authority.
+- Evidence limits remain explicit: profiles are cumulative/overlapping samples; exact diagnostic-bearing node count, invocation count, and bytes are unavailable; the report chooses no algorithm, expected gain, production owner set, validation contract, or rollback.
+
+### `E2-P2A-D004BOUNDARY1` — Main-Owned Attribution Handoff Boundary Check
+
+Status: `BOUNDARY_CHECK_COMPLETE / NO SEPARATE SUPERVISOR VERDICT / D004_ARCHITECT_PENDING`.
+
+- Before ledger sync, the changed-path set is exactly the authorized D004 attribution report; tracked unstaged paths and staged paths are empty; report-only whitespace check emits no diagnostics.
+- Report and task terminal verdict match exactly. Both targets remain separate, A005 remains rejected evidence only, and no architecture/solution, production/test/script/target change, accepted value, denominator, attempt, `NO_KEEP`, streak, disposition, checkbox, or queue mutation exists.
+- Main created no handoff-verification report and issued no Supervisor acceptance verdict. This is the one allowed identity/boundary/handoff check.
+- Planner authoring used the fresh current graph above; file-detail for each of the four standard ledgers reports current/non-stale LOW-risk Markdown with `2` inbound / `1` outbound / `0` unresolved and related files `plan-rules.md` plus the roadmap. This proves authoring scope only.
+- Next action after the scoped report/four-ledger checkpoint: open exactly one fresh visible D004 Architect. It consumes the complete attribution packet, selects or refuses one bounded production direction, and performs no discovery rerun, source/ledger edit, build/test/measurement, staging, commit, or Supervisor work.
 
 `REWORK` and `ROLLBACK` never authorize Coder directly. They describe the failed attempt's disposition; any next production edit starts a new attempt at Visible Architect.
 
