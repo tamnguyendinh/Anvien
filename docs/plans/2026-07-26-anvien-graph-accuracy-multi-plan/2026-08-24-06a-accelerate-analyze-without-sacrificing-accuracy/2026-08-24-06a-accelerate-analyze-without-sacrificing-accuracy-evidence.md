@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR PASS / NO_KEEP / ROLLBACK_COMPLETE / A006_M2_RECEIVER_RECHECK_FALSIFIED / A006_NO_FURTHER_MEASUREMENT_JUSTIFIED / D001_BLOCKED_OPEN / EVIDENCE_PROVEN_TWO_TARGET_OWNER_UNAVAILABLE / D001_STREAK_2`; accepted A003 remains baseline
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR PASS / NO_KEEP / ROLLBACK_COMPLETE / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_CURRENT_BASIS_RECORDED / D002_RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED`; accepted A003 remains baseline
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -40,6 +40,7 @@
 - `SYSTEM_CHARACTERISTIC` preserves the last accepted correct state. It is not a speedup claim, accuracy waiver, permission to retain a rejected candidate, or parent completion. A parent closes only after every measured child is terminal and checked.
 - After `SYSTEM_CHARACTERISTIC`, accepted child/parent/end-to-end remeasurement and complete child/top-level list refresh must be evidenced before the next child is selected. If accepted measurement exposes a missing parent or child, evidence must bind its new benchmark row and matching unchecked plan checkbox immediately.
 - A concrete unavailable authority/dependency/evidence `BLOCKED` row remains unchecked and blocks the parent/P2-A. It cannot terminalize a measured row or skip a small elapsed-time cost.
+- Exact binding `EVIDENCE_EXHAUSTED` is the only exception: the last accepted baseline is preserved, a fresh attempt-local Architect proves no further bounded measurement is justified and releases no production direction, Main Supervisor-protocol verification passes, no candidate/attempt/`NO_KEEP`/streak event is manufactured, and exact unavailable evidence plus strict resume condition are recorded. It terminalizes only that measured child; it is not `SYSTEM_CHARACTERISTIC`, a third attempt, a speedup, an accuracy waiver, or an ordinary `BLOCKED_OPEN` shortcut.
 - Fresh required Anvien graph/file-detail/impact runs immediately before editing the exact measured owner. Production implementation precedes authorized test edits; build-holder preflight and canonical full-build `PASS` then precede focused/package test execution; later child -> parent -> end-to-end remeasurement and Supervisor remain separate.
 - A full-package test is never relabeled `PASS`. When an isolated candidate rerun and an exact-HEAD overlay rerun reproduce the same out-of-scope golden failure, record it as a pre-existing unrelated stale validation failure: neither A001 failure nor A001 validation proof, and never permission to edit its preserve-only owner.
 - Raw debug/profile material remains under repository-local `E:\Anvien\.tmp`. The four ledgers are the durable recording system; do not create a per-run evidence tree, cost-map report, report audit, or evidence-about-evidence chain.
@@ -256,9 +257,10 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-AnnnDECISION1` | disposition and precise promotion/restoration/next-owner effect after Supervisor |
 | `E2-P2A-AnnnRESTORE1` | required on rejected/non-retained candidate: exact owned rollback and last accepted state restored/retained |
 | `E2-P2A-AnnnSYSTEM1` | only on third consecutive unsuccessful child attempt: exact parent/child rows, denominator, retained child/parent times, three attempts/reasons, terminal child `SYSTEM_CHARACTERISTIC`, and matching child checklist check |
+| `E2-P2A-A006EXHAUST1` | D001-only governance proof that all binding `EVIDENCE_EXHAUSTED` conditions are met; preserves A003 and streak `2`, creates no production attempt/value/commit, checks only D001, and advances to D002 attribution pending |
 | `E2-P2A-AnnnRANK1` | accepted-state child/parent/full-pipeline timing refresh, complete child/top-level list update, and exact next unchecked child/parent pointer |
 
-Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. A003 checkpoint is `b6bf45bce95323aa6b53b182edfea8628bd8b463`; accepted Cheapapp and Restaurant Manager values remain separate. WAL fix checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004/A005 are `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; their values remain rejected-candidate evidence. D001 remains active/unchecked with streak `2`; parent and all children remain unchecked; D002-D017 remain queued. A006-M1/M2 are complete; M2 falsifies the receiver-recheck owner, and post-M2 Architect returns `ARCHITECT_A006_NO_FURTHER_MEASUREMENT_JUSTIFIED`. `E2-P2A-A006BLOCK1` records the concrete missing-evidence blocker without changing any accepted value, streak, checkbox, queue, or disposition.
+Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. A003 checkpoint is `b6bf45bce95323aa6b53b182edfea8628bd8b463`; accepted Cheapapp and Restaurant Manager values remain separate. WAL fix checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004/A005 are `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; their values remain rejected-candidate evidence. `E2-P2A-A006EXHAUST1` terminalizes only D001 while retaining its streak exactly `2`; parent remains unchecked. D002 is active/unchecked at current-basis recorded and residual-attribution pending; D003-D017 remain queued.
 
 ### `E2-P2A-A001DRILL1` — Complete OP001 Resolution Child Measurement
 
@@ -1311,6 +1313,18 @@ Status: `PASS / D001_BLOCKED_OPEN / EVIDENCE_PROVEN_TWO_TARGET_OWNER_UNAVAILABLE
 - Fresh plan-authoring analyze after the Architect/Main reports existed exited `0`: `2269` scanned / `766` parsed / `0` failed, graph `124490 / 171356`.
 - Concrete blocker: no evidence-proven, two-target, synchronously removable D001 owner outside A001-A005 remains after the sole eligible final split was falsified. This is an unavailable-evidence blocker under the binding `BLOCKED_OPEN` rule, not a third unsuccessful production attempt, terminal disposition, or child check.
 - Resume condition: genuinely new external evidence or an explicit Owner boundary change. Repeating M1/M2, opening M3, manufacturing an A001-A005 variant, or releasing Planner/Coder is forbidden.
+
+### `E2-P2A-A006EXHAUST1` — D001 Evidence-Exhausted Terminal Transition
+
+Status: `D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_CURRENT_BASIS_RECORDED / D002_RESIDUAL_ATTRIBUTION_PENDING / ARCHITECT_LOCKED`.
+
+- Source evidence is exactly `E2-P2A-A006ARCH3/A006MAINVERIFY2/A006BLOCK1`: accepted A003 is preserved; the fresh attempt-local Architect proves no further bounded measurement is justified and releases no production direction; Main Supervisor-protocol verification passes; and the exact unavailable evidence is no evidence-proven two-target synchronously removable D001 owner outside A001-A005 after the sole eligible final split was falsified.
+- No A006 production candidate, production attempt, `NO_KEEP`, third unsuccessful event, streak change, measurement value, or production commit is created. M1/M2 remain attribution-only. D001's accepted A003 values, denominators, parent/process basis, and streak remain unchanged; streak is exactly `2`.
+- This is not `KEEP`, `NO_KEEP`, `ROLLBACK`, `SYSTEM_CHARACTERISTIC`, a speedup, a third attempt, or an accuracy waiver. It is not a generic size/convenience skip and cannot apply to an ordinary unresolved `BLOCKED_OPEN` row.
+- Strict D001 resume condition: genuinely new external evidence or an explicit Owner boundary change that invalidates the recorded exhaustion basis. Repeating M1/M2, opening M3, or manufacturing an A001-A005 variant is insufficient.
+- Checklist effect: check only `B2-P2A-A001-D001`; keep `B1-P1A-OP001` unchecked; activate unchecked `B2-P2A-A001-D002 resolve_accesses`; keep D003-D017 queued/unopened.
+- D002 inventory points to `internal/resolution/resolve.go::resolveAccess` on `analyze.Run -> runPhase(PhaseResolution) -> ResolveBoundInto -> w.files -> ir.Accesses -> resolveAccess`. Exact current cause, attributable owner, and complete causal call path remain pending; no technical cause is inferred here.
+- Next owner: Main Orchestration verifies this Planner transition once, records the docs/report checkpoint, then dispatches one separate visible read-only D002 attribution lane. Architect/Planner/Coder remain locked until that attribution is durable.
 
 `REWORK` and `ROLLBACK` never authorize Coder directly. They describe the failed attempt's disposition; any next production edit starts a new attempt at Visible Architect.
 
