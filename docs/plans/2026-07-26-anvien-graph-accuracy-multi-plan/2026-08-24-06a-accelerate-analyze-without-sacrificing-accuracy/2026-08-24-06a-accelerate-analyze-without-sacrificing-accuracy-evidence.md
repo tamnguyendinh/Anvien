@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR PASS / NO_KEEP / ROLLBACK_COMPLETE / A006_M1_DIRECT_CALLEE_ATTRIBUTION_READY / A006_ARCHITECT_NO_SAFE_DIRECTION / A006_M2_READY / A006_M2_MEASUREMENT_PENDING / D001_STREAK_2`; accepted A003 remains baseline
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR PASS / NO_KEEP / ROLLBACK_COMPLETE / A006_M1_DIRECT_CALLEE_ATTRIBUTION_READY / A006_M2_RECEIVER_RECHECK_FALSIFIED / A006_POST_M2_ARCHITECT_PENDING / D001_STREAK_2`; accepted A003 remains baseline
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -258,7 +258,7 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-AnnnSYSTEM1` | only on third consecutive unsuccessful child attempt: exact parent/child rows, denominator, retained child/parent times, three attempts/reasons, terminal child `SYSTEM_CHARACTERISTIC`, and matching child checklist check |
 | `E2-P2A-AnnnRANK1` | accepted-state child/parent/full-pipeline timing refresh, complete child/top-level list update, and exact next unchecked child/parent pointer |
 
-Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. A003 checkpoint is `b6bf45bce95323aa6b53b182edfea8628bd8b463`; accepted Cheapapp and Restaurant Manager values remain separate. WAL fix checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004/A005 are `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; their values remain rejected-candidate evidence. D001 remains active/unchecked with streak `2`; parent and all children remain unchecked; D002-D017 remain queued. A006-M1 is complete under `E2-P2A-A006M1DIRECT1`; post-M1 Architect `E2-P2A-A006ARCH2` returned `ARCHITECT_A006_NO_SAFE_DIRECTION`; the bounded follow-up `E2-P2A-A006M2ARCH1` now returns `ARCHITECT_A006_M2_READY`, and Main verification `E2-P2A-A006M2MAINVERIFY1` passed. None changes an accepted value, streak, checkbox, queue, or disposition.
+Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. A003 checkpoint is `b6bf45bce95323aa6b53b182edfea8628bd8b463`; accepted Cheapapp and Restaurant Manager values remain separate. WAL fix checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004/A005 are `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; their values remain rejected-candidate evidence. D001 remains active/unchecked with streak `2`; parent and all children remain unchecked; D002-D017 remain queued. A006-M1 and M2 are complete under `E2-P2A-A006M1DIRECT1/A006M2DIRECT1`; M2 validly falsifies the receiver-recheck owner under `E2-P2A-A006M2REVIEW1`. None changes an accepted value, streak, checkbox, queue, or disposition; one fresh post-M2 production Architect decision is pending.
 
 ### `E2-P2A-A001DRILL1` — Complete OP001 Resolution Child Measurement
 
@@ -1270,6 +1270,27 @@ Status: `PASS / MEASUREMENT RELEASE ONLY`.
 - Main read the full Architect report and exact one-file diff, confirmed current HEAD `d6b5b954d02ea2f908e7319bebdfe5a29c6a9fd7`, scoped diff-check PASS, staged set empty, absent new M2 root, and exact current hashes for both mapped production starts, the reusable builder, and all four protected candidate sources.
 - Bounded source inspection confirmed the earlier false claim fact and later duplicate receiver-claim recheck. Fresh Planner authoring analyze then exited `0`: `2266` scanned / `766` parsed / `0` failed, graph `124450 / 171316`.
 - State effect: release only existing visible measurement executor `01a04061-02fe-7f02-9c4c-f9caa6c0413c` for the exact one-shot M2 contract. Accepted A003, D001 streak `2`, every numeric row, checkbox, and queue remain unchanged; Planner/Coder and production remain locked.
+
+### `E2-P2A-A006M2DIRECT1` — Two-Target Receiver-Recheck Attribution Complete
+
+Status: `A006_M2_RECEIVER_RECHECK_FALSIFIED / A006_POST_M2_ARCHITECT_PENDING / D001_STREAK_2`.
+
+- Existing measurement executor/report: `01a04061-02fe-7f02-9c4c-f9caa6c0413c`; `E:\Anvien\reports\Investigation\rp_child06a_a006_m2_typescript_member_receiver_recheck.md`; SHA-256 `0D88DFA030FD3748A44586391916B72FDA53648708C768BD5839B17485A5D124`; terminal marker `A006_M2_RECEIVER_RECHECK_FALSIFIED`.
+- One new repo-local root: `E:\Anvien\.tmp\child06a_a006_m2_typescript_member_recheck_20260827`. Accepted M1 seeds, exactly two overlay mappings, unchanged builder/candidate/native hashes, and fixed `[7]` plus scalar-counter lifetime passed. Canonical production/tests/scripts/targets were untouched.
+- One builder invocation passed with executable version/bytes/SHA-256 `1.2.8 / 73,846,784 / 9455E26AD0C862D7D528B7E1FD37806DAEA668F5C05486575D24266A64868ABA`; provenance schema/attempt/exits `1/A006/0/0`, identities `2/4/3`; no retry.
+- Cheapapp one launch/exit `0`: D001 `2,990,982,500 ns`; TypeScript parent `764,972,500 ns`; receiver recheck/control/net `10,466,100 / 1,000,600 / 9,465,500 ns`; rechecks `3,549`, false/true `3,549/0`; denominator `27,890/887`. All `30/30`, ordered `17/17`, M1/M2 count/conservation, overlap `0`, and A003 graph/DB/semantic/ordered-Evidence/Graph-JSON/stdout/stderr parity pass.
+- Restaurant Manager one launch/exit `0`: D001 `8,511,039,500 ns`; TypeScript parent `500,153,900 ns`; receiver recheck/control/net `0 / 0 / 0 ns`; rechecks `638`, false/true `638/0`; denominator `86,030/1,234`. All packet/count/conservation/parity gates independently pass, but the exact positive-net exposure predicate is false.
+- Sequential gap is `213,628,851,200 ns`; cross-target overlap `0`; both immediate competitor lists are empty. Validation SHA-256 values: Cheapapp `57F6FB4BD0B43AA809E6F50A3ED4BCFC42EB874A5E401E0E89FD52EAFDC06EE5`, Restaurant `2E0E98125C0FB852FF2612584F08554E3E54D59850A572DF554EC60F1EF784AB`, cross-target `E3412C9B8CDDDC4D380238B7BB73453D0423E7114D78C6F29D48783094CC70C0`.
+- State effect: the duplicate predicate exists but is not a two-target production owner. M2 is attribution-only, not a production attempt/candidate/Supervisor disposition/streak event. Accepted A003, D001 streak `2`, every numeric control row, checkbox, and queue remain unchanged. M3 is forbidden.
+
+### `E2-P2A-A006M2REVIEW1` — Main M2 Handoff Supervisor PASS
+
+Status: `PASS / FALSIFICATION ACCEPTED / NO PRODUCTION RELEASE`.
+
+- Main review report: `E:\Anvien\reports\Supervisor\rp_supervisor_260827_094027_by_gpt-5_child06a_a006_m2_handoff.md`; verdict `PASS`.
+- Main read the complete Investigation report and all three validation JSONs; independently confirmed both packet statuses PASS, zero failed gates, exact exposure values, cross-target classification `FALSIFIED`, gap/overlap, report hashes, HEAD `7764ebf69ce4a155d11caa253b8b16e378915bf1`, empty staged set, and report-only Git scope.
+- Fresh plan-authoring analyze after both reports existed exited `0`: `2268` scanned / `766` parsed / `0` failed, graph `124475 / 171341`.
+- Next action: checkpoint report/ledgers and return the packet once to a fresh post-M2 production Architect decision in the existing visible Architect task. Do not run M3, another attribution family, Planner, Coder, source edit, D002-D017, P3, or Child 07 early.
 
 `REWORK` and `ROLLBACK` never authorize Coder directly. They describe the failed attempt's disposition; any next production edit starts a new attempt at Visible Architect.
 
