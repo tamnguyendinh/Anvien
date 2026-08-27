@@ -604,3 +604,37 @@ STOP and return to Main if M2 needs a third overlay owner, production/test/scrip
 Completion is exactly two valid target packets plus the one Investigation report and the predicates above. M2 remains attribution-only: no candidate comparison, baseline promotion, D001 streak/checklist/disposition effect, Supervisor, detect, stage, or commit. Next owner is Main Orchestration; after valid M2, Main may return it to one fresh A006 production Architect for the immediate expose-or-falsify decision, never to Planner/Coder directly.
 
 `ARCHITECT_A006_M2_READY`
+
+---
+
+## Post-M2 Production/No-Production Architecture Decision
+
+Final post-M2 result: no further measurement is justified.
+
+This decision consumes the accepted M2 falsification without reopening the post-M1 production-direction review. The slice remains `P2-A / A006 / B1-P1A-OP001 resolution / B2-P2A-A001-D001 resolve_calls`; checkpoint `506490011c190fbeeaf81db8c2a13da09d87420a` is the authority basis, and A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463` remains accepted.
+
+### Decisive Evidence
+
+- Both M2 target packets pass every identity, count, conservation, parity, resource-lifetime, sequentiality, and overlap gate.
+- Cheapapp records receiver recheck/control/net `10,466,100 / 1,000,600 / 9,465,500 ns`, with false/true counts `3,549 / 0`.
+- Restaurant Manager records receiver recheck/control/net `0 / 0 / 0 ns`, with false/true counts `638 / 0`.
+- Cross-target gap is `213,628,851,200 ns` and overlap is `0`.
+- The binding exposure rule required positive recheck-minus-control elapsed on both targets. Restaurant Manager's valid `0 ns` result therefore establishes `A006_M2_RECEIVER_RECHECK_FALSIFIED`; the duplicate receiver-claim read is not a two-target production owner.
+
+The accepted post-M1 disqualifications remain controlling for every other M1 family. `go_same_package` is Restaurant-dominant and near-zero on Cheapapp. `evidence_emission` remains a composite of mandatory graph/reference/outcome/diagnostic carriers plus accepted or already attempted A002-A005 ownership. `typescript_lookup_record` was the only material common composite family eligible for one final bounded split, and M2 falsified its sole exact new synchronous owner. The remaining groups are small, composite, already indexed, mandatory identity/carrier work, or lack an exact removable owner and synchronous cost-removal algorithm. M2 supplies no evidence that overturns those findings.
+
+### Hard Loop Stop And Campaign Blocker
+
+No materially new synchronous mechanism is now proven to have nonzero removable exclusive work on both targets. Any attempt to select another owner would require a forbidden M3, another family split, cache-key packet, profile/source discovery, or broad instrumentation and would still need another measurement before production could be judged. That would create the attribution/audit loop this boundary exists to stop.
+
+The concrete campaign blocker for Main is therefore the absence of an evidence-proven, two-target, synchronously removable D001 owner outside A001-A005 after the sole eligible final split was falsified. No production owner, algorithm, test surface, expected gain, Planner, Coder, Supervisor, or rollback is released.
+
+### State Effect And Handoff
+
+- M1 and M2 remain attribution-only. Neither is a production attempt, candidate, no-KEEP event, `SYSTEM_CHARACTERISTIC`, or disposition.
+- Accepted A003 remains unchanged; D001 streak remains `2`.
+- P2-A, parent, and D001 remain unchecked. D002-D017 remain queued/unopened; P3 and Child 07 remain closed.
+- M3 and every further A006 measurement/discovery packet are stopped. No graph/source refresh was needed because this decision releases no new production direction and canonical source is unchanged.
+- Next owner: Main Orchestration, for governance only. Main must not infer a Planner/Coder release or terminalize D001 from this report.
+
+`ARCHITECT_A006_NO_FURTHER_MEASUREMENT_JUSTIFIED`

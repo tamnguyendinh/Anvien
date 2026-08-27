@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR PASS / NO_KEEP / ROLLBACK_COMPLETE / A006_M1_DIRECT_CALLEE_ATTRIBUTION_READY / A006_M2_RECEIVER_RECHECK_FALSIFIED / A006_POST_M2_ARCHITECT_PENDING / D001_STREAK_2`; accepted A003 remains baseline
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR PASS / NO_KEEP / ROLLBACK_COMPLETE / A006_M2_RECEIVER_RECHECK_FALSIFIED / A006_NO_FURTHER_MEASUREMENT_JUSTIFIED / D001_BLOCKED_OPEN / EVIDENCE_PROVEN_TWO_TARGET_OWNER_UNAVAILABLE / D001_STREAK_2`; accepted A003 remains baseline
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -258,7 +258,7 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-AnnnSYSTEM1` | only on third consecutive unsuccessful child attempt: exact parent/child rows, denominator, retained child/parent times, three attempts/reasons, terminal child `SYSTEM_CHARACTERISTIC`, and matching child checklist check |
 | `E2-P2A-AnnnRANK1` | accepted-state child/parent/full-pipeline timing refresh, complete child/top-level list update, and exact next unchecked child/parent pointer |
 
-Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. A003 checkpoint is `b6bf45bce95323aa6b53b182edfea8628bd8b463`; accepted Cheapapp and Restaurant Manager values remain separate. WAL fix checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004/A005 are `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; their values remain rejected-candidate evidence. D001 remains active/unchecked with streak `2`; parent and all children remain unchecked; D002-D017 remain queued. A006-M1 and M2 are complete under `E2-P2A-A006M1DIRECT1/A006M2DIRECT1`; M2 validly falsifies the receiver-recheck owner under `E2-P2A-A006M2REVIEW1`. None changes an accepted value, streak, checkbox, queue, or disposition; one fresh post-M2 production Architect decision is pending.
+Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. A003 checkpoint is `b6bf45bce95323aa6b53b182edfea8628bd8b463`; accepted Cheapapp and Restaurant Manager values remain separate. WAL fix checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004/A005 are `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; their values remain rejected-candidate evidence. D001 remains active/unchecked with streak `2`; parent and all children remain unchecked; D002-D017 remain queued. A006-M1/M2 are complete; M2 falsifies the receiver-recheck owner, and post-M2 Architect returns `ARCHITECT_A006_NO_FURTHER_MEASUREMENT_JUSTIFIED`. `E2-P2A-A006BLOCK1` records the concrete missing-evidence blocker without changing any accepted value, streak, checkbox, queue, or disposition.
 
 ### `E2-P2A-A001DRILL1` — Complete OP001 Resolution Child Measurement
 
@@ -1291,6 +1291,26 @@ Status: `PASS / FALSIFICATION ACCEPTED / NO PRODUCTION RELEASE`.
 - Main read the complete Investigation report and all three validation JSONs; independently confirmed both packet statuses PASS, zero failed gates, exact exposure values, cross-target classification `FALSIFIED`, gap/overlap, report hashes, HEAD `7764ebf69ce4a155d11caa253b8b16e378915bf1`, empty staged set, and report-only Git scope.
 - Fresh plan-authoring analyze after both reports existed exited `0`: `2268` scanned / `766` parsed / `0` failed, graph `124475 / 171341`.
 - Next action: checkpoint report/ledgers and return the packet once to a fresh post-M2 production Architect decision in the existing visible Architect task. Do not run M3, another attribution family, Planner, Coder, source edit, D002-D017, P3, or Child 07 early.
+
+### `E2-P2A-A006ARCH3` — Post-M2 No-Further-Measurement Architecture Decision
+
+Status: `ARCHITECT_A006_NO_FURTHER_MEASUREMENT_JUSTIFIED / D001_BLOCKED_OPEN / D001_STREAK_2`.
+
+- Visible Architect task/turn: `01a0409e-6403-7412-9d8b-b9c6f5496464` / `01a04121-981e-7771-965e-f0e5d0692dc5`; same A006 report; exact terminal verdict `ARCHITECT_A006_NO_FURTHER_MEASUREMENT_JUSTIFIED`.
+- The decision consumes the accepted M2 falsification without reopening source/graph discovery. M2 validly falsifies the sole exact new synchronous owner inside the only material common composite family eligible for a final split.
+- Every other M1 family retains its accepted post-M1 disqualification: Restaurant-only/asymmetric, composite with mandatory carriers/prior A002-A005 ownership, small/already indexed, or lacking an exact removable owner and synchronous cost-removal algorithm.
+- Any further A006 production selection would require forbidden M3, another family split, cache-key packet, profile/source discovery, or broad instrumentation, and would still need another measurement. No production owner, algorithm, test surface, expected gain, Planner, Coder, Supervisor, or rollback is released.
+- M1/M2 remain attribution-only. Accepted A003 remains current; D001 streak remains `2`; parent/D001 remain unchecked; D002-D017 remain queued; D001 is not `SYSTEM_CHARACTERISTIC`.
+
+### `E2-P2A-A006MAINVERIFY2/A006BLOCK1` — Main Handoff PASS And Concrete Open Blocker
+
+Status: `PASS / D001_BLOCKED_OPEN / EVIDENCE_PROVEN_TWO_TARGET_OWNER_UNAVAILABLE`.
+
+- Main review report: `E:\Anvien\reports\Supervisor\rp_supervisor_260827_100511_by_gpt-5_child06a_a006_post_m2_architect_handoff.md`; verdict `PASS`.
+- Main verified the exact report append `+34/-0`, terminal verdict, M1/M2 state effects, hard no-M3 boundary, report-only Git scope, scoped diff-check PASS, and staged set empty. No source/graph/build/test/measurement/detect gate was rerun for handoff acceptance.
+- Fresh plan-authoring analyze after the Architect/Main reports existed exited `0`: `2269` scanned / `766` parsed / `0` failed, graph `124490 / 171356`.
+- Concrete blocker: no evidence-proven, two-target, synchronously removable D001 owner outside A001-A005 remains after the sole eligible final split was falsified. This is an unavailable-evidence blocker under the binding `BLOCKED_OPEN` rule, not a third unsuccessful production attempt, terminal disposition, or child check.
+- Resume condition: genuinely new external evidence or an explicit Owner boundary change. Repeating M1/M2, opening M3, manufacturing an A001-A005 variant, or releasing Planner/Coder is forbidden.
 
 `REWORK` and `ROLLBACK` never authorize Coder directly. They describe the failed attempt's disposition; any next production edit starts a new attempt at Visible Architect.
 
