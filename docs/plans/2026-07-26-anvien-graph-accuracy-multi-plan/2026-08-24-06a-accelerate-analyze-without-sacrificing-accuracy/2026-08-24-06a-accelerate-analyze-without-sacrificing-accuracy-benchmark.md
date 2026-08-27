@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A006_M1_DIRECT_CALLEE_ATTRIBUTION_READY / A006_ARCHITECT_NO_SAFE_DIRECTION / A006_M2_OR_STOP_PENDING / D001_STREAK_2`; A004/A005 values remain rejected evidence; accepted A003 baselines remain current; A006-M1 values are attribution-only and create no candidate/promotion
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A006_M1_DIRECT_CALLEE_ATTRIBUTION_READY / A006_ARCHITECT_NO_SAFE_DIRECTION / A006_M2_READY / A006_M2_MEASUREMENT_PENDING / D001_STREAK_2`; A004/A005 values remain rejected evidence; accepted A003 baselines remain current; A006-M1/M2 are attribution-only and create no candidate/promotion
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -623,7 +623,7 @@ The unchanged recovery build produced one measurement-only executable. Cheapapp 
 
 Resource deltas versus the accepted A003 packet are recorded as instrumentation effects, not product improvement: Cheapapp start/end/max-Sys `+1,768 / +252,303,448 / +27,164,672` bytes; Restaurant `-3,896 / -36,632,576 / +364,048,384` bytes. Exact evidence: `E2-P2A-A006M1DIRECT1`.
 
-Post-M1 result: `E2-P2A-A006ARCH2/A006MAINVERIFY1` records `ARCHITECT_A006_NO_SAFE_DIRECTION` and Main verification `PASS`. No numeric row, accepted baseline, streak, checkbox, queue, candidate, or disposition changes. Exactly one bounded Architect `M2_OR_STOP` decision is pending; no measurement or Planner/Coder is open.
+Post-M1 result: `E2-P2A-A006ARCH2/A006MAINVERIFY1/A006M2ARCH1/A006M2MAINVERIFY1` records `ARCHITECT_A006_NO_SAFE_DIRECTION`, the exact one-shot M2 contract, and Main verification `PASS`. No numeric row, accepted baseline, streak, checkbox, queue, candidate, or disposition changes. M2 measurement is pending; Planner/Coder remain locked.
 
 Append only metrics needed to explain an active elapsed-time cost or validate its resource boundary. A002 residual profile rows are causal attribution only; candidate allocation/resource values remain pending.
 
@@ -644,7 +644,7 @@ Append only metrics needed to explain an active elapsed-time cost or validate it
 |--------------|----------------------|---------------|----------------------|----------------|---------------|-------------------------------------|------------------------------------|------------------------|-------------------|-------------|
 | `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `0/30` | `0/17`; active child `B2-P2A-A001-D001` | A004/A005 candidate values rejected/unpromoted; A006-M1 is attribution-only | A001/A002/A003 `KEEP`; A003 and WAL checkpoints complete; A004/A005 `NO_KEEP / ROLLBACK_COMPLETE`; `A006_M1_DIRECT_CALLEE_ATTRIBUTION_READY / A006_ARCHITECT_PENDING / D001_STREAK_2` | `E2-P2A-A003CURRENT1/ATTRIB1/ARCH1/PLAN2/IMPACT1/SRC1/BUILD1/TEST1/PACKET1/CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1/OWNERKEEP1/COMMIT1`, `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1/COMMIT1`, `E2-P2A-A004ARCH1/PLAN1/REVIEW1/DECISION1/ROLLBACK1`, `E2-P2A-A005CURRENT1/ATTRIB1/ARCH1/PLAN1/MAINVERIFY1/IMPACT1/SRC1/BUILD1/TEST1/BUILDFAIL1/PACKET1/CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1`, `E2-P2A-A006ARCH1/A006M1BUILDFAIL1/A006M1DIRECT1`; final evidence pending |
 
-Current nonnumeric cursor for this unchanged numeric row: `A006_ARCHITECT_NO_SAFE_DIRECTION / A006_M2_OR_STOP_PENDING / D001_STREAK_2`, evidenced by `E2-P2A-A006ARCH2/A006MAINVERIFY1`. Every numeric/checklist cell above remains unchanged.
+Current nonnumeric cursor for this unchanged numeric row: `A006_M2_READY / A006_M2_MEASUREMENT_PENDING / D001_STREAK_2`, evidenced by `E2-P2A-A006ARCH2/A006MAINVERIFY1/A006M2ARCH1/A006M2MAINVERIFY1`. Every numeric/checklist cell above remains unchanged.
 
 ## B3 - P3 Benchmarks
 
@@ -653,8 +653,8 @@ P3-A/P3-B/P3-C are final review, cleanup, detect, commit, and handoff operations
 ## Non-Benchmarkable Notes
 
 - `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1/COMMIT1` records the confirmed `--force` stale-generation correctness bug, exact four-file fix, `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`, and checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`. It is not an optimization attempt, benchmark, profile, A003 rerun, streak change, or checklist transition.
-- `E2-P2A-A005ATTRIB1/ARCH1/PLAN1/MAINVERIFY1/IMPACT1/SRC1/BUILD1/TEST1/BUILDFAIL1/PACKET1` are architecture/implementation/build identity evidence. `E2-P2A-A005CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1` record rejected/unpromoted candidate measurements, Supervisor correctness PASS, Main NO_KEEP, and exact restoration. A003 values stay accepted; A004/A005 values stay rejected. Current cursor: `A006_ARCHITECT_NO_SAFE_DIRECTION / A006_M2_OR_STOP_PENDING / D001_STREAK_2`.
-- `E2-P2A-A006ARCH1/A006ARCH2/A006MAINVERIFY1` create no candidate value. `A006-M1` completed measurement-only direct-callee attribution and cannot replace the accepted A003 basis, increment streak, or produce a disposition.
+- `E2-P2A-A005ATTRIB1/ARCH1/PLAN1/MAINVERIFY1/IMPACT1/SRC1/BUILD1/TEST1/BUILDFAIL1/PACKET1` are architecture/implementation/build identity evidence. `E2-P2A-A005CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1` record rejected/unpromoted candidate measurements, Supervisor correctness PASS, Main NO_KEEP, and exact restoration. A003 values stay accepted; A004/A005 values stay rejected. Current cursor: `A006_M2_READY / A006_M2_MEASUREMENT_PENDING / D001_STREAK_2`.
+- `E2-P2A-A006ARCH1/A006ARCH2/A006MAINVERIFY1/A006M2ARCH1/A006M2MAINVERIFY1` create no candidate value. `A006-M1` completed direct-callee attribution; M2 is the one pending measurement-only TypeScript receiver-recheck split. Neither may replace A003, increment streak, or produce a disposition.
 - `E2-P2A-A006M1BUILDFAIL1` remains the preserved initial build-input failure. `E2-P2A-A006M1DIRECT1` records the later authorized recovery and target-separated attribution values; neither is a production attempt or candidate benchmark.
 
 - P6-D commit identity, Architect decisions, Planner refreshes, source/test/build results, Supervisor verdicts, cleanup, detect, commit, and handoff are evidence rather than measurements.

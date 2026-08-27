@@ -1,6 +1,8 @@
 # Child 06A A006 Residual Architecture Decision
 
-Current post-M1 verdict: `ARCHITECT_A006_NO_SAFE_DIRECTION`
+Current M2-or-stop governance decision is appended at EOF.
+
+Accepted post-M1 production verdict preserved below: `ARCHITECT_A006_NO_SAFE_DIRECTION`
 
 Historical pre-M1 verdict preserved below: `ARCHITECT_A006_NEEDS_MEASUREMENT_INPUT`
 
@@ -409,3 +411,196 @@ No local D001 direction may transfer cost into another resolution child, final p
 Mandatory STOP: do not infer a third A006 production attempt, `SYSTEM_CHARACTERISTIC`, child check, parent transition, Planner/Coder handoff, new measurement request, source/test edit, or downstream phase from this report. Any later production edit would require new evidence and a separately authorized fresh attempt chain; this A006 lane releases none.
 
 `ARCHITECT_A006_NO_SAFE_DIRECTION`
+
+---
+
+## A006 M2-Or-Stop Governance Decision
+
+Governance result: exactly one bounded M2 is justified; the terminal marker is recorded at EOF.
+
+This section preserves both prior decisions above. `ARCHITECT_A006_NEEDS_MEASUREMENT_INPUT` remains the historical pre-M1 decision, and `ARCHITECT_A006_NO_SAFE_DIRECTION` remains the accepted post-M1 production-direction verdict. This follow-up releases exactly one measurement-only M2 packet; it does not release production work, Planner, Coder, Supervisor, a candidate comparison, a streak event, or a checklist transition.
+
+### Current Boundary And Freshness
+
+- Slice: `P2-A / A006 / B1-P1A-OP001 resolution / B2-P2A-A001-D001 resolve_calls`.
+- Current clean checkpoint: `d6b5b954d02ea2f908e7319bebdfe5a29c6a9fd7`; staged count `0` before this report-only update.
+- Accepted implementation and measurement baseline: A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`.
+- Campaign state remains `A004/A005 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / A006_M2_OR_STOP_PENDING / D001_STREAK_2`; parent/D001 are unchecked and D002-D017 are queued/unopened.
+- Startup authority, all four updated ledgers, this report, accepted M1, the M1 handoff PASS, and Main's post-M1 handoff PASS were read through EOF.
+- `anvien --help` passed. Exactly one fresh `anvien analyze --force` exited `0`: `2265` scanned, `766` parsed code, `0` failed; graph `124436 / 171302`; indexed/current commit both equal `d6b5b954d02ea2f908e7319bebdfe5a29c6a9fd7`, stale `false`.
+- `internal/resolution/resolve.go` is current/non-stale/unchanged-since-analyze and `HIGH`: `200` symbols, `134 / 289 / 87` inbound/outbound/local relationships, `26` linked flows, and `40` linked tests. Fresh upstream impact including tests keeps `resolveCall` `CRITICAL`: `31` impacted symbols, `1` direct caller, `7` modules, and `32` processes. Exact helper LOW/zero graph impacts are non-assurance because their call sites include unresolved graph gaps; the containing-file/D001 warning controls.
+
+### The One Eligible Composite Family And Exact Question
+
+M2 selects only M1 family `typescript_lookup_record`, which is material and nonzero on both targets:
+
+- Cheapapp: `686,469,300 ns / 23,430` invocations.
+- Restaurant Manager: `435,161,600 ns / 44,775` invocations.
+
+The exact unresolved question is whether one already-proven duplicate predicate inside that family owns nonzero exclusive work beyond matched timer overhead on **both** targets:
+
+`internal/resolution/resolve.go::(*workspace).lookupTypeScriptMember:858-870` recomputes `repositoryReceiverClaimed(receiver, startScope)` at current line `862` even though the D001 caller has already computed the identical predicate at `resolveCall:405`, assigned it to the monotonic `externalBlocked` gate at line `406`, and can reach the TypeScript member call at lines `516-519` only when that earlier result is false.
+
+No repository-claim input (`scopeBindings`, `typeBindings`, accepted A001 `importClaimsByReceiver`, parent scopes, or `defsByName`) is mutated between those two synchronous reads. The later predicate therefore has one exact candidate owner: the D001-only `resolveCall -> lookupTypeScriptMember -> repositoryReceiverClaimed` recheck. The other current helper callers at `resolveAccess:687` and `lookupTypeScriptAnnotation:816` remain preserve-only and are not attributed by M2.
+
+This mechanism is materially new versus A001-A005: it removes a repeated read-only ownership traversal made redundant by an existing control-flow fact. It is not an index, cache, diagnostic path, decoder, evidence-order variant, outcome-byte lifecycle, deferral, batching, or concurrency proposal. M2 must measure it before any production direction can be judged.
+
+### Exact Overlay Surface, Subgroups, And Counters
+
+Measurement ID: `A006-M2-D001-TYPESCRIPT-MEMBER-RECEIVER-RECHECK`.
+
+Allowed surface is exactly two new overlay copies under the one M2 root:
+
+- `overlay/internal/resolution/resolve.go` for the existing ten-group recorder plus this one family split;
+- `overlay/internal/resolution/types.go` for measurement-only metric carriers.
+
+The executor must seed them from the accepted M1 overlay identities `resolve.go=6B77B55097664234AB9FA28102C84702F3A8B830D36C7449AF2F676242DB8A61` and `types.go=8F5F8E7B2B29FDDB7A65384970DAC60E7E15882608D9024FF6DF7414DD9F4E2D`. Current mapped production starts must remain `resolve.go=8CEEDBA1883314EE8883320D3647C25DEF6F19F043D57881A893FBA73BA210D9` and `types.go=7C5E113F5E50584665D6D9AED0BCB2B3C6F6085219A62CD5AE74DD7654CD5DC3`.
+
+Keep the accepted M1 ten-group field unchanged and add exactly one metric object named `resolveCallTypeScriptLookupRecordMeasurement` with this schema:
+
+```json
+{
+  "parentGroupId": "typescript_lookup_record",
+  "parentDurationNs": 0,
+  "parentInvocationCount": 0,
+  "subgroups": [
+    {"groupId":"member_receiver_recheck","durationNs":0,"invocationCount":0},
+    {"groupId":"member_receiver_recheck_timer_control","durationNs":0,"invocationCount":0},
+    {"groupId":"member_lookup_remainder","durationNs":0,"invocationCount":0},
+    {"groupId":"global_lookup","durationNs":0,"invocationCount":0},
+    {"groupId":"site_target_text","durationNs":0,"invocationCount":0},
+    {"groupId":"record_typescript_lookup","durationNs":0,"invocationCount":0},
+    {"groupId":"typescript_lookup_record_residual","durationNs":0,"invocationCount":0}
+  ],
+  "work": {
+    "siteCount": 0,
+    "memberLookupCount": 0,
+    "globalLookupCount": 0,
+    "priorUnclaimedMemberLookupCount": 0,
+    "memberCatalogEligibleCount": 0,
+    "receiverRecheckCount": 0,
+    "receiverRecheckFalseCount": 0,
+    "receiverRecheckTrueCount": 0,
+    "targetTextCount": 0,
+    "recordCount": 0
+  },
+  "subgroupSumNs": 0,
+  "overlapCount": 0
+}
+```
+
+Instrumentation sites and ownership are exact:
+
+1. Preserve the existing M1 outer interval at `resolveCall:516-535`; it supplies `parentDurationNs` and `parentInvocationCount`.
+2. At the D001 member call site `resolveCall:519`, record `memberLookupCount` and the already-held false predicate as `priorUnclaimedMemberLookupCount`; pass the fixed recorder only through this measurement-overlay call. D002/D003 callers pass no recorder and retain their exact behavior.
+3. Inside overlay `lookupTypeScriptMember`, preserve the nil/library/language guards. When the D001 recorder is present and those guards pass, record `memberCatalogEligibleCount`, measure one empty adjacent `time.Now/time.Since` pair as the matched timer control, then measure only the direct `repositoryReceiverClaimed` call and record its true/false result. Recorder accumulation occurs after both local elapsed values are captured and is outside both intervals.
+4. Measure the complete D001 member helper at its caller; publish `member_lookup_remainder = member helper elapsed - receiver recheck elapsed - matched control elapsed`. Measure `lookupTypeScriptGlobal`, the single `callTargetText` evaluation used by the TypeScript source-site record, and `recordTypeScriptLookup` separately at their existing caller sites and in their existing evaluation order.
+5. Compute `typescript_lookup_record_residual` only after the run as the parent duration minus the other six subgroup durations. No subgroup may overlap another.
+
+The recorder is one fixed `[7]` row array plus scalar integer counters. No per-call event, slice growth, map, key cache, log, trace, goroutine, lock, I/O, global/cross-run state, or target-repository state is permitted.
+
+For each target, the packet must prove these integer equations and predicates:
+
+```text
+member_receiver_recheck
++ member_receiver_recheck_timer_control
++ member_lookup_remainder
++ global_lookup
++ site_target_text
++ record_typescript_lookup
++ typescript_lookup_record_residual
+= parentDurationNs
+
+parentDurationNs
+= resolveCallDirectCalleeMeasurements["typescript_lookup_record"].durationNs
+
+parentInvocationCount
+= memberLookupCount + globalLookupCount + targetTextCount + recordCount
+
+siteCount = memberLookupCount + globalLookupCount
+siteCount = targetTextCount = recordCount
+priorUnclaimedMemberLookupCount = memberLookupCount
+memberCatalogEligibleCount = receiverRecheckCount
+receiverRecheckFalseCount + receiverRecheckTrueCount = receiverRecheckCount
+member_receiver_recheck_timer_control.invocationCount = receiverRecheckCount
+subgroupSumNs = parentDurationNs
+overlapCount = 0
+```
+
+Every remainder must be nonnegative. The existing ten M1 groups must still sum exactly to D001 with overlap `0`; M2 does not re-accept or replace M1.
+
+### One Reusable Build And Execution Contract
+
+Use exactly one new repo-local output root, currently absent:
+
+`E:\Anvien\.tmp\child06a_a006_m2_typescript_member_recheck_20260827`
+
+All overlay, process-local home/cache/temp, build, capture, comparison, and validation artifacts must remain beneath that root. The only durable result outside it is:
+
+`E:\Anvien\reports\Investigation\rp_child06a_a006_m2_typescript_member_receiver_recheck.md`
+
+The overlay manifest is exactly `overlay\optimized-overlay.json` with exactly the two mappings above. Reuse unchanged builder `E:\Anvien\scripts\build-a00x-benchmark.ps1`, current SHA-256 `ADA407C7496FCEA988276F03BAD5001ED139A4AEC9A16B9C32947DA440814EC5`, once and without retry. Its invocation is fixed as:
+
+```powershell
+& 'E:\Anvien\scripts\build-a00x-benchmark.ps1' `
+  -AttemptId 'A006' `
+  -OverlayManifestPath 'E:\Anvien\.tmp\child06a_a006_m2_typescript_member_recheck_20260827\overlay\optimized-overlay.json' `
+  -OutputExecutablePath 'E:\Anvien\.tmp\child06a_a006_m2_typescript_member_recheck_20260827\frozen-build\anvien-a006-m2-benchmark.exe' `
+  -ExpectedOverlaySha256 '<literal validated M2 manifest SHA-256>' `
+  -ExpectedMappedSourceHash @(
+    'E:\Anvien\internal\resolution\resolve.go=<literal validated M2 overlay resolve.go SHA-256>',
+    'E:\Anvien\internal\resolution\types.go=<literal validated M2 overlay types.go SHA-256>'
+  ) `
+  -ExpectedCandidateSourceHash @(
+    'internal/graphhealth/diagnostics.go=6DE54D97A1B95E877B686DC3459238598F6060D28CE6329357A80BD7FC376D30',
+    'internal/resolution/emit.go=73AE20E8A18AC25F8019E2A3223407621AE7ABC358DBAF4F058E1D9AC3136060',
+    'internal/resolution/outcome.go=02092F9FE7DA2A4BDB49E13056FBA3C97DC24F416141E7F27866EE80F60C1F7E',
+    'internal/resolution/export_binding_proof.go=4BFE1976766FBF2E2257102070FF43CAC6D757E32E71DD583F8824781EAB6A8E'
+  ) `
+  -ExpectedNativeHash @(
+    'lbug.h=3D5114D0863B3DAB3B28BD2FEC97A52E6CF669213739921A01814A5BBF5525EB',
+    'lbug_shared.lib=B18AAFC0B712DC1C4CB9DD25F76C3828282D7D460627980E3A4B16EFCD98A955',
+    'lbug_shared.dll=20CBD87840483A2053CFF3FC2DB23A86DD802B8915D86509D41A4B709624CDB7'
+  ) `
+  -GoExecutable 'C:\Program Files\Go\bin\go.exe'
+```
+
+The executor must replace the three angle-bracket values with the freshly computed literal uppercase hashes before invocation; placeholders in the real command are forbidden. Provenance must report schema/attempt/build/root exits `1/A006/0/0`, exact identities `2/4/3`, and matching expected/actual hashes. No canonical script or production file is edited.
+
+After zero-competitor preflight, run exactly one launch per target, sequential Cheapapp then Restaurant Manager, with no retry:
+
+```text
+E:\Anvien\.tmp\child06a_a006_m2_typescript_member_recheck_20260827\frozen-build\anvien-a006-m2-benchmark.exe analyze E:\cheapapp.org --force --skip-git --json --progress --benchmark-json E:\Anvien\.tmp\child06a_a006_m2_typescript_member_recheck_20260827\captures\cheapapp\candidate\benchmark.json --benchmark-label child06a-a006-m2-cheapapp-ts-member-recheck-20260827
+
+E:\Anvien\.tmp\child06a_a006_m2_typescript_member_recheck_20260827\frozen-build\anvien-a006-m2-benchmark.exe analyze E:\Restaurant_manager --force --json --progress --exclude electron/renderer/src/api/userApi.ts --benchmark-json E:\Anvien\.tmp\child06a_a006_m2_typescript_member_recheck_20260827\captures\restaurant_manager\candidate\benchmark.json --benchmark-label child06a-a006-m2-restaurant-manager-ts-member-recheck-20260827
+```
+
+Use working directories `E:\cheapapp.org` and `E:\Anvien`, respectively. Set `ANVIEN_OP001_RESOLUTION_CPU_PROFILE` respectively to `E:\Anvien\.tmp\child06a_a006_m2_typescript_member_recheck_20260827\captures\cheapapp\candidate\resolution.cpu.pprof` and `E:\Anvien\.tmp\child06a_a006_m2_typescript_member_recheck_20260827\captures\restaurant_manager\candidate\resolution.cpu.pprof`; redirect every process-local home/cache/temp path beneath the corresponding capture root. Beside each target's `benchmark.json`, record exact files `process.json`, `stdout.txt`, `stderr.txt`, and a copied canonical `graph.json`. Write machine-readable validation exactly to `E:\Anvien\.tmp\child06a_a006_m2_typescript_member_recheck_20260827\validation\cheapapp.json`, `E:\Anvien\.tmp\child06a_a006_m2_typescript_member_recheck_20260827\validation\restaurant_manager.json`, and `E:\Anvien\.tmp\child06a_a006_m2_typescript_member_recheck_20260827\validation\cross-target.json`.
+
+Cheapapp must finish before Restaurant preflight and start. Both immediate competitor lists must be empty; cross-target capture overlap must equal `0`.
+
+### Validation, Resource, Completion, And Falsification Rules
+
+Each target must independently retain exact `30/30` operations, ordered `17/17` children, denominators `27,890/887` and `86,030/1,234`, parent/child/residual conservation, ten-group D001 conservation, the new TypeScript-family conservation/count equations, overlap `0`, and nonempty packet/profile/process artifacts. Validate exact A003 workload, file/parser, graph/DB, resolution counter, diagnostic, outcome, complete ordered Evidence, canonical Graph JSON, stdout, stderr, target HEAD/status, and source/native/provenance parity after excluding only authorized M2 timing/counter and ordinary timing/resource fields.
+
+Record `startAllocBytes`, `endAllocBytes`, `maxObservedSys`, process wall/CPU/user/kernel, and the fixed `O(1)` recorder lifetime. These are M2 observer/resource facts only. No M2 D001, parent, analyzer, process, or resource value is compared with or promoted over A003.
+
+M2 exposes the one exact production-owner candidate without another attribution packet only when, on Cheapapp and Restaurant Manager separately, all packet gates pass and:
+
+```text
+receiverRecheckCount > 0
+member_receiver_recheck.durationNs - member_receiver_recheck_timer_control.durationNs > 0
+receiverRecheckTrueCount = 0
+receiverRecheckFalseCount = receiverRecheckCount
+priorUnclaimedMemberLookupCount = memberLookupCount
+```
+
+If exposed, a fresh production Architect can judge immediately one synchronous call-only algorithm: preserve the existing nil/library/language, receiver trim, catalog lookup, result, order, and failure behavior, but route only D001's already-unclaimed member fallback through one private helper/path that omits the second `repositoryReceiverClaimed`; keep the existing checked helper for D002/D003. This removes the measured read-only traversal in place, adds no retained state, and shifts no work downstream. This paragraph is a post-M2 decision hypothesis, not production authorization.
+
+If either target has zero rechecks, no positive elapsed above the matched control, any true recheck, or a failed count predicate, this exact owner is falsified. Main must not request M3, another family split, a cache-key packet, or broad instrumentation. The valid M2 result then returns directly to governance with no production direction from this packet.
+
+STOP and return to Main if M2 needs a third overlay owner, production/test/script/canonical-build-interface/target edit, another M1 family, per-site retained data, a map/cache, a retry, overlapping targets, a competitor, a missing field, negative remainder, failed conservation, denominator/workload/output/order/semantic drift, or another attribution measurement before production can be judged.
+
+Completion is exactly two valid target packets plus the one Investigation report and the predicates above. M2 remains attribution-only: no candidate comparison, baseline promotion, D001 streak/checklist/disposition effect, Supervisor, detect, stage, or commit. Next owner is Main Orchestration; after valid M2, Main may return it to one fresh A006 production Architect for the immediate expose-or-falsify decision, never to Planner/Coder directly.
+
+`ARCHITECT_A006_M2_READY`
