@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_CURRENT_BASIS_RECORDED / D002_RESIDUAL_ATTRIBUTION_BLOCKED / DISTINCT_COMMON_OWNER_UNAVAILABLE / PRODUCTION_ARCHITECT_LOCKED / EXHAUSTION_ARCHITECT_PENDING`; accepted A003 baselines and every measured value remain current; A006-M1/M2 and D002 attribution are nonnumeric
+- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODUCTION_ARCHITECT_LOCKED`; accepted A003 baselines and every measured value remain current; A006-M1/M2, D002 attribution, and both exhaustion transitions are nonnumeric
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -580,7 +580,19 @@ Current rows: none.
 
 | Parent row | Child row | Accepted numeric basis | Streak effect | Terminal control | Checklist effect | Next cursor | Evidence ID |
 |------------|-----------|------------------------|---------------|------------------|------------------|-------------|-------------|
-| `B1-P1A-OP001` | `B2-P2A-A001-D001` | accepted A003 values and denominators unchanged | retains `2`; no event added | `EVIDENCE_EXHAUSTED`; not a third attempt or `SYSTEM_CHARACTERISTIC` | D001 checked; parent unchecked; checked children `1/17` | active unchecked D002; `D002_RESIDUAL_ATTRIBUTION_BLOCKED / DISTINCT_COMMON_OWNER_UNAVAILABLE / PRODUCTION_ARCHITECT_LOCKED / EXHAUSTION_ARCHITECT_PENDING` | `E2-P2A-A006EXHAUST1`, `E2-P2A-D002ATTRIB1` |
+| `B1-P1A-OP001` | `B2-P2A-A001-D001` | accepted A003 values and denominators unchanged | retains `2`; no event added | `EVIDENCE_EXHAUSTED`; not a third attempt or `SYSTEM_CHARACTERISTIC` | D001 checked; parent unchecked | D002 subsequently terminal `EVIDENCE_EXHAUSTED`; active unchecked D003 | `E2-P2A-A006EXHAUST1`, `E2-P2A-D002EXHAUST1` |
+| `B1-P1A-OP001` | `B2-P2A-A001-D002` | accepted A003 values and denominators unchanged | no D002 streak exists; no event added | `EVIDENCE_EXHAUSTED`; not a production attempt or `SYSTEM_CHARACTERISTIC` | D002 checked; parent unchecked; checked children `2/17` | active unchecked D003; `D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODUCTION_ARCHITECT_LOCKED` | `E2-P2A-D002ATTRIB1/D002ARCH1/D002BOUNDARY1/D002EXHAUST1`, `E2-P2A-D003CURRENT1` |
+
+### D003 Current Accepted Target-Separated Basis
+
+No new benchmark run occurred. These values are the already accepted A003 D003 rows, promoted only by the A003 Owner `KEEP` and now selected as the next current child after D002 terminalization.
+
+| Target | D003 `resolve_type_annotations` | Parent / analyzer / process | Denominator | Owner / measured path | Evidence |
+|---|---:|---:|---|---|---|
+| `E:\cheapapp.org` | `2.262894300 s` | `20.472602300 / 93.531974900 / 95.630648200 s` | `files=887; typeAnnotations=35003` | `internal/resolution/resolve.go::resolveTypeAnnotation`; `analyze.Run -> runPhase(PhaseResolution) -> ResolveBoundInto -> files -> TypeAnnotations -> resolveTypeAnnotation` | `E2-P2A-D003CURRENT1`; accepted A003 comparison SHA-256 `8D64F905A4413E375DF8CA75E6465EE09BBBEA777DC755DF304F09BB67691C2F` |
+| `E:\Restaurant_manager` | `1.835270600 s` | `20.850792800 / 98.020546700 / 101.096911900 s` | `files=1234; typeAnnotations=57970` | same measured envelope owner/path | `E2-P2A-D003CURRENT1`; accepted A003 comparison SHA-256 `ED19F20BEF5490C361D2A8F0C7634A8D2A7F7EC43371F5F96CF09117447B557C` |
+
+Targets remain independent and are never averaged. These values select D003 as the next checklist child under the binding queue; they do not prove a residual cause, production owner, candidate, speedup, or disposition.
 
 ### A003 Two-Target Candidate Measurement — Owner KEEP / Restore And Checkpoint Complete
 
@@ -630,7 +642,7 @@ The unchanged recovery build produced one measurement-only executable. Cheapapp 
 
 Resource deltas versus the accepted A003 packet are recorded as instrumentation effects, not product improvement: Cheapapp start/end/max-Sys `+1,768 / +252,303,448 / +27,164,672` bytes; Restaurant `-3,896 / -36,632,576 / +364,048,384` bytes. Exact evidence: `E2-P2A-A006M1DIRECT1`.
 
-Post-M2 control result: `E2-P2A-A006EXHAUST1` consumes `A006ARCH3/A006MAINVERIFY2/A006BLOCK1` without adding or changing a benchmark number. D001 is terminal `EVIDENCE_EXHAUSTED`, checked-child count is `1/17`, streak remains `2`, parent remains unchecked, and D002 becomes active/unchecked at attribution pending.
+Post-M2 control result: `E2-P2A-A006EXHAUST1` consumes `A006ARCH3/A006MAINVERIFY2/A006BLOCK1` without adding or changing a benchmark number. D001 is terminal `EVIDENCE_EXHAUSTED` and retains streak `2`. The later `E2-P2A-D002EXHAUST1` also changes no benchmark number or streak; checked-child count is now `2/17`, parent remains unchecked, and D003 is active/unchecked at attribution pending.
 
 ### A006-M2 Receiver-Recheck Attribution — Falsified Two-Target Owner
 
@@ -660,9 +672,9 @@ Append only metrics needed to explain an active elapsed-time cost or validate it
 
 | Benchmark ID | Workload denominator | Initial total | Final accepted total | Absolute delta | Percent delta | Parent checklist checked / measured | Child checklist checked / measured | Unchecked blocked rows | Final disposition | Evidence ID |
 |--------------|----------------------|---------------|----------------------|----------------|---------------|-------------------------------------|------------------------------------|------------------------|-------------------|-------------|
-| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `0/30` | `1/17`; D001 terminal `EVIDENCE_EXHAUSTED`; active D002 remains unchecked | D002 attribution blocked; A004/A005 values remain rejected and A006-M1/M2 remain attribution-only | A001/A002/A003 `KEEP`; A003 and WAL checkpoints complete; A004/A005 `NO_KEEP / ROLLBACK_COMPLETE`; `D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_RESIDUAL_ATTRIBUTION_BLOCKED / DISTINCT_COMMON_OWNER_UNAVAILABLE / PRODUCTION_ARCHITECT_LOCKED / EXHAUSTION_ARCHITECT_PENDING` | existing numeric evidence unchanged; `E2-P2A-A006EXHAUST1`, `E2-P2A-D002ATTRIB1`; final evidence pending |
+| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `0/30` | `2/17`; D001 and D002 terminal `EVIDENCE_EXHAUSTED`; active D003 remains unchecked | D003 attribution pending; A004/A005 values remain rejected and A006-M1/M2 remain attribution-only | A001/A002/A003 `KEEP`; A003 and WAL checkpoints complete; A004/A005 `NO_KEEP / ROLLBACK_COMPLETE`; `D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODUCTION_ARCHITECT_LOCKED` | existing numeric evidence unchanged; `E2-P2A-A006EXHAUST1`, `E2-P2A-D002EXHAUST1`, `E2-P2A-D003CURRENT1`; final evidence pending |
 
-Current nonnumeric cursor for this unchanged numeric row: `D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_RESIDUAL_ATTRIBUTION_BLOCKED / DISTINCT_COMMON_OWNER_UNAVAILABLE / PRODUCTION_ARCHITECT_LOCKED / EXHAUSTION_ARCHITECT_PENDING`, evidenced by `E2-P2A-A006EXHAUST1` and `E2-P2A-D002ATTRIB1`. No measured elapsed value, denominator, target separation, or Attempt Numeric History row changes.
+Current nonnumeric cursor for this unchanged numeric row: `D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODUCTION_ARCHITECT_LOCKED`, evidenced by `E2-P2A-A006EXHAUST1`, `E2-P2A-D002EXHAUST1`, and `E2-P2A-D003CURRENT1`. No measured elapsed value, denominator, target separation, or Attempt Numeric History row changes.
 
 ## B3 - P3 Benchmarks
 
@@ -671,7 +683,7 @@ P3-A/P3-B/P3-C are final review, cleanup, detect, commit, and handoff operations
 ## Non-Benchmarkable Notes
 
 - `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1/COMMIT1` records the confirmed `--force` stale-generation correctness bug, exact four-file fix, `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`, and checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`. It is not an optimization attempt, benchmark, profile, A003 rerun, streak change, or checklist transition.
-- `E2-P2A-A005ATTRIB1/ARCH1/PLAN1/MAINVERIFY1/IMPACT1/SRC1/BUILD1/TEST1/BUILDFAIL1/PACKET1` are architecture/implementation/build identity evidence. `E2-P2A-A005CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1` record rejected/unpromoted candidate measurements, Supervisor correctness PASS, Main NO_KEEP, and exact restoration. A003 values stay accepted; A004/A005 values stay rejected. Current cursor: `D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_RESIDUAL_ATTRIBUTION_BLOCKED / DISTINCT_COMMON_OWNER_UNAVAILABLE / PRODUCTION_ARCHITECT_LOCKED / EXHAUSTION_ARCHITECT_PENDING`.
+- `E2-P2A-A005ATTRIB1/ARCH1/PLAN1/MAINVERIFY1/IMPACT1/SRC1/BUILD1/TEST1/BUILDFAIL1/PACKET1` are architecture/implementation/build identity evidence. `E2-P2A-A005CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1` record rejected/unpromoted candidate measurements, Supervisor correctness PASS, Main NO_KEEP, and exact restoration. A003 values stay accepted; A004/A005 values stay rejected. Current cursor: `D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODUCTION_ARCHITECT_LOCKED`.
 - `E2-P2A-A006ARCH1/A006ARCH2/A006MAINVERIFY1/A006M2ARCH1/A006M2MAINVERIFY1/A006M2DIRECT1/A006M2REVIEW1` create no candidate value. M1/M2 completed attribution and cannot replace A003, increment streak, or produce a disposition; M3 is forbidden.
 - `E2-P2A-A006M1BUILDFAIL1` remains the preserved initial build-input failure. `E2-P2A-A006M1DIRECT1` records the later authorized recovery and target-separated attribution values; neither is a production attempt or candidate benchmark.
 
