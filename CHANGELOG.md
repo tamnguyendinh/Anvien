@@ -11,6 +11,8 @@ All notable changes to anvien will be documented in this file.
 - Added syntax-derived export tables plus alias, star, and re-export traversal with explicit cycle, ambiguity, and terminal-proof handling.
 - Added TypeScript standard-library authority, explicit external-target representation, structured resolution outcomes, Graph Health projection, and runtime-reader carriage.
 
+### Add skills: Orchestration, governance-rule-guard
+
 ### Changed
 
 - Strengthened graph identity with exact ranges, lexical ownership, occurrence conservation, and fail-closed Definition collision handling.
