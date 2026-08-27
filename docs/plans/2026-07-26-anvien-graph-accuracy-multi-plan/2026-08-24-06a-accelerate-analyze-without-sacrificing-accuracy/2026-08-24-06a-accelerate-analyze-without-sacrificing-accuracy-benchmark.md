@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODUCTION_ARCHITECT_LOCKED`; accepted A003 baselines and every measured value remain current; A006-M1/M2, D002 attribution, and both exhaustion transitions are nonnumeric
+- Current state: `OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN_16_OF_17_TERMINAL / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_ACTIVE_OPEN / D005-D017_PASS_BY_OWNER_COST_FLOOR / PRODUCTION_ARCHITECT_LOCKED`; accepted A003 values remain current and target-separated
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -18,11 +18,13 @@
 - Owner supersedes the existing `E:\Anvien` numeric rows as the current benchmark control surface. Their two independent replacements are now recorded in separate Cheapapp and Restaurant Manager blocks; the historical rows cannot select or prove A001.
 - Keep targets separate: Cheapapp and Restaurant Manager reports are both recorded and are never averaged or combined. A001 promotion occurred only after `E2-P2A-A001REVIEW1/DECISION1`; each repo's optimized values became that repo's accepted current baseline and never a cross-repo aggregate.
 - Elapsed wall-clock time is the primary and controlling metric. Current absolute elapsed time alone orders the bottleneck list.
+- Latest Owner authority supersedes every conflicting benchmark rule/table note that forbids a size/cost cutoff or requires production processing of every smaller row. `B2-P2A-OWNERCOSTFLOOR1` is the current control record: a row terminalizes as `PASS_BY_OWNER_COST_FLOOR` only when it exists on both accepted targets and both accepted controlling wall values are strictly `< 3.000000000 s`. Equality, any `>= 3.000000000 s`, missing value, or lost comparability remains open. CPU/profile samples never participate.
+- `PASS_BY_OWNER_COST_FLOOR` is non-production and nonnumeric in the sense that it creates no new measurement: it preserves the packet values and adds only a terminal control classification. It is not `KEEP`, `NO_KEEP`, `ROLLBACK`, `SYSTEM_CHARACTERISTIC`, `EVIDENCE_EXHAUSTED`, an attempt, streak event, speedup, or accuracy waiver; it needs no Architect/Coder/measurement/Supervisor.
 - For the selected child, `child_total_elapsed` is the sole value for child ranking, before/after comparison, and child-improvement acceptance. Active-child sub-metrics and work counters explain cause/comparability only and cannot substitute for it.
-- P1-A writes the first real total graph-generation time and one parent row per measured top-level operation with its work denominator. It creates the complete top-level list in descending current absolute elapsed-time order; every smaller measured parent remains mandatory queued work.
+- P1-A retains the complete top-level list. The Owner cost floor checks qualifying rows directly; only nonqualifying/missing/noncomparable rows remain in the open queue, preserving their relative order.
 - Exactly one visible measurement executor produces the initial accepted P1-A capture. Its exact real `anvien analyze` options/workload/cache/runtime identity is recorded in evidence at execution; after acceptance, up to three ACTIVE read-only measurement analysts may share that capture without running competing benchmark processes.
 - P2-A selects the largest unchecked parent first. Processing that parent begins by measuring inside only its real boundary and creating the complete child list in descending absolute elapsed-time order, including every smaller measured child.
-- Dynamic `B2-P2A-Annn-Dnnn` rows are the child control list for the active parent. The largest unchecked child is processed first, then every smaller child sequentially. No child may be omitted or terminalized because its elapsed time is small.
+- Dynamic `B2-P2A-Annn-Dnnn` rows remain the complete child control list. Strict floor qualifiers terminalize in place; the largest remaining open child is processed next. No row is omitted.
 - Benchmark parent/child row cardinality must match the plan checklist mirror exactly. If drill-down finds `10` children, this ledger contains exactly `10` child rows for that parent and plan contains exactly `10` nested child checkboxes before Architect.
 - Record every measurement immediately. Every numeric result references exact evidence that proves command/workload validity, operation boundary, denominator, and output comparability.
 - `Initial baseline` is immutable once P1-A accepts the first comparable value. `Current accepted` is the value on the last correct retained state. `Current before` is the accepted value entering the latest attempt. `Candidate after` remains unpromoted until disposition.
@@ -35,7 +37,7 @@
 - On the third consecutive attempt without `KEEP` at one accepted baseline, preserve accepted child/parent/total values, cite all three attempt rows/evidence, and set only the child to terminal `SYSTEM_CHARACTERISTIC`.
 - `SYSTEM_CHARACTERISTIC` is not a speedup, accuracy waiver, acceptance of a rejected candidate, or parent completion. It checks off only that child; the largest remaining unchecked child of the same parent is next.
 - A parent is processed only after every measured child is terminal and checked. Then remeasure parent/full pipeline, refresh the complete top-level list, check the parent, and select the largest remaining unchecked parent.
-- `BLOCKED` is permitted only for concrete unavailable authority, dependency, or evidence. It stays unchecked and blocks parent/P2-A completion; it cannot skip a small row.
+- `BLOCKED` is permitted only for concrete unavailable authority, dependency, or evidence. It stays unchecked and blocks parent/P2-A completion; cost-floor terminalization uses only the separate strict Owner predicate.
 - Binding `EVIDENCE_EXHAUSTED` is a nonnumeric terminal control state only after every exact condition in `plan-rules.md` is independently verified. It preserves accepted values and streak, creates no attempt or benchmark number, checks only that child, and cannot substitute for ordinary `BLOCKED_OPEN` or `SYSTEM_CHARACTERISTIC`.
 - Use existing timing/benchmark/profile capability first. Compare before/after only on a like-for-like workload, operation denominator, and instrumentation state. Do not rank inferred values, overlapping intervals, inclusive profile samples, or mismatched instrumentation states as if they were comparable elapsed times.
 - If one required P1-A timing needs source instrumentation, its numeric row is ineligible until `E1-P1A-INSTR1` proves the sole visible sequential writer, exact owner and fresh graph/file-detail/impact, canonical full-build PASS before use, accepted runtime/instrumentation identity, overhead/comparability, and output equivalence. The branch must then record exactly one disposition: carry exact ownership into the first refreshed P2-A attempt, or remove the owned bytes, full-build again, and re-establish and remeasure the accepted timing basis. Benchmark never mixes pre-instrumented, instrumented, or post-removal values in one comparison.
@@ -224,7 +226,7 @@ Executor `01a03597-6afb-73e1-bee6-4306836cce01` completed one launch and is idle
 | End-to-end before / after | total graph-generation values around the same attempt |
 | Cumulative delta from initial | current-accepted minus initial-baseline after promotion |
 | Consecutive unsuccessful attempts | child-owned count when one child is active; reset by child KEEP, terminal for that child at `3` |
-| Disposition | parent processing state or child-attempt result; rejected values never become current accepted and small time is never a disposition |
+| Disposition | parent processing state or child-attempt result; rejected values never become current accepted; `PASS_BY_OWNER_COST_FLOOR` is a separate non-production terminal control, not a disposition |
 | Proven owner / call path | exact current owner/call path only when evidence proves it; unknown is recorded without guessing |
 | Evidence ID | exact measurement and validity/disposition proof |
 
@@ -576,14 +578,73 @@ Current rows: none.
 | Parent row | Child row | Current accepted baseline | Work denominator | Retained child elapsed time | Retained parent elapsed time | Attempt 1 / no-KEEP reason | Attempt 2 / no-KEEP reason | Attempt 3 / no-KEEP reason | Terminal child disposition | Plan child checkbox | Evidence ID |
 |------------|-----------|---------------------------|------------------|-----------------------------|------------------------------|----------------------------|----------------------------|----------------------------|----------------------------|---------------------|-------------|
 
+### `B2-P2A-OWNERCOSTFLOOR1` — Accepted A003 Owner Cost-Floor Control
+
+Predicate: both accepted targets contain the row and both controlling wall values are strictly `< 3.000000000 s`. CPU/profile metrics are excluded. Packet mappings are exact `30/30` operations and `17/17` children with zero missing/duplicate names. Evidence: `E2-P2A-OWNERCOSTFLOOR1`.
+
+| Top-level row | Operation | Cheapapp wall | Restaurant wall | Control state |
+|---|---|---:|---:|---|
+| `B1-P1A-OP001` | `resolution` | `20.472602300 s` | `20.850792800 s` | `OPEN` |
+| `B1-P1A-OP002` | `db_load` | `39.490259400 s` | `35.320587700 s` | `OPEN` |
+| `B1-P1A-OP003` | `parse` | `10.798086200 s` | `17.321848600 s` | `OPEN` |
+| `B1-P1A-OP004` | `graph_snapshot` | `14.158001400 s` | `14.831941000 s` | `OPEN` |
+| `B1-P1A-OP005` | `semantic_enrichment` | `3.516770500 s` | `4.509375000 s` | `OPEN` |
+| `B1-P1A-OP006` | `db_runner_resolve` | `1.005832600 s` | `0.930066300 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP007` | `cross_file_binding` | `0.596224000 s` | `0.977645700 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP008` | `ai_context` | `1.241777700 s` | `1.461508500 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP009` | `analyzer_orchestration` | `0.182072000 s` | `0.915124100 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP010` | `processes` | `0.576625900 s` | `0.517450700 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP011` | `scan` | `0.329323800 s` | `0.593824500 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP012` | `file_projection` | `0.247998400 s` | `0.402707800 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP013` | `routes` | `1.471013400 s` | `0.562993500 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP014` | `documents` | `0.115228800 s` | `0.051515900 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP015` | `db_runner_close` | `0.202554800 s` | `0.227821300 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP016` | `analyze_setup` | `0.228877000 s` | `0.420487200 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP017` | `tools` | `0.460391300 s` | `0.177052700 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP018` | `communities` | `0.039984300 s` | `0.151438900 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP019` | `registry_meta` | `0.098595900 s` | `0.126964700 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP020` | `cli_preparation` | `0.050773100 s` | `0.112552400 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP021` | `output_publication` | `0.000000000 s` | `0.006995700 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP022` | `orm` | `0.088622300 s` | `0.051036600 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP023` | `cli_startup` | `0.017113300 s` | `0.015507100 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP024` | `structure` | `0.003751900 s` | `0.011648500 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP025` | `graph_compact` | `0.011348800 s` | `0.011380200 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP026` | `mro` | `0.003037800 s` | `0.004942700 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP027` | `benchmark_write` | `0.007725800 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP028` | `cobol` | `0.002517600 s` | `0.002060000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP029` | `memory_profile` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP030` | `cpu_profile_completion` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+
+| OP001 child row | Child | Cheapapp wall | Restaurant wall | Control state |
+|---|---|---:|---:|---|
+| `B2-P2A-A001-D001` | `resolve_calls` | `3.447846300 s` | `9.401585300 s` | preserved `EVIDENCE_EXHAUSTED`, streak `2` |
+| `B2-P2A-A001-D002` | `resolve_accesses` | `9.380783200 s` | `2.254679300 s` | preserved `EVIDENCE_EXHAUSTED`, no streak |
+| `B2-P2A-A001-D003` | `resolve_type_annotations` | `2.262894300 s` | `1.835270600 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D004` | `project_resolution_outcomes` | `4.652523600 s` | `5.995737900 s` | `OPEN / ACTIVE` |
+| `B2-P2A-A001-D005` | `emit_definition_nodes` | `0.389693800 s` | `0.657720100 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D006` | `finalize_resolution_outcomes` | `0.156782300 s` | `0.446357000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D007` | `build_binding_occurrence_index` | `0.077439500 s` | `0.188117900 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D008` | `finalize_typescript_authority_results` | `0.028755700 s` | `0.011585500 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D009` | `emit_import_edges` | `0.037951300 s` | `0.030692500 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D010` | `emit_typescript_external_symbols` | `0.015196500 s` | `0.005522000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D011` | `emit_method_dispatch_edges` | `0.000000000 s` | `0.003288900 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D012` | `assemble_resolution_result` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D013` | `binding_accumulator_dispose` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D014` | `emit_heritage_compatibility_edges` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D015` | `emit_unresolved_heritage_diagnostics` | `0.000000000 s` | `0.004026800 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D016` | `finalize_resolution_metadata` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D017` | `runtime_setup` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+
+Control totals: top-level `25` floor-PASS / `5` open (`25/30` checked); children `2` prior terminal + `14` floor-PASS + `1` open (`16/17` checked). Open parent order remains `OP001, OP002, OP003, OP004, OP005`; OP001 remains active and D004 is its only open child. Accepted values and attempt history are unchanged.
+
 ### Evidence-Exhausted Terminal Control Records
 
 | Parent row | Child row | Accepted numeric basis | Streak effect | Terminal control | Checklist effect | Next cursor | Evidence ID |
 |------------|-----------|------------------------|---------------|------------------|------------------|-------------|-------------|
-| `B1-P1A-OP001` | `B2-P2A-A001-D001` | accepted A003 values and denominators unchanged | retains `2`; no event added | `EVIDENCE_EXHAUSTED`; not a third attempt or `SYSTEM_CHARACTERISTIC` | D001 checked; parent unchecked | D002 subsequently terminal `EVIDENCE_EXHAUSTED`; active unchecked D003 | `E2-P2A-A006EXHAUST1`, `E2-P2A-D002EXHAUST1` |
-| `B1-P1A-OP001` | `B2-P2A-A001-D002` | accepted A003 values and denominators unchanged | no D002 streak exists; no event added | `EVIDENCE_EXHAUSTED`; not a production attempt or `SYSTEM_CHARACTERISTIC` | D002 checked; parent unchecked; checked children `2/17` | active unchecked D003; `D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODUCTION_ARCHITECT_LOCKED` | `E2-P2A-D002ATTRIB1/D002ARCH1/D002BOUNDARY1/D002EXHAUST1`, `E2-P2A-D003CURRENT1` |
+| `B1-P1A-OP001` | `B2-P2A-A001-D001` | accepted A003 values and denominators unchanged | retains `2`; no event added | `EVIDENCE_EXHAUSTED`; not a third attempt or `SYSTEM_CHARACTERISTIC` | D001 checked; parent unchecked | D004 active after independent floor classification | `E2-P2A-A006EXHAUST1`, `E2-P2A-OWNERCOSTFLOOR1` |
+| `B1-P1A-OP001` | `B2-P2A-A001-D002` | accepted A003 values and denominators unchanged | no D002 streak exists; no event added | `EVIDENCE_EXHAUSTED`; not a production attempt or `SYSTEM_CHARACTERISTIC` | D002 checked; parent unchecked | D004 active after D003/D005-D017 floor-PASS; checked children `16/17` | `E2-P2A-D002ATTRIB1/D002ARCH1/D002BOUNDARY1/D002EXHAUST1`, `E2-P2A-OWNERCOSTFLOOR1` |
 
-### D003 Current Accepted Target-Separated Basis
+### D003 Accepted Target-Separated Basis — Now Floor Terminal
 
 No new benchmark run occurred. These values are the already accepted A003 D003 rows, promoted only by the A003 Owner `KEEP` and now selected as the next current child after D002 terminalization.
 
@@ -592,7 +653,7 @@ No new benchmark run occurred. These values are the already accepted A003 D003 r
 | `E:\cheapapp.org` | `2.262894300 s` | `20.472602300 / 93.531974900 / 95.630648200 s` | `files=887; typeAnnotations=35003` | `internal/resolution/resolve.go::resolveTypeAnnotation`; `analyze.Run -> runPhase(PhaseResolution) -> ResolveBoundInto -> files -> TypeAnnotations -> resolveTypeAnnotation` | `E2-P2A-D003CURRENT1`; accepted A003 comparison SHA-256 `8D64F905A4413E375DF8CA75E6465EE09BBBEA777DC755DF304F09BB67691C2F` |
 | `E:\Restaurant_manager` | `1.835270600 s` | `20.850792800 / 98.020546700 / 101.096911900 s` | `files=1234; typeAnnotations=57970` | same measured envelope owner/path | `E2-P2A-D003CURRENT1`; accepted A003 comparison SHA-256 `ED19F20BEF5490C361D2A8F0C7634A8D2A7F7EC43371F5F96CF09117447B557C` |
 
-Targets remain independent and are never averaged. These values select D003 as the next checklist child under the binding queue; they do not prove a residual cause, production owner, candidate, speedup, or disposition.
+Targets remain independent and are never averaged. `B2-P2A-OWNERCOSTFLOOR1` now classifies both strict-sub-floor values as `PASS_BY_OWNER_COST_FLOOR`; D003 is checked without a production cause, candidate, speedup, or disposition. D004 is the next active child.
 
 ### A003 Two-Target Candidate Measurement — Owner KEEP / Restore And Checkpoint Complete
 
@@ -642,7 +703,7 @@ The unchanged recovery build produced one measurement-only executable. Cheapapp 
 
 Resource deltas versus the accepted A003 packet are recorded as instrumentation effects, not product improvement: Cheapapp start/end/max-Sys `+1,768 / +252,303,448 / +27,164,672` bytes; Restaurant `-3,896 / -36,632,576 / +364,048,384` bytes. Exact evidence: `E2-P2A-A006M1DIRECT1`.
 
-Post-M2 control result: `E2-P2A-A006EXHAUST1` consumes `A006ARCH3/A006MAINVERIFY2/A006BLOCK1` without adding or changing a benchmark number. D001 is terminal `EVIDENCE_EXHAUSTED` and retains streak `2`. The later `E2-P2A-D002EXHAUST1` also changes no benchmark number or streak; checked-child count is now `2/17`, parent remains unchecked, and D003 is active/unchecked at attribution pending.
+Post-M2 control result: D001 remains terminal `EVIDENCE_EXHAUSTED` with streak `2`; D002 remains terminal `EVIDENCE_EXHAUSTED` with no streak. `B2-P2A-OWNERCOSTFLOOR1` then checks D003 and D005-D017 without adding a measurement; checked-child count is `16/17`, parent remains unchecked, and D004 is active/open.
 
 ### A006-M2 Receiver-Recheck Attribution — Falsified Two-Target Owner
 
@@ -672,9 +733,9 @@ Append only metrics needed to explain an active elapsed-time cost or validate it
 
 | Benchmark ID | Workload denominator | Initial total | Final accepted total | Absolute delta | Percent delta | Parent checklist checked / measured | Child checklist checked / measured | Unchecked blocked rows | Final disposition | Evidence ID |
 |--------------|----------------------|---------------|----------------------|----------------|---------------|-------------------------------------|------------------------------------|------------------------|-------------------|-------------|
-| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `0/30` | `2/17`; D001 and D002 terminal `EVIDENCE_EXHAUSTED`; active D003 remains unchecked | D003 attribution pending; A004/A005 values remain rejected and A006-M1/M2 remain attribution-only | A001/A002/A003 `KEEP`; A003 and WAL checkpoints complete; A004/A005 `NO_KEEP / ROLLBACK_COMPLETE`; `D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODUCTION_ARCHITECT_LOCKED` | existing numeric evidence unchanged; `E2-P2A-A006EXHAUST1`, `E2-P2A-D002EXHAUST1`, `E2-P2A-D003CURRENT1`; final evidence pending |
+| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `25/30` | `16/17`; only D004 remains open under OP001 | open D004 plus top-level OP001-OP005; A004/A005 values remain rejected and A006-M1/M2 attribution-only | `OWNER_COST_FLOOR_APPLIED / D004_ACTIVE_OPEN / PRODUCTION_ARCHITECT_LOCKED`; accepted A003 unchanged | `B2-P2A-OWNERCOSTFLOOR1`, `E2-P2A-OWNERCOSTFLOOR1`; final evidence pending |
 
-Current nonnumeric cursor for this unchanged numeric row: `D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODUCTION_ARCHITECT_LOCKED`, evidenced by `E2-P2A-A006EXHAUST1`, `E2-P2A-D002EXHAUST1`, and `E2-P2A-D003CURRENT1`. No measured elapsed value, denominator, target separation, or Attempt Numeric History row changes.
+Current control cursor for this unchanged numeric row: `OWNER_COST_FLOOR_APPLIED / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_ACTIVE_OPEN / D005-D017_PASS_BY_OWNER_COST_FLOOR / PRODUCTION_ARCHITECT_LOCKED`, evidenced by `E2-P2A-OWNERCOSTFLOOR1`. No measured value, denominator, target separation, or Attempt Numeric History row changes.
 
 ## B3 - P3 Benchmarks
 
@@ -683,7 +744,7 @@ P3-A/P3-B/P3-C are final review, cleanup, detect, commit, and handoff operations
 ## Non-Benchmarkable Notes
 
 - `E2-P2A-WALFORCEPLAN1/FIX1/REVIEW1/COMMIT1` records the confirmed `--force` stale-generation correctness bug, exact four-file fix, `SUPERVISOR_CHILD06A_WAL_FORCE_FIX_PASS`, and checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d`. It is not an optimization attempt, benchmark, profile, A003 rerun, streak change, or checklist transition.
-- `E2-P2A-A005ATTRIB1/ARCH1/PLAN1/MAINVERIFY1/IMPACT1/SRC1/BUILD1/TEST1/BUILDFAIL1/PACKET1` are architecture/implementation/build identity evidence. `E2-P2A-A005CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1` record rejected/unpromoted candidate measurements, Supervisor correctness PASS, Main NO_KEEP, and exact restoration. A003 values stay accepted; A004/A005 values stay rejected. Current cursor: `D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODUCTION_ARCHITECT_LOCKED`.
+- `E2-P2A-A005ATTRIB1/ARCH1/PLAN1/MAINVERIFY1/IMPACT1/SRC1/BUILD1/TEST1/BUILDFAIL1/PACKET1` are architecture/implementation/build identity evidence. `E2-P2A-A005CHEAPAPP1/RESTAURANT1/REVIEW1/DECISION1/ROLLBACK1` record rejected/unpromoted candidate measurements, Supervisor correctness PASS, Main NO_KEEP, and exact restoration. A003 values stay accepted; A004/A005 values stay rejected. Current cursor is the separate `B2-P2A-OWNERCOSTFLOOR1` D004-active control state.
 - `E2-P2A-A006ARCH1/A006ARCH2/A006MAINVERIFY1/A006M2ARCH1/A006M2MAINVERIFY1/A006M2DIRECT1/A006M2REVIEW1` create no candidate value. M1/M2 completed attribution and cannot replace A003, increment streak, or produce a disposition; M3 is forbidden.
 - `E2-P2A-A006M1BUILDFAIL1` remains the preserved initial build-input failure. `E2-P2A-A006M1DIRECT1` records the later authorized recovery and target-separated attribution values; neither is a production attempt or candidate benchmark.
 

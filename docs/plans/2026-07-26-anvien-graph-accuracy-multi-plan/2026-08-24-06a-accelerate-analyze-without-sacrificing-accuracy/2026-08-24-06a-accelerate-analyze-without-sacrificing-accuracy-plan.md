@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Status: `P0-A complete / P1-A complete / A001 KEEP / A001_COMMIT_COMPLETE / A002 KEEP / A002_CHECKPOINT_COMPLETE / A003 SUPERVISOR PASS / OWNER KEEP / RESTORE COMPLETE / A003_CHECKPOINT_COMPLETE / WAL_FIX_SUPERVISOR_PASS / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR PASS / NO_KEEP / ROLLBACK_COMPLETE / A006_M2_RECEIVER_RECHECK_FALSIFIED / A006_NO_FURTHER_MEASUREMENT_JUSTIFIED / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODUCTION_ARCHITECT_LOCKED / PREEXISTING_PRESERVE_ONLY_GOLDEN_FAILURE_RECORDED / repo-specific measurements preserved separately`
+- Status: `P0-A complete / P1-A complete / P2-A open / OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN_16_OF_17_TERMINAL / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_ACTIVE_OPEN / D005-D017_PASS_BY_OWNER_COST_FLOOR / A003_CHECKPOINT_COMPLETE / TARGET_SEPARATION_PRESERVED / PRODUCTION_ARCHITECT_LOCKED`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -24,6 +24,7 @@ Reduce as much as current evidence safely permits the measured graph-generation 
 
 - Binding detailed rule authority: [plan-rules.md](plan-rules.md).
 - The linked auxiliary file contains the complete Child 06A plan-wide rules. It is not a fifth standard ledger, phase, gate, report, evidence source, numeric control surface, or permission boundary; this plan continues to control goals, checklists, the Current P2-A Attempt, work steps, gates, and acceptance.
+- The latest Owner cost-floor rule in [plan-rules.md](plan-rules.md) supersedes every conflicting statement in this plan that forbids a size/cost cutoff or requires functional processing of every smaller measured row. The complete row remains recorded; strict floor qualification terminalizes it in place rather than omitting it.
 
 ## Problem
 
@@ -57,13 +58,13 @@ Preserve/validate boundary:
 - No implementation of a historical idea merely because it appeared in a prior report or legacy plan item.
 - No predefined bottleneck, source owner, file list, optimization list, or reusable architecture decision.
 - No general measurement framework, permanent observability project, or durable run-by-run report hierarchy.
-- No fixed repetition count or numeric threshold before current evidence shows what comparability support is needed.
+- No numeric threshold other than the binding Owner cost floor in [plan-rules.md](plan-rules.md); the strict `3.000000000 s` all-target predicate controls current queue terminalization.
 - No parallel production editing, per-bottleneck implementation slice, unaccepted/rejected-attempt commit, or documentation acceptance loop. Accepted Supervisor-`PASS` + Main-`KEEP` progress checkpoints follow [plan-rules.md](plan-rules.md) without closing P2-A.
 - No promotion based only on timing without the exact attempt's Supervisor accuracy/equivalence `PASS`.
 - No Child 06 correctness re-review and no direct Child 06 -> Child 07 opening.
 - No target-repository access or terminal Child 07 validation in this child.
 - No performance claim from profiled cumulative samples, historical wall times, build/test duration, or an unmeasured resource hypothesis.
-- No elapsed-time size cutoff or discretionary queue filter that can omit a measured parent or child. Ordinary `BLOCKED_OPEN` is valid only for concrete unavailable authority, dependency, or evidence and remains unchecked; the only terminal exception is binding `EVIDENCE_EXHAUSTED` after every exact condition in [plan-rules.md](plan-rules.md) is durable and independently verified.
+- The former prohibition on an elapsed-time size cutoff is superseded by the latest Owner authority. `PASS_BY_OWNER_COST_FLOOR` checks a measured row without omitting it only when every accepted target has a strictly `< 3.000000000 s` controlling wall value; any `>= 3.000000000 s`, missing value, or comparability loss remains open. Ordinary `BLOCKED_OPEN` and binding `EVIDENCE_EXHAUSTED` retain their separate meanings.
 
 ## Requirements
 
@@ -81,9 +82,9 @@ Preserve/validate boundary:
 
 ### Per-attempt architecture, planning, implementation, and accuracy gate
 
-- Select the largest current unprocessed top-level parent from the complete benchmark list and establish its current accepted timing/denominator. Later smaller parents remain queued.
+- Classify every current top-level row from the accepted target-separated packet first. Check each strict all-target floor qualifier directly; retain every other row open in its existing relative order. Continue the already-active OP001 parent until its remaining child is terminal.
 - As the first processing step for that parent, measure more deeply inside only its proven runtime boundary, record elapsed time and denominator for every real measured child, and create the complete child list in descending absolute elapsed-time order. Do not drill down every parent upfront or create a separate phase.
-- Mirror the exact parent and complete child row IDs/names into the plan checklist. Select the largest unprocessed child, prove its exact cause, source owner, complete call path, and work denominator, and keep every smaller child queued under the same parent.
+- Mirror the exact parent and complete child row IDs/names into the plan checklist. Check each strict all-target floor qualifier directly, then select the largest remaining open child and keep only other nonqualifying children queued.
 - Open a new Visible Architect turn for exactly the selected child attempt only after the complete child list exists. The packet contains the parent row, complete current child list, selected child row, current accepted child/parent/total basis, denominator, exact cause/owner/call path, preserved invariants, and any prior rejection evidence.
 - Record the Architect's exact direction, allowed owners, expected observable gain, validation/resource boundaries, and rollback condition. The decision expires when the attempt reaches disposition.
 - Planner then refreshes the Current P2-A Attempt card and replaces generic steps with concrete files/symbols, production change, tests, build, measurements, equivalence checks, and rollback for that attempt. No Coder begins before this refresh is recorded.
@@ -91,13 +92,13 @@ Preserve/validate boundary:
 - Run the exact build-holder/process preflight and canonical full build. Only after full-build `PASS` run the focused tests and `internal/resolution` package tests as validation evidence.
 - Later and separately, remeasure the selected child with the same denominator, remeasure its parent, and remeasure total graph-generation time on the same workload.
 - Open a new Visible Supervisor check for that attempt's changed candidate and affected accuracy/correctness/equivalence/output/lifecycle boundary.
-- Record one production-attempt disposition only after the Supervisor result: `KEEP`, `REWORK`, `ROLLBACK`, concrete `BLOCKED`, or terminal `SYSTEM_CHARACTERISTIC` after the required three-attempt history. Separately, a measured child may reach terminal `EVIDENCE_EXHAUSTED` only through the exact non-production governance proof in [plan-rules.md](plan-rules.md). A row's small time is never a disposition.
+- Record one production-attempt disposition only after the Supervisor result: `KEEP`, `REWORK`, `ROLLBACK`, concrete `BLOCKED`, or terminal `SYSTEM_CHARACTERISTIC` after the required three-attempt history. Separately, `EVIDENCE_EXHAUSTED` follows its exact governance proof, while `PASS_BY_OWNER_COST_FLOOR` is a distinct Owner-authorized non-production terminal control state and never a production disposition.
 - `KEEP` requires lower selected-child elapsed wall-clock time, lower retained parent elapsed wall-clock time, lower retained end-to-end graph-generation elapsed wall-clock time, and Supervisor `PASS`; only then does the candidate become the current accepted baseline.
 - Supervisor `REJECT` forces scoped restoration of the last accepted baseline, a new attempt-local internal drill-down on that accepted state, and a correction packet with the current drill-down back to a new Architect. Rejected bytes cannot become baseline, cannot be ranked, and cannot authorize a different bottleneck. If the unsuccessful streak is below `3`, a new attempt on the same bottleneck is mandatory unless a concrete blocker exists.
 - Count an attempt as unsuccessful when it produces no retainable `KEEP`: Supervisor `REJECT`, no retainable direct/end-to-end improvement, or a `REWORK`/`ROLLBACK` outcome. Store the streak against the exact bottleneck row and current accepted baseline.
 - On `KEEP`, promote the candidate, reset the selected child's consecutive unsuccessful-attempt count to `0`, remeasure that child/parent/full pipeline, and continue the same child until its remaining retained cost reaches terminal `SYSTEM_CHARACTERISTIC` or a concrete blocker is resolved.
 - On the third consecutive unsuccessful attempt, record the exact three attempt/evidence references and reasons, preserve the last accepted correct timing, and terminalize only the selected child as `SYSTEM_CHARACTERISTIC`.
-- After a child becomes terminal by retained `SYSTEM_CHARACTERISTIC` evidence or the exact binding `EVIDENCE_EXHAUSTED` proof, mark only its plan checkbox and select the largest remaining unprocessed child under the active parent. An ordinary concrete `BLOCKED_OPEN` child stays unchecked and blocks parent completion; it cannot be used as a small-row shortcut.
+- After a child becomes terminal by `SYSTEM_CHARACTERISTIC`, exact `EVIDENCE_EXHAUSTED`, or strict `PASS_BY_OWNER_COST_FLOOR` evidence, mark only its plan checkbox and select the largest remaining open child under the active parent. An ordinary concrete `BLOCKED_OPEN` child stays unchecked and blocks parent completion.
 - Mark a parent complete only after every measured child is checked with retained terminal evidence. Then remeasure the parent/full pipeline, refresh the complete top-level list, and process the largest remaining unchecked parent. Continue until every measured parent and child is checked.
 
 ### Final equivalence and closure
@@ -115,13 +116,13 @@ Preserve/validate boundary:
 - If P1-A uses timing instrumentation, `E1-P1A-INSTR1` proves the sole visible writer, exact owner/impact, full-build PASS before timing use, runtime/instrumentation identity, like-for-like overhead/comparability, output equivalence, and exactly one completed carry-forward or remove/rebuild/remeasure disposition; no instrumentation branch remains half-open.
 - The benchmark living table contains current rank, real operation/bottleneck, current elapsed time, denominator, initial baseline, current before/after, meaningful share/delta, actionability, current attempt, direct delta, end-to-end before/after, cumulative initial delta, consecutive unsuccessful-attempt count, disposition, proven owner/call path when available, and exact evidence.
 - P1-A cannot close and P2-A cannot open until benchmark contains the complete ordered top-level bottleneck list for every currently measured real operation and plan contains one unchecked parent checklist row for each benchmark parent. The largest unchecked parent is first; every smaller parent remains mandatory.
-- P2-A is the only implementation slice and exhaustively processes every measured parent and child in largest-first order at each level.
+- P2-A is the only implementation slice and exhaustively resolves every measured row: strict cost-floor qualifiers terminalize directly, while every remaining open parent/child is processed in the preserved queue order.
 - Before the first child attempt of a parent, P2-A creates the complete measured child list, mirrors every child into the nested plan checklist, selects the largest unchecked child, and proves its cause/owner/complete call path; no coarse parent name or incomplete child inventory can authorize architecture or code.
 - Every production attempt has a distinct fresh Visible Architect decision, a recorded Planner refresh of the current P2-A attempt before Coder, and a distinct post-remeasurement Visible Supervisor accuracy/equivalence result.
 - Every retained production change has exact parent/child cause/owner/impact evidence, production-first implementation, authorized test edits only after production is correct, canonical full build, post-build focused/package test execution, child before/after, parent before/after, end-to-end before/after, affected equivalence, Supervisor `PASS`, and an immediate `KEEP` disposition.
 - Only `KEEP` attempts are promoted; each promoted state becomes the next current baseline and resets the row's unsuccessful streak. Rejected candidates are restored without ranking or transition on rejected bytes.
 - The same child continues through new attempts after each `KEEP`. Three consecutive attempts without `KEEP` at one accepted baseline terminalize only that child as `SYSTEM_CHARACTERISTIC`; independently, exact binding `EVIDENCE_EXHAUSTED` proof may terminalize only that measured child without manufacturing a third attempt or changing its streak. The next-largest unchecked child of the same parent follows.
-- Every measured child of every measured parent has a retained terminal disposition and a checked plan item; every parent is checked only after all its children are checked. No small measured row is omitted.
+- Every measured child of every measured parent has either retained production/governance terminal evidence or `PASS_BY_OWNER_COST_FLOOR` packet proof and a checked plan item; every open parent is checked only after all its children are checked. No row is omitted.
 - Final total graph-generation time is lower than the initial comparable value on the same workload.
 - Accuracy, semantic completeness, graph correctness, ordered output, determinism, freshness, failure, transaction, temp, publication, Graph JSON, Ladybug, and native-reader invariants pass at every affected boundary.
 - Exactly one final whole-candidate `P3-A` Supervisor boundary passes, `P3-B` cleanup leaves accepted production/test bytes unchanged, and `P3-C` records one detect, one implementation commit, and the direct Child 07 handoff.
@@ -141,55 +142,55 @@ Preserve/validate boundary:
 
 This is the living execution checklist requested for the bottlenecks discovered by measurement. It mirrors exact benchmark row IDs and real operation names so an executor can see and mark what has been processed; it never copies elapsed-time values or replaces benchmark ordering.
 
-Current checklist entries: `30` top-level parent items plus `17` nested child items under active parent `B1-P1A-OP001`. The child items exactly match `B2-P2A-A001-D001..D017`; checked-child count is `2/17`. `B2-P2A-A001-D001` (`resolve_calls`) remains terminal `D001_EVIDENCE_EXHAUSTED_TERMINAL` under `E2-P2A-A006EXHAUST1`; its accepted A003 basis and unsuccessful streak remain exactly preserved at `2`. `B2-P2A-A001-D002` (`resolve_accesses`) is now terminal `D002_EVIDENCE_EXHAUSTED_TERMINAL` under `E2-P2A-D002EXHAUST1`; accepted A003 values remain unchanged and no D002 production attempt, `NO_KEEP`, streak event, measured value, or disposition was created. The parent remains unchecked. `B2-P2A-A001-D003` (`resolve_type_annotations`) is the next active unchecked child at `D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODUCTION_ARCHITECT_LOCKED`; D004-D017 remain queued/unopened. A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463` remains the accepted target-separated baseline.
+Current checklist entries: `30` top-level rows plus `17` nested child rows under active parent `B1-P1A-OP001`. `E2-P2A-OWNERCOSTFLOOR1` and `B2-P2A-OWNERCOSTFLOOR1` classify the exact accepted A003 packets: top-level checked count is `25/30` and OP001 checked-child count is `16/17`. D001 remains terminal `EVIDENCE_EXHAUSTED` with streak exactly `2`; D002 remains terminal `EVIDENCE_EXHAUSTED` with no streak. D003 and D005-D017 are terminal `PASS_BY_OWNER_COST_FLOOR`. D004 is the only open OP001 child and is active; OP001 remains unchecked. Open top-level order remains OP001, OP002, OP003, OP004, OP005. Accepted A003 values and target separation are unchanged.
 
 - [ ] `B1-P1A-OP001` — `resolution`
   - [x] `B2-P2A-A001-D001` — `resolve_calls` — `EVIDENCE_EXHAUSTED`
   - [x] `B2-P2A-A001-D002` — `resolve_accesses` — `EVIDENCE_EXHAUSTED`
-  - [ ] `B2-P2A-A001-D003` — `resolve_type_annotations`
+  - [x] `B2-P2A-A001-D003` — `resolve_type_annotations` — `PASS_BY_OWNER_COST_FLOOR`
   - [ ] `B2-P2A-A001-D004` — `project_resolution_outcomes`
-  - [ ] `B2-P2A-A001-D005` — `emit_definition_nodes`
-  - [ ] `B2-P2A-A001-D006` — `finalize_resolution_outcomes`
-  - [ ] `B2-P2A-A001-D007` — `build_binding_occurrence_index`
-  - [ ] `B2-P2A-A001-D008` — `finalize_typescript_authority_results`
-  - [ ] `B2-P2A-A001-D009` — `emit_import_edges`
-  - [ ] `B2-P2A-A001-D010` — `emit_typescript_external_symbols`
-  - [ ] `B2-P2A-A001-D011` — `emit_method_dispatch_edges`
-  - [ ] `B2-P2A-A001-D012` — `assemble_resolution_result`
-  - [ ] `B2-P2A-A001-D013` — `binding_accumulator_dispose`
-  - [ ] `B2-P2A-A001-D014` — `emit_heritage_compatibility_edges`
-  - [ ] `B2-P2A-A001-D015` — `emit_unresolved_heritage_diagnostics`
-  - [ ] `B2-P2A-A001-D016` — `finalize_resolution_metadata`
-  - [ ] `B2-P2A-A001-D017` — `runtime_setup`
+  - [x] `B2-P2A-A001-D005` — `emit_definition_nodes` — `PASS_BY_OWNER_COST_FLOOR`
+  - [x] `B2-P2A-A001-D006` — `finalize_resolution_outcomes` — `PASS_BY_OWNER_COST_FLOOR`
+  - [x] `B2-P2A-A001-D007` — `build_binding_occurrence_index` — `PASS_BY_OWNER_COST_FLOOR`
+  - [x] `B2-P2A-A001-D008` — `finalize_typescript_authority_results` — `PASS_BY_OWNER_COST_FLOOR`
+  - [x] `B2-P2A-A001-D009` — `emit_import_edges` — `PASS_BY_OWNER_COST_FLOOR`
+  - [x] `B2-P2A-A001-D010` — `emit_typescript_external_symbols` — `PASS_BY_OWNER_COST_FLOOR`
+  - [x] `B2-P2A-A001-D011` — `emit_method_dispatch_edges` — `PASS_BY_OWNER_COST_FLOOR`
+  - [x] `B2-P2A-A001-D012` — `assemble_resolution_result` — `PASS_BY_OWNER_COST_FLOOR`
+  - [x] `B2-P2A-A001-D013` — `binding_accumulator_dispose` — `PASS_BY_OWNER_COST_FLOOR`
+  - [x] `B2-P2A-A001-D014` — `emit_heritage_compatibility_edges` — `PASS_BY_OWNER_COST_FLOOR`
+  - [x] `B2-P2A-A001-D015` — `emit_unresolved_heritage_diagnostics` — `PASS_BY_OWNER_COST_FLOOR`
+  - [x] `B2-P2A-A001-D016` — `finalize_resolution_metadata` — `PASS_BY_OWNER_COST_FLOOR`
+  - [x] `B2-P2A-A001-D017` — `runtime_setup` — `PASS_BY_OWNER_COST_FLOOR`
 - [ ] `B1-P1A-OP002` — `db_load`
 - [ ] `B1-P1A-OP003` — `parse`
 - [ ] `B1-P1A-OP004` — `graph_snapshot`
 - [ ] `B1-P1A-OP005` — `semantic_enrichment`
-- [ ] `B1-P1A-OP006` — `db_runner_resolve`
-- [ ] `B1-P1A-OP007` — `cross_file_binding`
-- [ ] `B1-P1A-OP008` — `ai_context`
-- [ ] `B1-P1A-OP009` — `analyzer_orchestration`
-- [ ] `B1-P1A-OP010` — `processes`
-- [ ] `B1-P1A-OP011` — `scan`
-- [ ] `B1-P1A-OP012` — `file_projection`
-- [ ] `B1-P1A-OP013` — `routes`
-- [ ] `B1-P1A-OP014` — `documents`
-- [ ] `B1-P1A-OP015` — `db_runner_close`
-- [ ] `B1-P1A-OP016` — `analyze_setup`
-- [ ] `B1-P1A-OP017` — `tools`
-- [ ] `B1-P1A-OP018` — `communities`
-- [ ] `B1-P1A-OP019` — `registry_meta`
-- [ ] `B1-P1A-OP020` — `cli_preparation`
-- [ ] `B1-P1A-OP021` — `output_publication`
-- [ ] `B1-P1A-OP022` — `orm`
-- [ ] `B1-P1A-OP023` — `cli_startup`
-- [ ] `B1-P1A-OP024` — `structure`
-- [ ] `B1-P1A-OP025` — `graph_compact`
-- [ ] `B1-P1A-OP026` — `mro`
-- [ ] `B1-P1A-OP027` — `benchmark_write`
-- [ ] `B1-P1A-OP028` — `cobol`
-- [ ] `B1-P1A-OP029` — `memory_profile`
-- [ ] `B1-P1A-OP030` — `cpu_profile_completion`
+- [x] `B1-P1A-OP006` — `db_runner_resolve` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP007` — `cross_file_binding` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP008` — `ai_context` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP009` — `analyzer_orchestration` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP010` — `processes` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP011` — `scan` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP012` — `file_projection` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP013` — `routes` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP014` — `documents` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP015` — `db_runner_close` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP016` — `analyze_setup` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP017` — `tools` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP018` — `communities` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP019` — `registry_meta` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP020` — `cli_preparation` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP021` — `output_publication` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP022` — `orm` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP023` — `cli_startup` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP024` — `structure` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP025` — `graph_compact` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP026` — `mro` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP027` — `benchmark_write` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP028` — `cobol` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP029` — `memory_profile` — `PASS_BY_OWNER_COST_FLOOR`
+- [x] `B1-P1A-OP030` — `cpu_profile_completion` — `PASS_BY_OWNER_COST_FLOOR`
 
 Population and marking rules:
 
@@ -198,7 +199,8 @@ Population and marking rules:
 - Cardinality must match exactly: if one parent drill-down measures `10` child bottlenecks, benchmark must contain exactly `10` child rows for that parent and this plan must contain exactly `10` nested child checkbox items before Architect. A missing or extra row/item blocks the attempt.
 - Do not insert generic candidate, filename, solution, or empty placeholder items. Every checkbox must come from a real measured benchmark row.
 - Keep the active child unchecked after `KEEP`; the retained baseline improves, its no-KEEP counter resets, and optimization continues on that same child.
-- Check a child only after retained evidence records terminal `SYSTEM_CHARACTERISTIC` or after the exact five-condition `EVIDENCE_EXHAUSTED` proof is durable and independently verified. An ordinary unavailable authority/dependency/evidence `BLOCKED_OPEN` row remains unchecked and blocks parent completion.
+- Check a child after retained `SYSTEM_CHARACTERISTIC`, exact five-condition `EVIDENCE_EXHAUSTED`, or strict all-target `PASS_BY_OWNER_COST_FLOOR` proof. An ordinary unavailable authority/dependency/evidence `BLOCKED_OPEN` row remains unchecked and blocks parent completion.
+- The latest Owner cost-floor rule supersedes all earlier checklist wording that forbids size/cost terminalization. It checks qualifying rows in place, preserves their row identity and accepted values, and does not count as production processing or an attempt.
 - Check a parent only after every measured child beneath it is checked and parent/full-pipeline remeasurement is recorded. If later accepted measurement exposes a previously missing child, reopen that parent, append the real child row, and continue P2-A.
 - If later accepted measurement exposes a previously missing top-level parent or child, append its real benchmark row and matching unchecked plan checkbox immediately. A new parent joins the remaining top-level queue; a new child reopens/remains under its parent. No discovered row may exist in only one ledger.
 - P2-A and `E2-P2A-EXHAUST1` cannot close until every measured parent and every nested measured child in this checklist is checked.
@@ -209,31 +211,31 @@ This is the living Planner refresh surface for the one implementation slice. Pla
 
 | Field | Current value |
 |-------|---------------|
-| Attempt state | `D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODUCTION_ARCHITECT_LOCKED`; accepted A003 checkpoint remains baseline; D001 and D002 are checked; parent and D003 remain unchecked |
-| Attempt ID | no D003 production attempt is open; D002 exhaustion is a non-production governance transition and creates no production attempt, `NO_KEEP`, streak, or `SYSTEM_CHARACTERISTIC` event |
-| Attempt goal | attribute the accepted A003 D003 `resolve_type_annotations` residual to an exact current cause, owner, and complete causal call path before any fresh production Architect decision; no production direction is released by the D002 terminal transition |
+| Attempt state | `OWNER_COST_FLOOR_APPLIED / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_ACTIVE_OPEN / D005-D017_PASS_BY_OWNER_COST_FLOOR / PRODUCTION_ARCHITECT_LOCKED`; accepted A003 remains baseline; parent remains unchecked |
+| Attempt ID | no D004 production attempt is open; `PASS_BY_OWNER_COST_FLOOR` is a non-production Owner control transition and creates no attempt, `NO_KEEP`, streak, or `SYSTEM_CHARACTERISTIC` event |
+| Attempt goal | hand the one remaining open OP001 child `B2-P2A-A001-D004 project_resolution_outcomes` to Main as the next functional row; this Planner slice releases no architecture, production, or measurement action |
 | Active parent benchmark row / checklist item | `B1-P1A-OP001` / unchecked `resolution` parent item |
-| Complete parent child list | `17/17` rows `B2-P2A-A001-D001..D017` remain recorded independently for both targets; checked-child count is `2/17`. D003 is active/unchecked, D004-D017 remain queued/unopened, and target-specific numbers stay separate in benchmark |
-| Active child benchmark row / checklist item | `B2-P2A-A001-D003` / unchecked `resolve_type_annotations` |
-| Remaining child queue | `B2-P2A-A001-D004..D017`, all unchecked and ordered by the existing benchmark inventory |
-| Current benchmark authority | accepted A003 target-separated D003 values are Cheapapp `2.262894300 s` with `files=887; typeAnnotations=35003` and Restaurant Manager `1.835270600 s` with `files=1234; typeAnnotations=57970`; accepted parent/analyzer/process values remain unchanged and no new measurement was run |
-| Consecutive unsuccessful attempts | D001 terminal record retains exactly `2`; A004 and A005 remain its two `NO_KEEP / ROLLBACK_COMPLETE` events. D002 and D003 have no production-attempt or streak event, and no streak transfers between children |
-| Selected child exact cause / owner / complete call path | inventory owner/path is `internal/resolution/resolve.go::resolveTypeAnnotation`; complete measured envelope path is `internal/analyze.Run -> internal/analyze.runPhase(PhaseResolution) -> resolution.ResolveBoundInto -> for each ir in w.files -> for each annotation in ir.TypeAnnotations -> resolution.resolveTypeAnnotation`. Exact current residual cause and attributable child owner remain pending D003 attribution |
-| Fresh Architect decision | no D003 production Architect decision exists. Production architecture remains locked until one visible read-only D003 attribution lane returns durable cause/owner/path evidence and a later fresh Architect decides direction |
-| Planner refresh evidence | `E2-P2A-D002EXHAUST1` materializes only the D002 terminal governance transition and `E2-P2A-D003CURRENT1` records the D003 accepted basis/cursor; neither is D003 architecture or production authority |
-| Transition authority | binding `EVIDENCE_EXHAUSTED` rule plus `E2-P2A-D002ATTRIB1/D002ARCH1/D002BOUNDARY1` -> `E2-P2A-D002EXHAUST1`; D002 may reopen only under the strict exact cross-target evidence or explicit Owner-boundary condition recorded by the Architect |
-| Future pre-edit Anvien gate | locked. After D003 attribution and a later fresh Architect/Planner chain, any production Coder must run its own fresh Anvien/file-detail/impact gate |
-| Allowed production/test surfaces | none; this Planner transition authorizes only one later visible read-only D003 attribution lane and leaves canonical production/tests/scripts/targets untouched |
+| Complete parent child list | `17/17` rows `B2-P2A-A001-D001..D017` remain target-separated; checked-child count is `16/17`. D001/D002 retain their prior terminal history; D003 and D005-D017 are floor-PASS; only D004 is open |
+| Active child benchmark row / checklist item | `B2-P2A-A001-D004` / unchecked `project_resolution_outcomes` |
+| Remaining child queue | none beyond active D004; every other OP001 child is terminal |
+| Current benchmark authority | `B2-P2A-OWNERCOSTFLOOR1`; accepted A003 packet values remain unchanged and separately recorded for Cheapapp and Restaurant Manager; no new measurement was run |
+| Consecutive unsuccessful attempts | D001 terminal record retains exactly `2`. D002, D003, and D004 have no production-attempt or streak event; no streak transfers between children |
+| Selected child exact cause / owner / complete call path | measured envelope owner/path is `internal/resolution/outcome.go::projectResolutionOutcomes`; `internal/analyze.Run -> internal/analyze.runPhase(PhaseResolution) -> resolution.ResolveBoundInto -> resolution.projectResolutionOutcomes`. No production cause or solution is inferred by this classification |
+| Fresh Architect decision | none for D004; production architecture remains locked |
+| Planner refresh evidence | `E2-P2A-OWNERCOSTFLOOR1` materializes only the Owner method/queue transition and exact packet classification; it is not D004 architecture or production authority |
+| Transition authority | latest Owner cost-floor rule plus `E2-P2A-OWNERCOSTFLOOR1` and `B2-P2A-OWNERCOSTFLOOR1`; D001/D002 terminal records remain unchanged |
+| Future pre-edit Anvien gate | locked. Any later D004 production Coder still requires the existing fresh Architect/Planner and pre-edit Anvien/file-detail/impact chain |
+| Allowed production/test surfaces | none; this Planner transition edits only the five plan files and its concise report |
 | Production algorithm | none authorized |
 | Test contract | none; no production/test edit or validation gate is opened by this transition |
 | Build/test contract | none; no passed gate is rerun and no build/test command is authorized |
-| Attribution contract | D002 is complete at `E2-P2A-D002ATTRIB1/D002ARCH1/D002BOUNDARY1/D002EXHAUST1`; D003 attribution must consume existing accepted A003 packets/current source first and prove an exact current cause, owner, and complete causal path without production mutation or numeric promotion |
-| Post-measurement Supervisor | not applicable; D002 terminalization and the next D003 attribution are non-production governance/evidence work |
-| Resource/invariant boundary | preserve accepted A003 output, target separation, values, denominators, and every A001-A005/WAL invariant; D002 terminalization and D003 attribution create no product state |
-| Exact rollback | none; no production byte or accepted value changes. D001 and D002 may reopen only under their separately recorded strict resume conditions |
-| Mandatory STOP | no D002 discovery rerun, inferred D003 cause, production Architect/Planner/Coder, source/test/script/target edit, benchmark/measurement rerun without a later exact Architect contract, parent/D004-D017 check, P3, or Child 07 opening; only the visible read-only D003 attribution lane may open next |
+| Attribution contract | none is performed here. Main receives D004 as the sole remaining open child and may open only the next method-valid D004 step; accepted packets are not rerun by this Planner |
+| Post-measurement Supervisor | not applicable; cost-floor classification is non-production and uses already accepted packets |
+| Resource/invariant boundary | preserve accepted A003 output, target separation, values, denominators, and every prior attempt/WAL invariant; the floor transition creates no product state |
+| Exact rollback | none; no production byte or accepted value changes. D001 and D002 retain their separately recorded strict reopen conditions |
+| Mandatory STOP | no stopped D003 attribution reuse, inferred D004 solution, production Architect/Planner/Coder, source/test/script/target edit, target rerun, Supervisor, detect, stage, commit, parent check, P3, or Child 07 opening in this Planner slice |
 | Coder status | locked; no production Coder exists |
-| Next action | Main checkpoints the Architect report plus four-ledger terminal sync once, then opens exactly one visible read-only D003 residual-attribution lane from `E2-P2A-D003CURRENT1`; the durable cursor is `D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODUCTION_ARCHITECT_LOCKED` |
+| Next action | visible Main Orchestration task `01a0421e-a38e-7192-8e98-8a09fa72f04d` consumes the synchronized plan and opens the next method-valid D004 step; durable cursor is `D004_ACTIVE_OPEN / PRODUCTION_ARCHITECT_LOCKED` |
 
 ### A005 PLAN1 Canonical Outcome-Byte Ownership Execution Authority
 
@@ -549,7 +551,7 @@ This gate applies to A001 because it is the latest direct Owner sequencing requi
        - UI flow check: N/A — CLI only.
        - DB/data flow check: prove the parent and every measured child belong to the accepted real path and bind each child to its work denominator.
        - Render location check: benchmark owns the complete child numeric list; plan mirrors every exact child as a nested checkbox; actual status points to active parent, active child, and remaining child queue.
-       - Mini QA: reject an incomplete child list, largest-only list, size-based omission, historical hypothesis, secondary-metric ordering, or generic checklist item.
+       - Mini QA: reject an incomplete child list, largest-only list, unrecorded omission, historical hypothesis, secondary-metric ordering, or generic checklist item. Strict `PASS_BY_OWNER_COST_FLOOR` terminalization is allowed only with complete all-target packet proof.
        - Evidence target: `E2-P2A-AnnnDRILL1`, exact parent `B1-P1A-OPnnn`, and complete dynamic child rows `B2-P2A-Annn-Dnnn`.
        - Current A001 cursor: complete for `B1-P1A-OP001`; `E2-P2A-A001DRILL1` binds all `17` rows/items, and all parent/child checkboxes remain unchecked.
     2. Select the largest unchecked child, bind its exact goal/current child-parent-total basis/denominator/cause/owner/complete call path, then open a new Visible Architect and obtain the exact attempt-scoped decision.
@@ -558,14 +560,14 @@ This gate applies to A001 because it is the latest direct Owner sequencing requi
        - Render location check: record `E2-P2A-AnnnCURRENT1` and `ARCH1` linked to the exact parent row, complete child list, and selected child row; do not create a separate architecture report gate.
        - Mini QA: Architect receives the full current parent-child list and selected child's measured owner, then names exact cause, direction, allowed owners, expected observable gain, validation/resources, and rollback; a coarse parent name is insufficient and the decision cannot be reused.
        - Evidence target: `E2-P2A-AnnnCURRENT1`, `E2-P2A-AnnnARCH1`.
-       - Current transition: `E2-P2A-D002ATTRIB1/D002ARCH1/D002BOUNDARY1/D002EXHAUST1` record the completed negative attribution, fresh no-further-measurement Architect decision, Main boundary check, and binding D002 terminal transition without manufacturing a production attempt, streak event, measured value, or disposition. D002 is checked terminal; D003 is active/unchecked and requires read-only residual attribution before any fresh production Architect.
+       - Current transition: `E2-P2A-OWNERCOSTFLOOR1` preserves D001/D002 history, terminalizes D003 and D005-D017 by the strict all-target floor predicate, and makes D004 the sole active/open OP001 child without manufacturing an attempt, streak event, speedup, or production disposition.
     3. Planner refreshes the Current P2-A Attempt card and these execution steps to the Architect decision before Coder begins.
        - UI flow check: N/A — plan control update.
        - DB/data flow check: concrete validation covers every data/output/lifecycle invariant named by the decision.
        - Render location check: exact owner/files/symbols/change/tests/build/measure/equivalence/rollback replace the unbound attempt fields in this plan set.
        - Mini QA: `E2-P2A-A005PLAN1` translates `E2-P2A-A005ARCH1` without redesign. It binds one canonical record-time encoding per retained SourceSiteID, the private run-scoped sidecar/finalized bundle, strict projection consumption without fallback, the exact two production files and two test owners, production-first/test-second order, fresh Coder Anvien/build/test/two-target/Supervisor sequence, exact rollback, and every STOP condition. It changes no benchmark number, checkbox, streak, or queue and cannot authorize Coder by itself.
        - Evidence target: `E2-P2A-AnnnPLAN1`.
-       - Current cursor: A003 remains closed at checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`; WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete; A004/A005 remain `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`. D001 and D002 are terminal `EVIDENCE_EXHAUSTED`; D001 retains streak exactly `2`; parent stays unchecked; D003 is active/unchecked at attribution pending; production Architect/Planner/Coder stay locked.
+       - Current cursor: accepted A003 checkpoint remains unchanged; D001/D002 retain terminal history and D001 streak `2`; D003 and D005-D017 are `PASS_BY_OWNER_COST_FLOOR`; parent stays unchecked; D004 is active/open; production Architect/Planner/Coder stay locked.
     4. The sole Coder completes fresh required Anvien graph/file-detail/impact, implements only the refreshed production direction, edits authorized tests only after production is correct, performs the exact build-holder preflight, obtains canonical full-build `PASS`, and only then executes focused and `internal/resolution` package tests.
        - UI flow check: N/A unless activated by impact.
        - DB/data flow check: preserve exact affected data, ordering, failure, transaction/temp, publication, and reader semantics.
@@ -573,26 +575,26 @@ This gate applies to A001 because it is the latest direct Owner sequencing requi
        - Mini QA: future Coder runs `anvien --help` -> exactly one fresh `anvien analyze --force` -> file-detail `internal/resolution/outcome.go` and `internal/resolution/resolve.go` -> exact upstream impact for every edited symbol, recording HIGH/CRITICAL warnings without treating them as bans. Production first adds/reuses the canonical string sidecar, private finalized bundle, strict coverage checks, projection consumption, and narrow result wiring while preserving the unchanged marshaler, validation/clone, callers, signatures, error timing, and public shapes. Only after production is correct may it create `outcome_serialization_test.go` and mechanically adapt the three direct `finalize` calls plus one direct projection call in `p6c3_structured_outcome_test.go`. Any additional owner/symbol, fallback/second encoder, moved record-time semantics, or byte/order/resource drift forces STOP.
        - Evidence target in execution order: `E2-P2A-AnnnIMPACT1`, `E2-P2A-AnnnSRC1`, `E2-P2A-AnnnBUILD1`, `E2-P2A-AnnnTEST1`; `TEST1` records only the attempt-authorized post-production test bytes and test execution after full-build `PASS`.
        - Holder/build/test sequence: run `anvien doctor locks --repo E:\Anvien --json` and `anvien doctor processes --json`, terminate only proven build-output holders, require canonical full build exit `0`, then run the new A005 focused tests plus `TestP6C3P5ProofNestingConflictAndImmutableReplay`, `TestP6C3FinalOutcomeStatusPrecedenceAndCarriageMatrix`, `TestResolveAttachesSourceBackedUnresolvedDiagnostics`, `TestP6BResolverCarriesCatalogValidationFailuresPerSourceSite`, `TestP6DStructuredOutcomeProjectionPreservesGraphJSONAndHealthParity`, `TestP6C3AnalyzeResultPreservesFinalOutcomesAndGraphCarriage`, `TestP6C3AnalyzeCapabilityOutcomesRetainAcceptedAuthorityStatus`, `TestP6C3ResolutionOutcomesPreserveGraphJSONAndLadybugParity`, and `TestP6C3NativeLadybugResolutionOutcomeReadback`; then run `internal/resolution`, `internal/graphhealth`, `internal/analyze`, `internal/lbugload`, and `internal/lbugnative`. The unchanged known golden remains truthful and any new/changed failure blocks A005.
-       - Current D003 cursor: no D003 production direction, Planner, source/test edit, or Coder exists. `E2-P2A-D003CURRENT1` records the target-separated accepted basis and measured envelope owner/path only; exact residual cause and attributable owner remain pending one read-only attribution lane. Parent and D003 remain unchecked.
+       - Current D004 cursor: no D004 production direction, Planner, source/test edit, or Coder exists. `E2-P2A-OWNERCOSTFLOOR1` records only target-separated accepted wall values and the queue transition. Parent and D004 remain unchecked.
     5. After A005 production/build/test validation, record two independent candidate measurements without combining them, using each target's accepted A003 artifact as that target's `before` and one identifiable A005 candidate containing only the authorized PLAN1 production bytes plus the accepted measurement overlay as `after`.
        - UI flow check: N/A unless activated by impact.
        - DB/data flow check: reuse unchanged `scripts/build-a00x-benchmark.ps1` and the accepted 17-child/native/runtime/provenance contract; no script edit or build-interface audit. Because A005 changes overlay-mapped `resolve.go`, mechanically regenerate/verify that mapping from exact A005 wiring plus accepted 17-child instrumentation; keep `types.go` unchanged absent exact compilation evidence; exclude all rejected A004 bytes. Cheapapp retains `--force --skip-git --json --progress`; Restaurant retains `--force --json --progress` and exactly one `--exclude electron/renderer/src/api/userApi.ts`.
        - Render location check: benchmark records separate A005 pending/returned numeric blocks against each target's own accepted A003 baseline; evidence records exact executable/command/target/artifact/overlay identity and equivalence; actual status records which reports are pending/received. Planner owns neither future measurement lane.
        - Mini QA: each repo separately records D001, parent, analyzer, process wall, all `30/30` operations and `17/17` children, calls/files, interval conservation/zero overlap, diagnostics/outcomes, complete ordered evidence equality, canonical Graph JSON/public stdout/stderr, graph/DB/semantic parity, `startAllocBytes`, `endAllocBytes`, `maxObservedSys`, and private `O(U+B)` one-payload lifecycle proof. Never rerun accepted A003 bases, average/combine targets, or use build/test/profile duration as elapsed proof.
        - Evidence target: `E2-P2A-AnnnDIRECT1`, `E2-P2A-AnnnPARENT1`, `E2-P2A-AnnnE2E1`, `E2-P2A-AnnnEQUIV1`, `E2-P2A-AnnnREVIEW1`.
-       - Current cursor: A006-M1/M2 packets remain D001 attribution history only. D001/D002 terminalization adds no measurement and changes no accepted number; no D003 candidate packet is authorized.
+       - Current cursor: A006-M1/M2 packets remain D001 attribution history only. Cost-floor materialization adds no measurement and changes no accepted number; no D004 candidate packet is authorized.
     6. Record disposition, promote only an eligible child+parent+end-to-end `KEEP`, and keep the same child active until terminal.
        - UI flow check: N/A — ledger-controlled transition.
        - DB/data flow check: rejected bytes never become accepted state or ranking input.
        - Render location check: update child/parent/E2E benchmark rows, promotion/history/streak, evidence disposition, plan checklist, actual-status queues, and this attempt card immediately.
        - Mini QA: `KEEP` resets the active child's streak but leaves its checkbox unchecked and starts another attempt on that child; reject restores accepted state and returns through fresh Architect/Planner, never Coder; only the third consecutive no-KEEP records `SYSTEM_CHARACTERISTIC`, refreshes accepted child/parent/E2E timings and both ordered lists, and checks that child.
        - Evidence target: `E2-P2A-AnnnDECISION1`, conditional `E2-P2A-AnnnRESTORE1`, terminal `E2-P2A-AnnnSYSTEM1`, and `E2-P2A-AnnnRANK1`.
-       - Current cursor: A001/A002/A003 are `KEEP`; A004/A005 are `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; D001 is `EVIDENCE_EXHAUSTED`, checked, and retains streak `2` without a third attempt; D002 is `EVIDENCE_EXHAUSTED`, checked, with no attempt/streak event. `B1-P1A-OP001` and active D003 remain unchecked; D004-D017 remain queued.
+       - Current cursor: A001/A002/A003 remain accepted history; A004/A005 remain `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; D001/D002 retain their exact terminal histories; D003 and D005-D017 are floor-PASS; `B1-P1A-OP001` and active D004 remain unchecked.
     7. After a child becomes terminal, select the largest remaining unchecked child of the same parent. After every child is checked, remeasure parent/full pipeline, check the parent, refresh the complete top-level list, and select the largest remaining unchecked parent.
        - UI flow check: N/A — ledger-controlled hierarchy.
        - DB/data flow check: parent completion requires every measured child terminal on retained correct state; a new measured child reopens the parent.
        - Render location check: benchmark owns current hierarchy/order; plan marks exact rows; actual status points to remaining parent/child queues.
-       - Mini QA: never move to another parent while a child is unchecked; never omit or check a small row by size; ordinary `BLOCKED_OPEN` stays unchecked; only exact binding `EVIDENCE_EXHAUSTED` proof can check a blocked measured child without a production attempt. Any later-discovered parent/child gets an immediate benchmark row plus matching unchecked plan checkbox before queue selection continues.
+       - Mini QA: never move to another parent while a child is open; never omit a row. A row may check directly only through strict `PASS_BY_OWNER_COST_FLOOR`, exact binding `EVIDENCE_EXHAUSTED`, or another retained terminal state. Ordinary `BLOCKED_OPEN` stays unchecked. Any later-discovered row gets an immediate benchmark row plus matching checkbox before queue selection continues.
        - Evidence target: `E2-P2A-AnnnRANK1`, plan checklist refresh, parent-completion evidence in the matching result record.
     8. After every measured parent and child checklist item is checked, record final initial-versus-current total and complete final equivalence on the stable accepted implementation state.
        - UI flow check: N/A unless activated by impact.
@@ -602,7 +604,7 @@ This gate applies to A001 because it is the latest direct Owner sequencing requi
        - Evidence target: `E2-P2A-FINALBUILD1`, `E2-P2A-FINALTIME1`, `E2-P2A-FINALEQUIV1`, `E2-P2A-EXHAUST1`.
   - Implementation Gate:
     - Every production edit has a unique attempt ID, active parent, complete child list, selected largest unchecked child, current child/parent/total benchmark basis, exact cause/owner/call path, fresh attempt-specific Architect decision, and completed Planner refresh.
-    - A003 identity/checkpoint and WAL checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` are complete; A004/A005 are `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`. `E2-P2A-D002ATTRIB1/D002ARCH1/D002BOUNDARY1/D002EXHAUST1` terminalize only D002 without a production attempt or streak event. `E2-P2A-D003CURRENT1` records the next accepted basis; no D003 production attempt or Coder transition is open.
+    - A003 identity/checkpoint and WAL checkpoint remain complete; A004/A005 remain `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`. `E2-P2A-OWNERCOSTFLOOR1` preserves D001/D002 history, leaves OP001 open, and selects D004 as the only remaining open child. No D004 production attempt or Coder transition is open.
     - Accepted A002 progress checkpoint `E2-P2A-A002COMMIT1` is complete at `ecf825d709b761390a5df4a2147b6ed6eec04499` with its exact nine-path manifest and empty staged set. It satisfies the checkpoint dependency without closing P2-A, checking D001/parent, or changing streak `0`.
     - For A001 only, the latest direct Owner sequencing required Main verification of the four refreshed artifacts followed by independent consistency review in Architect thread `01a036f5-c602-7422-b484-ac8e58a34eb9`. That sequence passed and Main authorized the sole Coder transition under `E2-P2A-A001CONSISTENCY1`. This was Owner authority, not Architect command authority, and is not a generic gate for every attempt.
     - Every refreshed attempt states the child + parent + total elapsed-time reduction goal against the exact benchmark rows/current accepted baseline; supporting tooling cannot replace that goal.
@@ -614,7 +616,7 @@ This gate applies to A001 because it is the latest direct Owner sequencing requi
     - DB/data: each attempt's Supervisor and final evidence pass affected correctness, persistence, reader, failure, transaction/temp, and publication invariants.
     - Behavior test: A005 production implementation, new outcome-serialization tests and minimal P6C3 direct-private-call adaptation only after production is correct, holder preflight, canonical full build, post-build nine focused P6B/P6C3/P6D/Graph JSON/Ladybug regressions plus truthful five-package execution, later same-work target-separated remeasurement with verified A005 overlay, per-attempt review, and final equivalence pass in that order.
     - Cleanup/quarantine: failed/superseded/debug work is identified for P3-B; protected work is untouched.
-    - Checklist: every measured child and parent item is checked from retained terminal evidence; no `BLOCKED` or smaller measured row is hidden.
+    - Checklist: every measured row is explicit; terminal rows are checked from retained terminal or strict Owner cost-floor evidence, and no open/blocked row is hidden.
     - Evidence IDs: dynamic attempt families including `E2-P2A-AnnnDRILL1/PARENT1`, plus `E2-P2A-FINALBUILD1`, `E2-P2A-FINALTIME1`, `E2-P2A-FINALEQUIV1`, `E2-P2A-EXHAUST1`.
     - Actual-status rows refreshed: active parent/child, remaining parent/child queues, attempt state, unsuccessful streak, Architect/Planner/Coder/Supervisor pointers, last disposition, accepted baseline, and next action.
   - Evidence Targets: complete top-level list, complete child lists, exact plan checklist mirror, parent/child selection, cause/owner/call path, Architect, Planner refresh, impact/source/tests/build, child/parent/E2E measurements, Supervisor, disposition, restoration/promotion, three-attempt terminal proof, parent completion, reranking, exhaustion, final proof.

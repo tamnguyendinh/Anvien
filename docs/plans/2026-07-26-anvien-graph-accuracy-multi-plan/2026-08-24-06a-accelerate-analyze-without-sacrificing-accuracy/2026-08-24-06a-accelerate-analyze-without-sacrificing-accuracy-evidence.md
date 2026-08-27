@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `A003_CHECKPOINT_COMPLETE / WAL_FIX_CHECKPOINT_COMPLETE / A004/A005 SUPERVISOR PASS / NO_KEEP / ROLLBACK_COMPLETE / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODUCTION_ARCHITECT_LOCKED`; accepted A003 remains baseline
+- Current state: `OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN_16_OF_17_TERMINAL / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_ACTIVE_OPEN / D005-D017_PASS_BY_OWNER_COST_FLOOR / PRODUCTION_ARCHITECT_LOCKED`; accepted A003 remains baseline
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -19,6 +19,8 @@
 
 - Evidence explains why a command, measurement, architecture decision, plan refresh, implementation, validation, review, disposition, or transition is valid. Numeric values and rankings live in benchmark.
 - Elapsed wall-clock time is the controlling performance proof. Secondary resource/count evidence may explain cause or comparability but cannot select a bottleneck or justify `KEEP`.
+- Latest Owner authority supersedes every conflicting statement in this ledger that forbids a size/cost cutoff or requires functional processing of every smaller row. `PASS_BY_OWNER_COST_FLOOR` applies only when a row exists on both accepted targets and each controlling accepted elapsed wall value is strictly `< 3.000000000 s`; equality, any `>= 3.000000000 s`, missing accepted value, or lost comparability remains open. CPU/profile samples never participate.
+- `PASS_BY_OWNER_COST_FLOOR` is a non-production terminal control state. It is not `KEEP`, `NO_KEEP`, `ROLLBACK`, `SYSTEM_CHARACTERISTIC`, `EVIDENCE_EXHAUSTED`, an attempt, a streak event, a speedup, or an accuracy waiver; it requires no Architect/Coder/measurement/Supervisor and preserves accepted numbers, denominators, target separation, correctness, and prior history.
 - Record every result immediately. A pending evidence ID is not completed proof and cannot authorize a later state.
 - P1-A records only the real `anvien analyze` command/workload identity, total timing validity, operation boundaries/denominators, conditional minimum instrumentation when used, initial equivalence, and ranking derivation. It contains no production-optimization proof and does not predeclare an unmeasured options/workload/cache tuple.
 - Exactly one visible measurement executor produces each accepted P1-A runtime capture. After acceptance, up to three ACTIVE read-only measurement analysts may share that capture for independent measured problems; analysts do not edit source or launch duplicate competing benchmark processes.
@@ -53,6 +55,7 @@
 - `E1-P1A-*` records initial detailed measurement and ranking.
 - `E2-P2A-Annn*` records one actual production attempt, where `nnn` is a zero-padded chronological sequence beginning with `001`.
 - `E2-P2A-FINAL*` and `E2-P2A-EXHAUST1` record stable final P2-A proof.
+- `E2-P2A-OWNERCOSTFLOOR1` records the one exact Owner cost-floor method/packet classification and queue/checklist transition; it is not an attempt family.
 - `E3-P3A-*`, `E3-P3B-*`, and `E3-P3C-*` record final whole-candidate review, cleanup, detect/commit, and handoff.
 - Never reuse an attempt number or evidence ID after rejection, rollback, compaction, rotation, or another edit to the same bottleneck.
 
@@ -260,9 +263,10 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-A006EXHAUST1` | D001-only governance proof that all binding `EVIDENCE_EXHAUSTED` conditions are met; preserves A003 and streak `2`, creates no production attempt/value/commit, checks only D001, and advances to D002 attribution pending |
 | `E2-P2A-D002EXHAUST1` | D002-only governance proof that all binding `EVIDENCE_EXHAUSTED` conditions are met; preserves A003, creates no production attempt/`NO_KEEP`/streak/value/commit, checks only D002, and advances to D003 attribution pending |
 | `E2-P2A-D003CURRENT1` | accepted target-separated D003 values/denominators plus the measured envelope owner/call path; exact residual cause and attributable owner remain pending one read-only attribution lane |
+| `E2-P2A-OWNERCOSTFLOOR1` | exact two-packet `30/30` operation and `17/17` OP001-child mapping; strict threshold classification; preserved D001/D002 history; terminal/checklist counts; D004 next cursor; no production or measurement event |
 | `E2-P2A-AnnnRANK1` | accepted-state child/parent/full-pipeline timing refresh, complete child/top-level list update, and exact next unchecked child/parent pointer |
 
-Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. A003 checkpoint is `b6bf45bce95323aa6b53b182edfea8628bd8b463`; accepted Cheapapp and Restaurant Manager values remain separate. WAL fix checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. A004/A005 are `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; their values remain rejected-candidate evidence. `E2-P2A-A006EXHAUST1` terminalizes only D001 while retaining its streak exactly `2`. `E2-P2A-D002EXHAUST1` terminalizes only D002 with no attempt or streak event. Parent remains unchecked. D003 is active/unchecked at `E2-P2A-D003CURRENT1`; D004-D017 remain queued.
+Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. Accepted Cheapapp and Restaurant Manager A003 values remain separate. A004/A005 stay rejected-candidate history. `E2-P2A-A006EXHAUST1` and `E2-P2A-D002EXHAUST1` remain unchanged. `E2-P2A-OWNERCOSTFLOOR1` terminalizes D003 and D005-D017 plus top-level OP006-OP030 without changing any accepted number or streak. Parent OP001 remains unchecked; D004 is the sole active/open child.
 
 ### `E2-P2A-A001DRILL1` — Complete OP001 Resolution Child Measurement
 
@@ -1384,6 +1388,71 @@ Status: `D003_CURRENT_BASIS_RECORDED / D003_RESIDUAL_ATTRIBUTION_PENDING / PRODU
 - Measured envelope owner/path: `internal/resolution/resolve.go::resolveTypeAnnotation`; `internal/analyze.Run -> internal/analyze.runPhase(PhaseResolution) -> resolution.ResolveBoundInto -> for each ir in w.files -> for each annotation in ir.TypeAnnotations -> resolution.resolveTypeAnnotation`.
 - Exact current residual cause, attributable child owner, and complete causal subpath remain unknown and are not inferred. Exactly one visible read-only D003 attribution lane is the next functional owner; production Architect/Planner/Coder remain locked.
 
+### `E2-P2A-OWNERCOSTFLOOR1` — Owner Cost-Floor Classification And Current Queue
+
+Status: `OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN_16_OF_17_TERMINAL / D004_ACTIVE_OPEN`.
+
+- Owner predicate: a row qualifies only when it exists on both accepted targets and both accepted controlling wall values are strictly `< 3.000000000 s`. Equality, any target `>= 3.000000000 s`, missing accepted value, or lost comparability stays open. CPU/profile samples are excluded.
+- Packet authority: Cheapapp `candidate/benchmark.json` under `E:\Anvien\.tmp\child06a_a003_cheapapp_frozen_17child_20260826`, comparison SHA-256 `8D64F905A4413E375DF8CA75E6465EE09BBBEA777DC755DF304F09BB67691C2F`; Restaurant Manager `candidate/benchmark.json` and `candidate/comparison.json` under `E:\Anvien\.tmp\child06a_a003_restaurant_manager_frozen_17child_20260826`, comparison SHA-256 `ED19F20BEF5490C361D2A8F0C7634A8D2A7F7EC43371F5F96CF09117447B557C`.
+- Machine mapping passed exactly: `30/30` unique top-level `operations` names map to `B1-P1A-OP001..OP030`; `17/17` unique `resolution.childMeasurements.childId` values map to `B2-P2A-A001-D001..D017`; missing mappings `0`, duplicate mappings `0`.
+
+| Top-level row | Operation | Cheapapp wall | Restaurant wall | Current control |
+|---|---|---:|---:|---|
+| `B1-P1A-OP001` | `resolution` | `20.472602300 s` | `20.850792800 s` | `OPEN` |
+| `B1-P1A-OP002` | `db_load` | `39.490259400 s` | `35.320587700 s` | `OPEN` |
+| `B1-P1A-OP003` | `parse` | `10.798086200 s` | `17.321848600 s` | `OPEN` |
+| `B1-P1A-OP004` | `graph_snapshot` | `14.158001400 s` | `14.831941000 s` | `OPEN` |
+| `B1-P1A-OP005` | `semantic_enrichment` | `3.516770500 s` | `4.509375000 s` | `OPEN` |
+| `B1-P1A-OP006` | `db_runner_resolve` | `1.005832600 s` | `0.930066300 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP007` | `cross_file_binding` | `0.596224000 s` | `0.977645700 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP008` | `ai_context` | `1.241777700 s` | `1.461508500 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP009` | `analyzer_orchestration` | `0.182072000 s` | `0.915124100 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP010` | `processes` | `0.576625900 s` | `0.517450700 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP011` | `scan` | `0.329323800 s` | `0.593824500 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP012` | `file_projection` | `0.247998400 s` | `0.402707800 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP013` | `routes` | `1.471013400 s` | `0.562993500 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP014` | `documents` | `0.115228800 s` | `0.051515900 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP015` | `db_runner_close` | `0.202554800 s` | `0.227821300 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP016` | `analyze_setup` | `0.228877000 s` | `0.420487200 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP017` | `tools` | `0.460391300 s` | `0.177052700 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP018` | `communities` | `0.039984300 s` | `0.151438900 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP019` | `registry_meta` | `0.098595900 s` | `0.126964700 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP020` | `cli_preparation` | `0.050773100 s` | `0.112552400 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP021` | `output_publication` | `0.000000000 s` | `0.006995700 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP022` | `orm` | `0.088622300 s` | `0.051036600 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP023` | `cli_startup` | `0.017113300 s` | `0.015507100 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP024` | `structure` | `0.003751900 s` | `0.011648500 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP025` | `graph_compact` | `0.011348800 s` | `0.011380200 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP026` | `mro` | `0.003037800 s` | `0.004942700 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP027` | `benchmark_write` | `0.007725800 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP028` | `cobol` | `0.002517600 s` | `0.002060000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP029` | `memory_profile` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B1-P1A-OP030` | `cpu_profile_completion` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+
+| OP001 child row | Child | Cheapapp wall | Restaurant wall | Current control |
+|---|---|---:|---:|---|
+| `B2-P2A-A001-D001` | `resolve_calls` | `3.447846300 s` | `9.401585300 s` | preserve `EVIDENCE_EXHAUSTED`, streak `2` |
+| `B2-P2A-A001-D002` | `resolve_accesses` | `9.380783200 s` | `2.254679300 s` | preserve `EVIDENCE_EXHAUSTED`, no streak |
+| `B2-P2A-A001-D003` | `resolve_type_annotations` | `2.262894300 s` | `1.835270600 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D004` | `project_resolution_outcomes` | `4.652523600 s` | `5.995737900 s` | `OPEN / ACTIVE` |
+| `B2-P2A-A001-D005` | `emit_definition_nodes` | `0.389693800 s` | `0.657720100 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D006` | `finalize_resolution_outcomes` | `0.156782300 s` | `0.446357000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D007` | `build_binding_occurrence_index` | `0.077439500 s` | `0.188117900 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D008` | `finalize_typescript_authority_results` | `0.028755700 s` | `0.011585500 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D009` | `emit_import_edges` | `0.037951300 s` | `0.030692500 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D010` | `emit_typescript_external_symbols` | `0.015196500 s` | `0.005522000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D011` | `emit_method_dispatch_edges` | `0.000000000 s` | `0.003288900 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D012` | `assemble_resolution_result` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D013` | `binding_accumulator_dispose` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D014` | `emit_heritage_compatibility_edges` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D015` | `emit_unresolved_heritage_diagnostics` | `0.000000000 s` | `0.004026800 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D016` | `finalize_resolution_metadata` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+| `B2-P2A-A001-D017` | `runtime_setup` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
+
+- Mechanical result: top-level floor-PASS `25`, open `5`, checked/remaining `25/5`; OP001 prior terminal `2`, floor-PASS `14`, open `1`, checked/remaining `16/1`. Open parent order remains `OP001 -> OP002 -> OP003 -> OP004 -> OP005`; OP001 stays active and D004 is its only open child.
+- State boundary: accepted A003 values, denominators, target separation, D001 streak `2`, D002 no-streak truth, attempt history, and correctness stay unchanged. No production/test/script/target edit, target analyze, build, test, profile, measurement, Architect, Coder, Supervisor, detect, stage, or commit occurred.
+- The stopped D003 attribution marker `D003_ATTRIBUTION_SUPERSEDED_BY_OWNER_COST_FLOOR` is honored. No partial D003 report is consumed, recreated, or used as authority.
+
 `REWORK` and `ROLLBACK` never authorize Coder directly. They describe the failed attempt's disposition; any next production edit starts a new attempt at Visible Architect.
 
 ### Attempt Result Ledger
@@ -1403,7 +1472,7 @@ Append one row after every attempt result. Current rows: `3`.
 | `E2-P2A-FINALBUILD1` | canonical full build of stable accepted complete state | pending |
 | `E2-P2A-FINALTIME1` | initial-versus-final total graph-generation measurement on same workload | pending |
 | `E2-P2A-FINALEQUIV1` | aggregate correctness/output/persistence/reader/determinism/freshness/failure/transaction/temp/publication equivalence | pending |
-| `E2-P2A-EXHAUST1` | every measured top-level parent and every measured child has retained terminal evidence and a checked plan item; no smaller row is omitted; no `BLOCKED` row remains unchecked | pending |
+| `E2-P2A-EXHAUST1` | every measured top-level parent and child has retained terminal or strict Owner cost-floor evidence and a checked plan item; no row is omitted and no open/blocked row remains | pending; D004 and five top-level rows remain open |
 
 ## E3 - P3 Evidence
 
@@ -1429,9 +1498,10 @@ Every Child 06A execution handoff must include:
 - measurement-pool state: `10` pre-opened visible lanes total, exact zero-to-three ACTIVE assignments (one measured parent/child problem per active lane), remaining waiting count, shared accepted capture identity when used, and one shared-worktree production/test writer at most; no active slot is freed until that lane's benchmark number, evidence proof, plan checklist state, and actual-status pointer are recorded;
 - no rerun of still-valid accepted evidence when runtime/workload/boundary is unchanged;
 - lane report limited to lane/work/result/checkpoint/next owner, with no report audit, hash chain, evidence-about-evidence, or documentation review.
+- current cost-floor handoff must cite `E2-P2A-OWNERCOSTFLOOR1` / `B2-P2A-OWNERCOSTFLOOR1`, exact checked/remaining counts, preserved D001/D002 history, and active D004; it never authorizes production by itself.
 
 `E3-P3C-HANDOFF1` is reserved for opening Child 07 from the one Child 06A closure commit.
 
 ## Closure Evidence
 
-Closure requires any opened `E1-P1A-INSTR1` branch to have exactly one completed carry-forward or remove/rebuild/remeasure disposition; every measured parent and child benchmark row to have retained terminal evidence and a checked plan item; no unresolved unchecked `BLOCKED` row; lower comparable final total; complete per-attempt parent/child/Architect/Planner/Coder/Supervisor evidence; final equivalence; `E3-P3A-REVIEW1` `PASS`; exact cleanup; one detect; one implementation commit; and `E3-P3C-HANDOFF1`. No current closure evidence exists.
+Closure requires any opened `E1-P1A-INSTR1` branch to have exactly one completed carry-forward or remove/rebuild/remeasure disposition; every measured parent and child row to have retained terminal or strict `PASS_BY_OWNER_COST_FLOOR` evidence and a checked item; no unresolved open/blocked row; lower comparable final total; complete required attempt evidence; final equivalence; `E3-P3A-REVIEW1` `PASS`; exact cleanup; one detect; one implementation commit; and `E3-P3C-HANDOFF1`. No current closure evidence exists.
