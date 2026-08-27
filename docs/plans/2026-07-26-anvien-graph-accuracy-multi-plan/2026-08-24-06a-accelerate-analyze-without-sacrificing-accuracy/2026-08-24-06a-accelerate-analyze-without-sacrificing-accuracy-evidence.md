@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN_16_OF_17_TERMINAL / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_ACTIVE_OPEN / D004_RESIDUAL_ATTRIBUTION_READY / D004_ARCHITECT_PENDING / D005-D017_PASS_BY_OWNER_COST_FLOOR / PRODUCTION_ARCHITECT_LOCKED`; accepted A003 remains baseline
+- Current state: `OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN_16_OF_17_TERMINAL / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_A007_PLAN_READY / D005-D017_PASS_BY_OWNER_COST_FLOOR / OWNER_FINAL_SCOPE_BOUND / OP002-OP005_DEFER_AFTER_D004 / CODER_RELEASE_PENDING`; accepted A003 remains baseline
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -266,9 +266,13 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-OWNERCOSTFLOOR1` | exact two-packet `30/30` operation and `17/17` OP001-child mapping; strict threshold classification; preserved D001/D002 history; terminal/checklist counts; D004 next cursor; no production or measurement event |
 | `E2-P2A-D004ATTRIB1` | exact target-separated D004 residual cause, attributable owner, complete synchronous path, A005 non-duplication, full HIGH/CRITICAL scope, evidence limits, and `D004_RESIDUAL_ATTRIBUTION_READY` verdict |
 | `E2-P2A-D004BOUNDARY1` | one Main-owned report/handoff boundary check: exact report path/verdict, target separation, no production direction or state mutation, report-only path set, clean staged set, and no separate Supervisor verdict/report |
+| `E2-P2A-A007ARCH1` | exact D004 guarded canonical typed-read plus legacy JSON-fallback decision, one-file production owner, one-new-test owner, invariants, validation/measurement/rollback/STOP contract, and verdict `ARCHITECT_D004_READY_FOR_PLANNER` |
+| `E2-P2A-A007BOUNDARY1` | one Main-owned Architect handoff boundary check: exact report/hash/verdict, report-only path, clean staged set, target separation and no implementation/acceptance/numeric/checklist mutation |
+| `E2-P2A-A007PLAN1` | exact five-ledger Planner translation for the one final D004 production chain; binds Coder pre-edit, production-first, full-build-before-test, two-target measurement, Supervisor, rollback, and Owner-scope transition without creating a candidate result |
+| `E2-P2A-OWNERSCOPE1` | latest Owner authority that A007 is the final Child 06A optimization chain; after safe disposition D004/OP001 close and OP002-OP005 become `DEFERRED_BY_OWNER_SCOPE`, preserving all numeric history without a performance or correctness claim |
 | `E2-P2A-AnnnRANK1` | accepted-state child/parent/full-pipeline timing refresh, complete child/top-level list update, and exact next unchecked child/parent pointer |
 
-Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. Accepted Cheapapp and Restaurant Manager A003 values remain separate. A004/A005 stay rejected-candidate history. `E2-P2A-A006EXHAUST1` and `E2-P2A-D002EXHAUST1` remain unchanged. `E2-P2A-OWNERCOSTFLOOR1` terminalizes D003 and D005-D017 plus top-level OP006-OP030 without changing any accepted number or streak. Parent OP001 remains unchecked; D004 is the sole active/open child, its residual attribution is ready, and one fresh visible Architect is pending before any production authority can exist.
+Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. Accepted Cheapapp and Restaurant Manager A003 values remain separate. A004/A005 stay rejected-candidate history. `E2-P2A-A006EXHAUST1` and `E2-P2A-D002EXHAUST1` remain unchanged. `E2-P2A-OWNERCOSTFLOOR1` terminalizes D003 and D005-D017 plus top-level OP006-OP030 without changing any accepted number or streak. Parent OP001 and D004 remain unchecked; `E2-P2A-A007ARCH1/A007PLAN1` now authorize exactly one final D004 Coder chain. OP002-OP005 remain unchecked until that chain has a safe Supervisor/Main disposition, after which `E2-P2A-OWNERSCOPE1` defers them without opening optimization work.
 
 ### `E2-P2A-A001DRILL1` — Complete OP001 Resolution Child Measurement
 
@@ -1476,6 +1480,44 @@ Status: `BOUNDARY_CHECK_COMPLETE / NO SEPARATE SUPERVISOR VERDICT / D004_ARCHITE
 - Planner authoring used the fresh current graph above; file-detail for each of the four standard ledgers reports current/non-stale LOW-risk Markdown with `2` inbound / `1` outbound / `0` unresolved and related files `plan-rules.md` plus the roadmap. This proves authoring scope only.
 - Next action after the scoped report/four-ledger checkpoint: open exactly one fresh visible D004 Architect. It consumes the complete attribution packet, selects or refuses one bounded production direction, and performs no discovery rerun, source/ledger edit, build/test/measurement, staging, commit, or Supervisor work.
 
+### `E2-P2A-A007ARCH1` — D004 Guarded Diagnostic Typed-Read Architecture
+
+Status: `ARCHITECT_D004_READY_FOR_PLANNER / A007_PRODUCTION_DIRECTION_BOUND`.
+
+- Visible Architect task: `01a042b3-e15c-7412-9c49-86f8c4b4fd09`. Transport later returned `429`, but the complete durable output exists at `E:\Anvien\reports\system-architect\rp_system-architect_260827_by_gpt-5_child06a_d004_diagnostic_roundtrip.md`; SHA-256 `834D4A0C9297602C12B9EF9C55C4149382743B0103A0E592CA830A58C5AA8D21`; exact verdict `ARCHITECT_D004_READY_FOR_PLANNER`. No continuation/reopen/duplicate architecture lane is required.
+- Production owner is only `internal/resolution/outcome.go::resolutionOutcomeDiagnosticSites`, plus at most one private non-exported read-only helper and minimal import in the same file. Test ownership begins only after production is correct and creates only `internal/resolution/outcome_diagnostic_sites_test.go`; every existing test is run-only.
+- Selected direction: exact canonical `[]graphhealth.Diagnostic` may be iterated directly only when consumed `SourceSiteID` and `Note` strings are JSON-equivalent. Every noncanonical or JSON-unstable representation follows the exact current property marshal/unmarshal fallback and fail-closed error path. The actual graph property remains source-of-truth; traversal, ordering, status/payload/overlap parity and error timing stay unchanged.
+- The direction explicitly preserves graph/public/persisted shapes, Graph JSON, Ladybug/native/readback consumers, deterministic output, A005-rejected canonical outcome-byte lifecycle, accepted A003 instrumentation/runtime/target identity, and `O(1)` extra retained state. It predicts no numeric speedup; only target candidate measurement may prove gain.
+- Fresh execution order is exact: Coder Anvien/file-detail/impact -> production -> diff/owner STOP check -> new test -> proven-holder clearance -> canonical full build PASS -> focused/named regressions plus five packages -> freeze candidate -> Cheapapp and Restaurant one-launch packets -> one fresh visible Supervisor -> Main disposition.
+- Existing impact packet is consumed rather than rerun at architecture: `outcome.go` HIGH; `projectResolutionOutcomes` CRITICAL, `124` symbols / `50` files / `26` modules / `42` processes. The future Coder still runs the required fresh pre-edit gate on its exact edited symbol.
+- Mandatory STOP includes any extra production owner/symbol, existing-test edit, signature/coordinator/graphhealth/collector/resolve change, fallback weakening/coercion, graph mutation/reordering, public/persisted/output/failure/resource drift, A005 lifecycle reuse, new/changed build/test failure, or incomplete/mixed target packet.
+
+### `E2-P2A-A007BOUNDARY1` — Main-Owned Architect Handoff Boundary Check
+
+Status: `BOUNDARY_CHECK_COMPLETE / NO SUPERVISOR ACCEPTANCE VERDICT / A007_PLANNER_TRANSLATION_ALLOWED`.
+
+- Before this ledger sync, worktree status contains exactly the untracked Architect report above and staged set is empty; tracked source/test/plan paths are unchanged. Report SHA/verdict/path match the allowed D004 Architect boundary.
+- The report selects one exact one-file direction and one new-test owner, preserves target separation and accepted A003 values, and creates no source/test/script/target change, build, test, measurement, attempt numeric row, streak event, disposition, checklist transition, acceptance verdict, stage, or commit.
+- Main consumed the durable report directly after the Architect task's transport failure and did not reopen, remind, duplicate, or continue that lane. This boundary check is Main identity/scope/handoff verification only.
+
+### `E2-P2A-OWNERSCOPE1` — Final Child 06A Optimization Scope
+
+Status: `OWNER_FINAL_SCOPE_BOUND / OP002-OP005_DEFER_AFTER_D004`.
+
+- Latest direct Owner authority: D004 is the final Child 06A bottleneck to optimize; after it finishes, close Child 06A and immediately open Child 07. Do not continue into the remaining smaller optimization rows now; they may be optimized later in a different future scope.
+- A007 is therefore the one final D004 production chain. It must still complete the technical Coder/build/test/two-target/Supervisor/Main disposition path. A blocker is not completion.
+- After an eligible `KEEP`, promote its exact target-separated candidate; after any non-KEEP/reject, restore or retain exact accepted A003. Once that boundary is safe, mark D004 and OP001 `CLOSED_BY_OWNER_SCOPE`, do not open another D004 attempt, and mark OP002-OP005 `DEFERRED_BY_OWNER_SCOPE` without drill-down or implementation.
+- `CLOSED_BY_OWNER_SCOPE` and `DEFERRED_BY_OWNER_SCOPE` are not `PASS`, `KEEP`, `NO_KEEP`, cost-floor, `SYSTEM_CHARACTERISTIC`, `EVIDENCE_EXHAUSTED`, attempt/streak events, speedups, correctness verdicts, or accuracy waivers. All accepted numeric rows/denominators/order/history remain visible for later work.
+- Resulting closure path is lean and fixed: complete/check all `30/30` top-level and `17/17` OP001 rows -> one final P3-A visible Supervisor -> P3-B exact no-behavior-change cleanup -> P3-C final detect/one closure commit -> immediate Child 07 opening. No documentation audit/report loop is allowed.
+
+### `E2-P2A-A007PLAN1` — Exact D004 Execution Translation
+
+Status: `D004_A007_PLAN_READY / CODER_RELEASE_PENDING`.
+
+- Planner translation is materialized across `plan-rules.md` and the four standard ledgers without changing any accepted benchmark number, denominator, target separation, checklist, streak, attempt-result row, source/test/script/target byte, or disposition.
+- Authoring gate: `anvien --help` PASS; one `anvien analyze --force` at HEAD `24df6bade53dabeafbbec278e25315c17f55ba75` reports `2284` scanned / `766` parsed / `0` failed and graph `124652 / 171518`; file-detail was invoked for `plan-rules.md` and all four standard ledgers. This is documentation-authoring freshness only, not production impact, measurement, test, or acceptance evidence.
+- Exact Coder/validation/measurement/Supervisor/rollback/STOP and Owner-scope controls are now bound in the living Current P2-A Attempt and concrete P2-A steps. Exactly one fresh visible A007 Coder is the next functional owner.
+
 `REWORK` and `ROLLBACK` never authorize Coder directly. They describe the failed attempt's disposition; any next production edit starts a new attempt at Visible Architect.
 
 ### Attempt Result Ledger
@@ -1495,7 +1537,7 @@ Append one row after every attempt result. Current rows: `3`.
 | `E2-P2A-FINALBUILD1` | canonical full build of stable accepted complete state | pending |
 | `E2-P2A-FINALTIME1` | initial-versus-final total graph-generation measurement on same workload | pending |
 | `E2-P2A-FINALEQUIV1` | aggregate correctness/output/persistence/reader/determinism/freshness/failure/transaction/temp/publication equivalence | pending |
-| `E2-P2A-EXHAUST1` | every measured top-level parent and child has retained terminal or strict Owner cost-floor evidence and a checked plan item; no row is omitted and no open/blocked row remains | pending; D004 and five top-level rows remain open |
+| `E2-P2A-EXHAUST1` | every measured row has retained technical terminal or exact Owner-scope control evidence and a checked plan item; no row is omitted and no open/blocked row remains | pending; D004 A007 disposition plus Owner-scope materialization remain |
 
 ## E3 - P3 Evidence
 
