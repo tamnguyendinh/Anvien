@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN_16_OF_17_TERMINAL / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_A007_CODER_COMPLETE / D005-D017_PASS_BY_OWNER_COST_FLOOR / OWNER_FINAL_SCOPE_BOUND / OP002-OP005_DEFER_AFTER_D004 / SAME_CODER_MEASUREMENT_PENDING / CAMPAIGN_CLOSE_AFTER_A007 / CHILD07_NOT_OPENED_BY_OWNER`; accepted A003 values remain current and target-separated
+- Current state: `CAMPAIGN_CLOSED / CHILD07_NOT_OPENED_BY_OWNER / TOP_LEVEL_30_OF_30_TERMINAL / OP001_CHILDREN_17_OF_17_TERMINAL / D004_CLOSED_BY_OWNER_SCOPE / A007_STOPPED_BY_OWNER / A007_ROLLBACK_COMPLETE / OP002-OP005_DEFERRED_BY_OWNER_SCOPE`; accepted A003 values are final and target-separated
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -585,10 +585,10 @@ Predicate: both accepted targets contain the row and both controlling wall value
 | Top-level row | Operation | Cheapapp wall | Restaurant wall | Control state |
 |---|---|---:|---:|---|
 | `B1-P1A-OP001` | `resolution` | `20.472602300 s` | `20.850792800 s` | `OPEN` |
-| `B1-P1A-OP002` | `db_load` | `39.490259400 s` | `35.320587700 s` | `OPEN / DEFERRED_BY_OWNER_SCOPE_AFTER_A007_DISPOSITION` |
-| `B1-P1A-OP003` | `parse` | `10.798086200 s` | `17.321848600 s` | `OPEN / DEFERRED_BY_OWNER_SCOPE_AFTER_A007_DISPOSITION` |
-| `B1-P1A-OP004` | `graph_snapshot` | `14.158001400 s` | `14.831941000 s` | `OPEN / DEFERRED_BY_OWNER_SCOPE_AFTER_A007_DISPOSITION` |
-| `B1-P1A-OP005` | `semantic_enrichment` | `3.516770500 s` | `4.509375000 s` | `OPEN / DEFERRED_BY_OWNER_SCOPE_AFTER_A007_DISPOSITION` |
+| `B1-P1A-OP002` | `db_load` | `39.490259400 s` | `35.320587700 s` | `DEFERRED_BY_OWNER_SCOPE` |
+| `B1-P1A-OP003` | `parse` | `10.798086200 s` | `17.321848600 s` | `DEFERRED_BY_OWNER_SCOPE` |
+| `B1-P1A-OP004` | `graph_snapshot` | `14.158001400 s` | `14.831941000 s` | `DEFERRED_BY_OWNER_SCOPE` |
+| `B1-P1A-OP005` | `semantic_enrichment` | `3.516770500 s` | `4.509375000 s` | `DEFERRED_BY_OWNER_SCOPE` |
 | `B1-P1A-OP006` | `db_runner_resolve` | `1.005832600 s` | `0.930066300 s` | `PASS_BY_OWNER_COST_FLOOR` |
 | `B1-P1A-OP007` | `cross_file_binding` | `0.596224000 s` | `0.977645700 s` | `PASS_BY_OWNER_COST_FLOOR` |
 | `B1-P1A-OP008` | `ai_context` | `1.241777700 s` | `1.461508500 s` | `PASS_BY_OWNER_COST_FLOOR` |
@@ -620,7 +620,7 @@ Predicate: both accepted targets contain the row and both controlling wall value
 | `B2-P2A-A001-D001` | `resolve_calls` | `3.447846300 s` | `9.401585300 s` | preserved `EVIDENCE_EXHAUSTED`, streak `2` |
 | `B2-P2A-A001-D002` | `resolve_accesses` | `9.380783200 s` | `2.254679300 s` | preserved `EVIDENCE_EXHAUSTED`, no streak |
 | `B2-P2A-A001-D003` | `resolve_type_annotations` | `2.262894300 s` | `1.835270600 s` | `PASS_BY_OWNER_COST_FLOOR` |
-| `B2-P2A-A001-D004` | `project_resolution_outcomes` | `4.652523600 s` | `5.995737900 s` | `OPEN / A007_CODER_COMPLETE / SAME_CODER_MEASUREMENT_PENDING` |
+| `B2-P2A-A001-D004` | `project_resolution_outcomes` | `4.652523600 s` | `5.995737900 s` | `CLOSED_BY_OWNER_SCOPE / A007_ROLLBACK_COMPLETE / accepted A003 retained` |
 | `B2-P2A-A001-D005` | `emit_definition_nodes` | `0.389693800 s` | `0.657720100 s` | `PASS_BY_OWNER_COST_FLOOR` |
 | `B2-P2A-A001-D006` | `finalize_resolution_outcomes` | `0.156782300 s` | `0.446357000 s` | `PASS_BY_OWNER_COST_FLOOR` |
 | `B2-P2A-A001-D007` | `build_binding_occurrence_index` | `0.077439500 s` | `0.188117900 s` | `PASS_BY_OWNER_COST_FLOOR` |
@@ -635,7 +635,7 @@ Predicate: both accepted targets contain the row and both controlling wall value
 | `B2-P2A-A001-D016` | `finalize_resolution_metadata` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
 | `B2-P2A-A001-D017` | `runtime_setup` | `0.000000000 s` | `0.000000000 s` | `PASS_BY_OWNER_COST_FLOOR` |
 
-Control totals: top-level `25` floor-PASS / `5` open (`25/30` checked); children `2` prior terminal + `14` floor-PASS + `1` open (`16/17` checked). Open parent order remains `OP001, OP002, OP003, OP004, OP005`; OP001 remains active and D004 is its only open child. Accepted values and attempt history are unchanged.
+Control totals: top-level `30/30` checked and OP001 children `17/17` checked. D004/OP001 are closed only by Owner scope; OP002-OP005 are deferred only by Owner scope. Accepted A003 values and prior attempt history remain unchanged.
 
 ### Evidence-Exhausted Terminal Control Records
 
@@ -729,13 +729,22 @@ Append only metrics needed to explain an active elapsed-time cost or validate it
 | `B2-P2A-A003-CPU1` | A003 / D001 Cheapapp | retained `resolveCall / diagnosticAppender.appendToNode / normalize-policy-decoder / encoding/json.Unmarshal` | separate cumulative CPU samples | `2.76 / 0.92 / 0.87 / 1.84 s` | not measured | not applicable | causal attribution only; overlapping, non-additive, not elapsed, no speed claim | `E2-P2A-A003ATTRIB1` |
 | `B2-P2A-A003-CPU2` | A003 / D001 Restaurant Manager | retained `resolveCall / diagnosticAppender.appendToNode / normalize-policy / decoder / encoding/json.Unmarshal` | separate cumulative CPU samples | `9.19 / 2.35 / 2.11 / 2.10 / 2.28 s` | not measured | not applicable | causal attribution only; overlapping, non-additive, not elapsed, no speed claim | `E2-P2A-A003ATTRIB1` |
 
+### A007 Stopped Candidate Packet
+
+| Target / packet | D004 before -> candidate | Parent before -> candidate | Analyzer before -> candidate | Process before -> candidate | Control disposition |
+|-----------------|--------------------------|----------------------------|------------------------------|-----------------------------|---------------------|
+| Cheapapp / valid | `4.652523600 -> 3.106366300 s` (`-33.232659%`) | `20.472602300 -> 28.725261800 s` (`+40.310750%`) | `93.531974900 -> 159.327229000 s` (`+70.345199%`) | `95.630648200 -> 339.501882400 s` (`+255.013679%`) | rejected/unaccepted; local D004 gain does not satisfy system-level `KEEP` |
+| Restaurant Manager / incomplete | accepted A003 remains `5.995737900 s` | accepted A003 remains `20.850792800 s` | accepted A003 remains `98.020546700 s` | accepted A003 remains `101.096911900 s` | raw candidate benchmark exists, but no complete validated comparison/process packet; excluded at Owner stop |
+
+Targets are not averaged. A007 creates no accepted metric row, speedup, baseline promotion, or streak event.
+
 ### Final Comparable Result
 
 | Benchmark ID | Workload denominator | Initial total | Final accepted total | Absolute delta | Percent delta | Parent checklist checked / measured | Child checklist checked / measured | Unchecked blocked rows | Final disposition | Evidence ID |
 |--------------|----------------------|---------------|----------------------|----------------|---------------|-------------------------------------|------------------------------------|------------------------|-------------------|-------------|
-| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | current checkpointed A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | initial-to-A003 deltas: Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | final-plan percentage remains pending because P2-A is not exhausted | `25/30` | `16/17`; only D004 remains open under OP001 | validated A007 source exists but has no measurement row; same Coder task must return Cheapapp then Restaurant packets; OP002-OP005 retain exact values for later deferral | `OWNER_COST_FLOOR_APPLIED / D004_A007_CODER_COMPLETE / SAME_CODER_MEASUREMENT_PENDING / CAMPAIGN_CLOSE_AFTER_A007`; accepted A003 unchanged | `B2-P2A-OWNERCOSTFLOOR1`, `E2-P2A-A007SRC1/BUILD1/TEST1/CODERBOUNDARY1/MEASUREAUTH1`; final evidence pending |
+| `B2-P2A-FINAL1` | Cheapapp and Restaurant Manager workloads/denominators recorded exactly in separate independent tables | Cheapapp process `890.314783200 s`; Restaurant process `1178.391336900 s` | final accepted A003: Cheapapp process `95.630648200 s`; Restaurant process `101.096911900 s` | Cheapapp `-794.684135000 s`; Restaurant `-1077.294425000 s` | Cheapapp `-89.258782%`; Restaurant `-91.420769%` | `30/30` | `17/17` | none; D004/OP001 closed and OP002-OP005 deferred by Owner scope | `CAMPAIGN_CLOSED / CHILD07_NOT_OPENED_BY_OWNER / A007_ROLLBACK_COMPLETE`; accepted A003 retained | `B2-P2A-OWNERCOSTFLOOR1`, `E2-P2A-A007TARGET1/A007OWNERSTOP1/A007ROLLBACK1`, `E3-P3C-OWNERCLOSE1` |
 
-Current control cursor for this unchanged numeric row: `OWNER_COST_FLOOR_APPLIED / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_A007_CODER_COMPLETE / D005-D017_PASS_BY_OWNER_COST_FLOOR / OWNER_FINAL_SCOPE_BOUND / OP002-OP005_DEFER_AFTER_D004 / SAME_CODER_MEASUREMENT_PENDING / CAMPAIGN_CLOSE_AFTER_A007 / CHILD07_NOT_OPENED_BY_OWNER`, evidenced by `E2-P2A-OWNERCOSTFLOOR1` and non-numeric `E2-P2A-A007SRC1/BUILD1/TEST1/CODERBOUNDARY1/MEASUREAUTH1/CAMPAIGNCLOSE1`. No measured value, denominator, target separation, or Attempt Numeric History row changes.
+Final control cursor: `CAMPAIGN_CLOSED / CHILD07_NOT_OPENED_BY_OWNER / A007_STOPPED_BY_OWNER / A007_ROLLBACK_COMPLETE / D004_AND_OP001_CLOSED_BY_OWNER_SCOPE / OP002-OP005_DEFERRED_BY_OWNER_SCOPE`. A003 remains the accepted numeric source; A007 Cheapapp is retained only as rejected-candidate evidence.
 
 ## B3 - P3 Benchmarks
 

@@ -1563,15 +1563,16 @@ Append one row after every attempt result. Current rows: `3`.
 | `A001` | `B1-P1A-OP001` / `B2-P2A-A001-D001`; pre-A001 baselines remain separate: Cheapapp D001/parent/process `209.823705100 / 733.384225100 / 890.314783200 s`; Restaurant D001/parent/process `501.638742800 / 1090.085959900 / 1178.391336900 s` | complete `17/17` rows per target; parent and all `17` child checklist items remain unchecked | `E2-P2A-A001ARCH1` | `E2-P2A-A001PLAN1`, `E2-P2A-A001CONSISTENCY1` | `E2-P2A-A001IMPACT1/SRC1/BUILD1/TEST1/COMMIT1`; exact five-file `+174/-10` candidate, build PASS, focused PASS, pre-existing package golden FAIL recorded truthfully, implementation commit `17a1f3af37dcb61f9d389345822b6470a8f772cc` complete; Coder report `E:\Anvien\reports\coder\rp_coder_260825_175710_by_gpt-5_child06a_a001_import_claim_index.md` remains outside that implementation manifest and is committed separately at `18b5063d236f9f2567fea90e48eca8f1501bd1eb` with a one-file report manifest | separate accepted after values: Cheapapp D001/parent/process `25.045225300 / 184.481061700 / 279.105934600 s`; Restaurant `40.769294200 / 136.436879300 / 218.680628900 s`; denominators unchanged | `SUPERVISOR_A001_PASS`; `E2-P2A-A001REVIEW1` | `KEEP`; `E2-P2A-A001DECISION1` | `0` | promote each repo's optimized values as that repo's accepted current baseline; never average/combine; leave P2-A/parent/D001 unchecked and D002-D017 queued/unopened | `A001_COMMIT_COMPLETE`; Main Orchestration opens fresh visible Architect A002 on the same active D001; Coder remains closed |
 | `A002` | `B1-P1A-OP001` / `B2-P2A-A001-D001`; accepted A001 baselines separate: Cheapapp D001/parent/process `25.045225300 / 184.481061700 / 279.105934600 s`; Restaurant `40.769294200 / 136.436879300 / 218.680628900 s` | complete `17/17` rows per target; parent and all `17` child checklist items remain unchecked | `E2-P2A-A002ARCH1` | `E2-P2A-A002PLAN1` | `E2-P2A-A002IMPACT1/SRC1/BUILD1/TEST1/SCRIPTBUILD1/COMMIT1`; exact three-production-plus-one-test boundary, build PASS, focused/graphhealth PASS, pre-existing package golden FAIL recorded truthfully; accepted checkpoint `ecf825d7` complete | separate promoted after values: Cheapapp D001/parent/process `3.090914200 / 19.040468000 / 136.729876000 s`; Restaurant `9.909636600 / 21.242055400 / 145.066210900 s`; denominators unchanged | `SUPERVISOR_A002_PASS`; `E2-P2A-A002REVIEW1` | `KEEP`; `E2-P2A-A002DECISION1` | `0` | promote each repo's A002 values separately; checkpoint accepted bytes; leave P2-A/parent/D001 unchecked and D002-D017 queued | `E2-P2A-A003CURRENT1/ATTRIB1/ARCH1/PLAN2`; Main opens a fresh visible Coder only after PLAN2 handoff |
 | `A003` | `B1-P1A-OP001` / `B2-P2A-A001-D001`; A002 measurements remain the separate before basis | complete `17/17` rows per target; parent and all `17` child checklist items remain unchecked | `E2-P2A-A003ARCH1` historical exact-candidate scope only | `E2-P2A-A003PLAN2/OWNERKEEP1` | prior `IMPACT1/SRC1/BUILD1/TEST1/PACKET1` complete; exact two-file A003 hashes are materialized; checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463` complete; no gate rerun | Cheapapp D001/parent/analyzer/process `3.090914200 -> 3.447846300 / 19.040468000 -> 20.472602300 / 100.843249000 -> 93.531974900 / 136.729876000 -> 95.630648200 s`; Restaurant `9.909636600 -> 9.401585300 / 21.242055400 -> 20.850792800 / 109.339859600 -> 98.020546700 / 145.066210900 -> 101.096911900 s`; denominators unchanged | `SUPERVISOR_A003_PASS`; `E2-P2A-A003REVIEW1` | Owner `KEEP / RESTORE_COMPLETE / A003_CHECKPOINT_COMPLETE` | `0` | exact A003 bytes checkpointed; all checkboxes unchanged; WAL fix later checkpointed separately | `E2-P2A-A004ARCH1/PLAN1` complete; Main verifies A004 plan while Coder remains locked |
+| `A007` | final D004 candidate over accepted A003 | Cheapapp packet valid; Restaurant packet incomplete at Owner stop | `E2-P2A-A007ARCH1` | `E2-P2A-A007PLAN1` | source/build/test completed, then exact source/test rollback completed | Cheapapp D004 `4.652523600 -> 3.106366300 s`, parent `20.472602300 -> 28.725261800 s`, analyzer `93.531974900 -> 159.327229000 s`, process `95.630648200 -> 339.501882400 s`; Restaurant not accepted or used | no A007 Supervisor opened; no acceptance claimed | `STOPPED_BY_OWNER / NO_KEEP / ROLLBACK_COMPLETE / CLOSED_BY_OWNER_SCOPE` | no streak event | accepted A003 exact source and target-separated metrics retained; D004/OP001 closed by scope; OP002-OP005 deferred | campaign closed; no Child 07 |
 
 ### Final P2-A Evidence
 
 | Evidence ID | Required proof | Current status |
 |-------------|----------------|----------------|
-| `E2-P2A-FINALBUILD1` | canonical full build of stable accepted complete state | pending |
-| `E2-P2A-FINALTIME1` | initial-versus-final total graph-generation measurement on same workload | pending |
-| `E2-P2A-FINALEQUIV1` | aggregate correctness/output/persistence/reader/determinism/freshness/failure/transaction/temp/publication equivalence | pending |
-| `E2-P2A-EXHAUST1` | every measured row has retained technical terminal or exact Owner-scope control evidence and a checked plan item; no row is omitted and no open/blocked row remains | pending; D004 A007 disposition plus Owner-scope materialization remain |
+| `E2-P2A-FINALBUILD1` | canonical full build of stable accepted complete state | complete from retained accepted A003/WAL checkpoints; A007 left no source/test diff |
+| `E2-P2A-FINALTIME1` | initial-versus-final total graph-generation measurement on same workload | complete from target-separated accepted A003 totals; A007 values are rejected/unaccepted |
+| `E2-P2A-FINALEQUIV1` | aggregate correctness/output/persistence/reader/determinism/freshness/failure/transaction/temp/publication equivalence | complete from still-valid `SUPERVISOR_A003_PASS` plus exact A007 rollback identity |
+| `E2-P2A-EXHAUST1` | every measured row has retained technical terminal or exact Owner-scope control evidence and a checked plan item; no row is omitted and no open/blocked row remains | complete: `30/30` top-level and `17/17` OP001 child rows terminal |
 
 ## E3 - P3 Evidence
 
@@ -1579,11 +1580,11 @@ Matching plan item(s): `P3-A`, `P3-B`, `P3-C`
 
 | Evidence ID | Required proof | Current status |
 |-------------|----------------|----------------|
-| `E3-P3A-REVIEW1` | one final whole-candidate Supervisor `PASS` over initial/final measurements, all per-attempt reviews, stable source/build, and preserved invariants | pending/locked |
-| `E3-P3B-CLEAN1` | exact Child 06A dead/debug work disposition and accepted production/test bytes unchanged from P3-A | pending/locked |
-| `E3-P3C-DETECT1` | fresh post-cleanup detect-changes on accepted implementation boundary | pending/locked |
-| `E3-P3C-COMMIT1` | exactly one isolated Child 06A implementation commit and verified manifest | pending/locked |
-| `E3-P3C-HANDOFF1` | Child 07 predecessor/opening points to exact Child 06A closure commit and accepted performance/equivalence basis | pending/locked |
+| `E3-P3A-REVIEW1` | one final whole-candidate Supervisor `PASS` | not opened by newest Owner termination authority; no new candidate survives and no new verdict is claimed |
+| `E3-P3B-CLEAN1` | exact Child 06A dead/debug work disposition | not opened; raw A007 artifacts preserved and accepted source/test bytes unchanged |
+| `E3-P3C-DETECT1` | fresh post-cleanup implementation detect | not applicable: exact rollback leaves no implementation/test diff; closure is docs-only |
+| `E3-P3C-COMMIT1` | one scoped campaign-closure checkpoint | this docs-only five-file closure commit |
+| `E3-P3C-HANDOFF1` | historical field records successor disposition | `CAMPAIGN_CLOSED / CHILD07_NOT_OPENED_BY_OWNER` |
 
 ## Handoff Rules
 
@@ -1599,8 +1600,14 @@ Every Child 06A execution handoff must include:
 - lane report limited to lane/work/result/checkpoint/next owner, with no report audit, hash chain, evidence-about-evidence, or documentation review.
 - current cost-floor handoff must cite `E2-P2A-OWNERCOSTFLOOR1` / `B2-P2A-OWNERCOSTFLOOR1`, exact checked/remaining counts, preserved D001/D002 history, and active D004; it never authorizes production by itself.
 
-`E3-P3C-HANDOFF1` is reserved for opening Child 07 from the one Child 06A closure commit.
+`E3-P3C-HANDOFF1` is retained only as a historical field name and records `CAMPAIGN_CLOSED / CHILD07_NOT_OPENED_BY_OWNER`.
 
 ## Closure Evidence
 
-Closure requires any opened `E1-P1A-INSTR1` branch to have exactly one completed carry-forward or remove/rebuild/remeasure disposition; every measured parent and child row to have retained terminal or strict `PASS_BY_OWNER_COST_FLOOR` evidence and a checked item; no unresolved open/blocked row; lower comparable final total; complete required attempt evidence; final equivalence; `E3-P3A-REVIEW1` `PASS`; exact cleanup; one detect; one implementation commit; and `E3-P3C-HANDOFF1`. No current closure evidence exists.
+`E2-P2A-A007TARGET1`: Cheapapp `comparison.json` SHA-256 `79724F952B6BA36A679ED2CEC26FE79CA4FABD4AAE6FB0AA3919B8C50708C5CC` is `A007_TARGET_PACKET_VALID`. D004 improved `-33.232659%`, but parent regressed `+40.310750%`, analyzer `+70.345199%`, and process `+255.013679%`; A007 therefore cannot be `KEEP`. Restaurant has only an incomplete raw candidate benchmark at Owner stop and contributes no accepted value.
+
+`E2-P2A-A007OWNERSTOP1`: on `2026-08-28`, Owner explicitly stopped further A007 work, selected the post-analyze-bug-fix A003 state as the best retained code, and ordered campaign closure immediately after rollback. This is scope/termination authority, not a speedup or Supervisor verdict.
+
+`E2-P2A-A007ROLLBACK1`: HEAD `3e40cc951f51e9973c451e333f4137f5c80c61ac`; `internal/resolution/outcome.go` SHA-256 `02092F9FE7DA2A4BDB49E13056FBA3C97DC24F416141E7F27866EE80F60C1F7E`, HEAD/worktree blob `bd95f9fb4ee6076520555afe5fd789b716c394d2`; A007-only test absent; worktree and staged set empty before ledger sync. Accepted A003 `SUPERVISOR_A003_PASS` remains the final technical acceptance basis.
+
+`E3-P3C-OWNERCLOSE1`: D004/OP001 are `CLOSED_BY_OWNER_SCOPE`; OP002-OP005 are `DEFERRED_BY_OWNER_SCOPE`; all `30/30` top-level and `17/17` OP001 child rows are terminal. Campaign state is `CAMPAIGN_CLOSED / CHILD07_NOT_OPENED_BY_OWNER`; no A007 `KEEP`, speedup, or new Supervisor verdict is manufactured.
