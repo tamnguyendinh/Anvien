@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Current state: `OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN_16_OF_17_TERMINAL / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_A007_PLAN_READY / D005-D017_PASS_BY_OWNER_COST_FLOOR / OWNER_FINAL_SCOPE_BOUND / OP002-OP005_DEFER_AFTER_D004 / CODER_RELEASE_PENDING`; accepted A003 remains baseline
+- Current state: `OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN_16_OF_17_TERMINAL / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_A007_CODER_COMPLETE / D005-D017_PASS_BY_OWNER_COST_FLOOR / OWNER_FINAL_SCOPE_BOUND / OP002-OP005_DEFER_AFTER_D004 / SAME_CODER_MEASUREMENT_PENDING / CAMPAIGN_CLOSE_AFTER_A007 / CHILD07_NOT_OPENED_BY_OWNER`; accepted A003 remains baseline
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -270,9 +270,16 @@ Every actual production attempt instantiates every mandatory ID below with one i
 | `E2-P2A-A007BOUNDARY1` | one Main-owned Architect handoff boundary check: exact report/hash/verdict, report-only path, clean staged set, target separation and no implementation/acceptance/numeric/checklist mutation |
 | `E2-P2A-A007PLAN1` | exact five-ledger Planner translation for the one final D004 production chain; binds Coder pre-edit, production-first, full-build-before-test, two-target measurement, Supervisor, rollback, and Owner-scope transition without creating a candidate result |
 | `E2-P2A-OWNERSCOPE1` | latest Owner authority that A007 is the final Child 06A optimization chain; after safe disposition D004/OP001 close and OP002-OP005 become `DEFERRED_BY_OWNER_SCOPE`, preserving all numeric history without a performance or correctness claim |
+| `E2-P2A-A007IMPACT1` | fresh Coder graph/file-detail/impact gate for exact one-file production owner with full HIGH/CRITICAL scope |
+| `E2-P2A-A007SRC1` | exact guarded typed-read/fallback production bytes plus sole new D004 test file, hashes, numstat, and no owner drift |
+| `E2-P2A-A007BUILD1` | holder preflight plus canonical full build exit `0` before every test execution |
+| `E2-P2A-A007TEST1` | new focused matrix and eight named regressions actually run/PASS; four packages PASS; exact known preserve-only resolution golden remains the sole package failure |
+| `E2-P2A-A007CODERBOUNDARY1` | Main handoff check of exact source/test/report paths, hashes, staged-empty state, durable verdict and no measurement/Supervisor/disposition/detect/commit mutation |
+| `E2-P2A-A007MEASUREAUTH1` | latest Owner authority that the same A007 Coder task freezes and measures both targets sequentially; no separate builder/measurement lane and no acceptance/disposition authority |
+| `E2-P2A-CAMPAIGNCLOSE1` | latest Owner authority that the campaign ends after A007/D004 disposition and Child 06A closure; Child 07 is not opened |
 | `E2-P2A-AnnnRANK1` | accepted-state child/parent/full-pipeline timing refresh, complete child/top-level list update, and exact next unchecked child/parent pointer |
 
-Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. Accepted Cheapapp and Restaurant Manager A003 values remain separate. A004/A005 stay rejected-candidate history. `E2-P2A-A006EXHAUST1` and `E2-P2A-D002EXHAUST1` remain unchanged. `E2-P2A-OWNERCOSTFLOOR1` terminalizes D003 and D005-D017 plus top-level OP006-OP030 without changing any accepted number or streak. Parent OP001 and D004 remain unchecked; `E2-P2A-A007ARCH1/A007PLAN1` now authorize exactly one final D004 Coder chain. OP002-OP005 remain unchecked until that chain has a safe Supervisor/Main disposition, after which `E2-P2A-OWNERSCOPE1` defers them without opening optimization work.
+Current attempt basis: A001/A002/A003 evidence and checkpoints remain complete history. Accepted Cheapapp and Restaurant Manager A003 values remain separate. A004/A005 stay rejected-candidate history. `E2-P2A-A006EXHAUST1` and `E2-P2A-D002EXHAUST1` remain unchanged. `E2-P2A-OWNERCOSTFLOOR1` terminalizes D003 and D005-D017 plus top-level OP006-OP030 without changing any accepted number or streak. Parent OP001 and D004 remain unchecked. A007 source/build/test is Coder-complete with no numeric candidate row; the exact same Coder task is next for sequential two-target measurement. OP002-OP005 remain unchecked until safe Supervisor/Main disposition, after which Owner scope defers them. The campaign then closes at Child 06A and does not open Child 07.
 
 ### `E2-P2A-A001DRILL1` — Complete OP001 Resolution Child Measurement
 
@@ -1504,11 +1511,11 @@ Status: `BOUNDARY_CHECK_COMPLETE / NO SUPERVISOR ACCEPTANCE VERDICT / A007_PLANN
 
 Status: `OWNER_FINAL_SCOPE_BOUND / OP002-OP005_DEFER_AFTER_D004`.
 
-- Latest direct Owner authority: D004 is the final Child 06A bottleneck to optimize; after it finishes, close Child 06A and immediately open Child 07. Do not continue into the remaining smaller optimization rows now; they may be optimized later in a different future scope.
+- Latest direct Owner authority: D004 is the final Child 06A bottleneck to optimize; after it finishes, close Child 06A and end the entire campaign. Do not open Child 07 or continue into remaining smaller optimization rows; those rows remain preserved history for a separate future campaign only if the Owner later starts one.
 - A007 is therefore the one final D004 production chain. It must still complete the technical Coder/build/test/two-target/Supervisor/Main disposition path. A blocker is not completion.
 - After an eligible `KEEP`, promote its exact target-separated candidate; after any non-KEEP/reject, restore or retain exact accepted A003. Once that boundary is safe, mark D004 and OP001 `CLOSED_BY_OWNER_SCOPE`, do not open another D004 attempt, and mark OP002-OP005 `DEFERRED_BY_OWNER_SCOPE` without drill-down or implementation.
 - `CLOSED_BY_OWNER_SCOPE` and `DEFERRED_BY_OWNER_SCOPE` are not `PASS`, `KEEP`, `NO_KEEP`, cost-floor, `SYSTEM_CHARACTERISTIC`, `EVIDENCE_EXHAUSTED`, attempt/streak events, speedups, correctness verdicts, or accuracy waivers. All accepted numeric rows/denominators/order/history remain visible for later work.
-- Resulting closure path is lean and fixed: complete/check all `30/30` top-level and `17/17` OP001 rows -> one final P3-A visible Supervisor -> P3-B exact no-behavior-change cleanup -> P3-C final detect/one closure commit -> immediate Child 07 opening. No documentation audit/report loop is allowed.
+- Resulting closure path is lean and fixed: complete/check all `30/30` top-level and `17/17` OP001 rows -> one final P3-A visible Supervisor -> P3-B exact no-behavior-change cleanup -> P3-C final detect/one campaign-closure commit -> `CAMPAIGN_CLOSED / CHILD07_NOT_OPENED_BY_OWNER`. No successor or documentation-audit loop is allowed.
 
 ### `E2-P2A-A007PLAN1` — Exact D004 Execution Translation
 
@@ -1517,6 +1524,33 @@ Status: `D004_A007_PLAN_READY / CODER_RELEASE_PENDING`.
 - Planner translation is materialized across `plan-rules.md` and the four standard ledgers without changing any accepted benchmark number, denominator, target separation, checklist, streak, attempt-result row, source/test/script/target byte, or disposition.
 - Authoring gate: `anvien --help` PASS; one `anvien analyze --force` at HEAD `24df6bade53dabeafbbec278e25315c17f55ba75` reports `2284` scanned / `766` parsed / `0` failed and graph `124652 / 171518`; file-detail was invoked for `plan-rules.md` and all four standard ledgers. This is documentation-authoring freshness only, not production impact, measurement, test, or acceptance evidence.
 - Exact Coder/validation/measurement/Supervisor/rollback/STOP and Owner-scope controls are now bound in the living Current P2-A Attempt and concrete P2-A steps. Exactly one fresh visible A007 Coder is the next functional owner.
+
+### `E2-P2A-A007IMPACT1/SRC1/BUILD1/TEST1` — Validated A007 Candidate Source
+
+Status: `CODER_A007_READY_FOR_MEASUREMENT_HANDOFF`.
+
+- Visible Coder task/turn: `01a042fd-4efa-7880-ada8-66ea8ec5871f` / `01a042fd-5161-7bd0-a9c9-f1378ec5220d`. Durable report: `E:\Anvien\reports\coder\rp_coder_260827_by_gpt-5_child06a_a007_d004_diagnostic_typed_read.md`; SHA-256 `568E4999C6450461DD093069A411B371628628D73FBE8AE2235D60F83DA05D57`; exact verdict `CODER_A007_READY_FOR_MEASUREMENT_HANDOFF`.
+- `E2-P2A-A007IMPACT1`: one fresh pre-edit analyze PASS (`2284/766/0`, graph `124656/171522`); `outcome.go` HIGH; edited `resolutionOutcomeDiagnosticSites` CRITICAL with `7` impacted symbols, `6` files, `2` modules, and `23` processes. Scope stayed inside the authorized owner.
+- `E2-P2A-A007SRC1`: `internal/resolution/outcome.go` SHA-256 `6DFCA0CB912B00FC984DD7B25DB469DC74B87512DC8EC48DFF1ACE0438BF0BB2`, `+20/-6`; new `internal/resolution/outcome_diagnostic_sites_test.go` SHA-256 `34ABD93FDAA444899E63DBED6DA8647ADE7819FBF9DBB41DA03DB8DE9D94F25F`, `+349/-0`. Typed exact slice with UTF-8 stable consumed strings uses direct read; every other representation retains the exact marshal/unmarshal fallback. No owner, signature, caller, mutation, lifecycle, output, or persisted-shape drift.
+- `E2-P2A-A007BUILD1`: both doctor commands PASS and prove no build-output holder; no process terminated. Canonical full build exit `0` before tests; vendor `1798/0/0/0`; runtime and launcher/Vite build PASS; maintenance analyze `2285/767/0`, graph `124787/171689`.
+- `E2-P2A-A007TEST1`: all new focused tests PASS; all eight named regressions actually run and PASS, including the correctly tagged native Ladybug invocation. Full `graphhealth`, `analyze`, `lbugload`, and `lbugnative` packages PASS. Full `resolution` exits `1` solely on the exact known preserve-only `TestProofBasedCallAccessGoldenCorpus` with unchanged blob/payload; package is not mislabeled PASS and no new/changed failure exists.
+- No target measurement, Supervisor, disposition, accepted numeric change, checklist/streak change, detect, stage, commit, ledger edit, or performance claim occurred in the completed Coder turn.
+
+### `E2-P2A-A007CODERBOUNDARY1` — Main Coder Handoff Check
+
+Status: `BOUNDARY_CHECK_COMPLETE / SAME_CODER_MEASUREMENT_ALLOWED`.
+
+- Main checked exactly three worktree paths: modified `internal/resolution/outcome.go`, new `internal/resolution/outcome_diagnostic_sites_test.go`, and the Coder report. Their hashes match the handoff above; staged set is empty and `git diff --check` emits no diagnostics.
+- Durable report, source/test identities, build/test truth, terminal verdict, and STOP boundary agree. This is Main identity/scope/handoff verification only, not Supervisor acceptance and not a new durable verification report.
+
+### `E2-P2A-A007MEASUREAUTH1 / E2-P2A-CAMPAIGNCLOSE1` — Latest Owner Execution And Termination Authority
+
+Status: `SAME_CODER_MEASUREMENT_PENDING / CAMPAIGN_CLOSE_AFTER_A007 / CHILD07_NOT_OPENED_BY_OWNER`.
+
+- Owner explicitly directs the completed A007 Coder to continue immediately with candidate freezing and both target measurements in the same visible task; no separate builder or measurement lane is opened. Main updates the plan at this safe boundary, checkpoints only report/plan paths, and then resumes task `01a042fd-4efa-7880-ada8-66ea8ec5871f` with exact inputs/commands/artifacts/packet criteria.
+- Plan-authoring freshness for this scope change: `anvien --help` PASS; one `anvien analyze --force` exit `0` at HEAD `e61e5567` with the uncommitted validated candidate present reports `2286` scanned / `767` parsed / `0` failed and graph `124806 / 171708`; file-detail for `plan-rules.md` and all four standard ledgers reports current/non-stale LOW risk and `0` unresolved. This proves documentation freshness only and is not target measurement, candidate acceptance, or implementation detect.
+- Same-lane authority is measurement-only. The task may not edit production/tests/plans, issue Supervisor/disposition/closure verdicts, run detect, stage, or commit. Cheapapp executes once before Restaurant Manager executes once; accepted A003 before values are consumed, never rerun or averaged.
+- Owner also explicitly ends the whole campaign after A007/D004 is fully dispositioned and Child 06A closure completes. No Child 07 task, plan, handoff, or successor is opened.
 
 `REWORK` and `ROLLBACK` never authorize Coder directly. They describe the failed attempt's disposition; any next production edit starts a new attempt at Visible Architect.
 

@@ -3,7 +3,7 @@
 ## Metadata
 
 - Date: `2026-08-24`
-- Status: `P0-A complete / P1-A complete / P2-A open / OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN_16_OF_17_TERMINAL / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_A007_PLAN_READY / D005-D017_PASS_BY_OWNER_COST_FLOOR / OWNER_FINAL_SCOPE_BOUND / OP002-OP005_DEFER_AFTER_D004 / A003_CHECKPOINT_COMPLETE / TARGET_SEPARATION_PRESERVED / CODER_RELEASE_PENDING`
+- Status: `P0-A complete / P1-A complete / P2-A open / OWNER_COST_FLOOR_APPLIED / TOP_LEVEL_25_OF_30_TERMINAL / OP001_CHILDREN_16_OF_17_TERMINAL / D001_EVIDENCE_EXHAUSTED_TERMINAL / D001_STREAK_2 / D002_EVIDENCE_EXHAUSTED_TERMINAL / D003_PASS_BY_OWNER_COST_FLOOR / D004_A007_CODER_COMPLETE / D005-D017_PASS_BY_OWNER_COST_FLOOR / OWNER_FINAL_SCOPE_BOUND / OP002-OP005_DEFER_AFTER_D004 / SAME_CODER_MEASUREMENT_PENDING / CAMPAIGN_CLOSE_AFTER_A007 / CHILD07_NOT_OPENED_BY_OWNER / A003_CHECKPOINT_COMPLETE / TARGET_SEPARATION_PRESERVED`
 - Plan: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-plan.md`
 - Plan rules: [plan-rules.md](plan-rules.md)
 - Evidence: `docs/plans/2026-07-26-anvien-graph-accuracy-multi-plan/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy/2026-08-24-06a-accelerate-analyze-without-sacrificing-accuracy-evidence.md`
@@ -44,7 +44,7 @@ In scope:
 - per-attempt fresh Visible Architect decision and concrete Planner refresh before production editing;
 - sequential production optimization of current measured bottlenecks, with production-first implementation, authorized test edits, full build, post-build test execution, direct and end-to-end remeasurement, per-attempt Visible Supervisor accuracy/equivalence review, disposition, baseline promotion or restoration, and reranking;
 - final initial-versus-final graph-generation proof on the same workload;
-- one final whole-candidate Supervisor boundary, exact dead-work cleanup, one detect, one implementation commit, and Child 07 handoff.
+- one final whole-candidate Supervisor boundary, exact dead-work cleanup, one detect, one Child 06A campaign-closure commit, and terminal campaign closure without Child 07 opening.
 
 Preserve/validate boundary:
 
@@ -61,8 +61,8 @@ Preserve/validate boundary:
 - No numeric threshold other than the binding Owner cost floor in [plan-rules.md](plan-rules.md); the strict `3.000000000 s` all-target predicate controls current queue terminalization.
 - No parallel production editing, per-bottleneck implementation slice, unaccepted/rejected-attempt commit, or documentation acceptance loop. Accepted Supervisor-`PASS` + Main-`KEEP` progress checkpoints follow [plan-rules.md](plan-rules.md) without closing P2-A.
 - No promotion based only on timing without the exact attempt's Supervisor accuracy/equivalence `PASS`.
-- No Child 06 correctness re-review and no direct Child 06 -> Child 07 opening.
-- No target-repository access or terminal Child 07 validation in this child.
+- No Child 06 correctness re-review and no Child 07 opening.
+- No terminal Child 07 validation; the latest Owner ends the campaign at the Child 06A closure commit.
 - No performance claim from profiled cumulative samples, historical wall times, build/test duration, or an unmeasured resource hypothesis.
 - The former prohibition on an elapsed-time size cutoff is superseded by the latest Owner authority. `PASS_BY_OWNER_COST_FLOOR` checks a measured row without omitting it only when every accepted target has a strictly `< 3.000000000 s` controlling wall value; any `>= 3.000000000 s`, missing value, or comparability loss remains open. Ordinary `BLOCKED_OPEN` and binding `EVIDENCE_EXHAUSTED` retain their separate meanings.
 
@@ -107,7 +107,7 @@ Preserve/validate boundary:
 - Final acceptance requires lower measured total graph-generation time on the same workload, no unexplained transfer of cost to another operation, and exact required equivalence across all affected accepted boundaries.
 - One stable final state receives the final whole-candidate P3-A Supervisor review; this does not replace or retroactively supply any per-attempt review.
 - Cleanup removes only Child 06A-created failed, superseded, or debug work and must not mutate accepted production/test bytes.
-- One post-cleanup detect and one isolated implementation commit close Child 06A; Child 07 consumes that exact closure commit.
+- One post-cleanup detect and one isolated implementation commit close Child 06A and the campaign; Child 07 remains unopened by Owner authority.
 
 ## Acceptance Criteria
 
@@ -125,7 +125,7 @@ Preserve/validate boundary:
 - Every measured child of every measured parent has either retained production/governance terminal evidence or `PASS_BY_OWNER_COST_FLOOR` packet proof and a checked plan item; every open parent is checked only after all its children are checked. No row is omitted.
 - Final total graph-generation time is lower than the initial comparable value on the same workload.
 - Accuracy, semantic completeness, graph correctness, ordered output, determinism, freshness, failure, transaction, temp, publication, Graph JSON, Ladybug, and native-reader invariants pass at every affected boundary.
-- Exactly one final whole-candidate `P3-A` Supervisor boundary passes, `P3-B` cleanup leaves accepted production/test bytes unchanged, and `P3-C` records one detect, one implementation commit, and the direct Child 07 handoff.
+- Exactly one final whole-candidate `P3-A` Supervisor boundary passes, `P3-B` cleanup leaves accepted production/test bytes unchanged, and `P3-C` records one detect, one campaign-closure commit, and terminal `CAMPAIGN_CLOSED / CHILD07_NOT_OPENED_BY_OWNER` status.
 - No removed-method control structure, template placeholder, parallel report tree, reusable stale architecture decision, or fabricated measurement/result remains in the four ledgers.
 - The plan directory contains exactly four standard planner files plus the auxiliary [plan-rules.md](plan-rules.md); standard companion/suffix checks still count exactly the four standard files.
 
@@ -237,8 +237,9 @@ This is the living Planner refresh surface for the one implementation slice. Pla
 | Exact rollback | only the A007 hunk/helper/import in `outcome.go`, the new D004 test, and its frozen overlay/candidate packet; accepted A003/A001-A006/protected bytes remain untouched |
 | Mandatory STOP | any other production file/symbol, existing-test edit, signature/coordinator/graphhealth/collector/resolve change, fallback weakening, unsupported coercion, A005 lifecycle reuse, graph/output/order/error/resource drift, build/new test failure, or mixed/incomplete target packet returns to Main without broadening |
 | Owner closure control | after the A007 Supervisor verdict and safe Main promotion/restoration, do not open another D004 attempt. Mark D004/OP001 `CLOSED_BY_OWNER_SCOPE`, mark OP002-OP005 `DEFERRED_BY_OWNER_SCOPE`, preserve all numbers, then proceed directly to lean P3 closure |
-| Coder status | release pending; exactly one fresh visible A007 Coder may open from this checkpoint |
-| Next action | Main checkpoints the Architect report plus five plan files, opens exactly one visible A007 Coder, and continuously monitors its pre-edit/source/build/test handoff; measurement and Supervisor remain locked until Coder validity |
+| Coder status | `CODER_A007_READY_FOR_MEASUREMENT_HANDOFF`; exact source/test/report hashes and validation truth are recorded under `E2-P2A-A007IMPACT1/SRC1/BUILD1/TEST1/CODERBOUNDARY1` |
+| Measurement owner | latest Owner authority resumes the same visible Coder task `01a042fd-4efa-7880-ada8-66ea8ec5871f`; no separate builder or measurement lane opens |
+| Next action | checkpoint the Coder report plus five plan files without staging source/test, then resume that same Coder to freeze one A007 candidate and run Cheapapp followed by Restaurant Manager; Supervisor remains locked until both packets exist |
 
 ### A005 PLAN1 Canonical Outcome-Byte Ownership Execution Authority
 
@@ -579,10 +580,10 @@ This gate applies to A001 because it is the latest direct Owner sequencing requi
        - Evidence target in execution order: `E2-P2A-AnnnIMPACT1`, `E2-P2A-AnnnSRC1`, `E2-P2A-AnnnBUILD1`, `E2-P2A-AnnnTEST1`; `TEST1` records only the attempt-authorized post-production test bytes and test execution after full-build `PASS`.
        - Holder/build/test sequence: run `anvien doctor locks --repo E:\Anvien --json` and `anvien doctor processes --json`, terminate only proven build-output holders, require canonical full build exit `0`, then run the new D004 focused test plus `TestDiagnosticAppenderMatchesLegacySemantics`, `TestP6C3FinalOutcomeStatusPrecedenceAndCarriageMatrix`, `TestResolveAttachesSourceBackedUnresolvedDiagnostics`, `TestP6DStructuredOutcomeProjectionPreservesGraphJSONAndHealthParity`, `TestP6C3AnalyzeResultPreservesFinalOutcomesAndGraphCarriage`, `TestP6C3AnalyzeCapabilityOutcomesRetainAcceptedAuthorityStatus`, `TestP6C3ResolutionOutcomesPreserveGraphJSONAndLadybugParity`, and `TestP6C3NativeLadybugResolutionOutcomeReadback`; then run the five required packages. The unchanged known golden remains truthful and any new/changed failure blocks A007.
        - Current D004 cursor: `E2-P2A-A007ARCH1/A007PLAN1` authorize only the exact guarded typed-read/fallback implementation; parent and D004 remain unchecked and no candidate result exists.
-    5. After A007 production/build/test validation, record two independent candidate measurements without combining them, using each target's accepted A003 artifact as that target's `before` and one identifiable A007 candidate containing only the authorized PLAN1 production bytes plus the accepted measurement overlay as `after`.
+    5. After A007 production/build/test validation, resume the same visible Coder task to record two sequential target-independent candidate measurements without combining them, using each target's accepted A003 artifact as that target's `before` and one identifiable A007 candidate containing only the authorized PLAN1 production bytes plus the accepted measurement overlay as `after`. Do not open a separate builder or measurement lane.
        - UI flow check: N/A unless activated by impact.
        - DB/data flow check: reuse unchanged `scripts/build-a00x-benchmark.ps1` and accepted 17-child/native/runtime/provenance contract; map only the A007 `outcome.go` candidate plus unchanged accepted measurement overlay inputs. No script/build-interface audit, target edit, accepted-before rerun, or rejected A004/A005 byte is allowed. Cheapapp retains `--force --skip-git --json --progress`; Restaurant retains `--force --json --progress` and exactly one `--exclude electron/renderer/src/api/userApi.ts`.
-       - Render location check: benchmark records separate A007 pending/returned numeric blocks against each target's own accepted A003 baseline; evidence records exact executable/command/target/artifact/overlay identity and equivalence; actual status records which reports are pending/received. Planner owns neither future measurement lane.
+       - Render location check: benchmark records separate A007 pending/returned numeric blocks against each target's own accepted A003 baseline; evidence records exact executable/command/target/artifact/overlay identity and equivalence; actual status records which packet is pending/received. The same Coder task owns execution/reporting only and cannot issue acceptance or disposition.
        - Mini QA: each repo separately records D004, parent, analyzer, process wall, all `30/30` operations and ordered `17/17` children, exact D004 denominators, conservation/zero overlap, diagnostics/outcomes/SourceSiteIDs/ordered Evidence/reference indexes, canonical Graph JSON/stdout/stderr, logical Ladybug/native reader parity, `startAllocBytes`, `endAllocBytes`, `maxObservedSys`, and exact candidate/overlay/target/one-launch identity. Never rerun accepted A003 bases, average/combine targets, or use CPU/build/test duration as elapsed proof.
        - Evidence target: `E2-P2A-AnnnDIRECT1`, `E2-P2A-AnnnPARENT1`, `E2-P2A-AnnnE2E1`, `E2-P2A-AnnnEQUIV1`, `E2-P2A-AnnnREVIEW1`.
        - Current cursor: A007 candidate measurement stays locked until the sole Coder returns valid source/build/test evidence; no numeric row exists now.
@@ -626,9 +627,9 @@ This gate applies to A001 because it is the latest direct Owner sequencing requi
   - Actual-status Update: refresh after every result; open P3-A only after final speedup/equivalence and terminal-disposition criteria pass.
   - Commit Boundary: `E2-P2A-A001COMMIT1` records A001 commit `17a1f3af37dcb61f9d389345822b6470a8f772cc`; `E2-P2A-A002COMMIT1` records accepted A002 checkpoint `ecf825d709b761390a5df4a2147b6ed6eec04499`; WAL fix checkpoint `0f3a572331dd23d17688886fcbfebeb7d37ee35d` is complete. P3-C retains its local one-closure-commit rule.
 
-### P3: Final Acceptance And Closure
+### P3: Final Acceptance And Campaign Closure
 
-- Phase Goal: review the stable whole candidate, clean it without changing accepted behavior, detect it, commit it once, and hand it to Child 07.
+- Phase Goal: review the stable whole candidate, clean it without changing accepted behavior, detect it, create one Child 06A closure commit, and terminate the campaign without opening Child 07.
 - Phase Boundary:
   - In scope: P3-A, P3-B, and P3-C only.
   - Out of scope: new optimization work, another implementation slice, another final Supervisor boundary, or another commit.
@@ -651,14 +652,14 @@ This gate applies to A001 because it is the latest direct Owner sequencing requi
   - Implementation Gate: `E3-P3A-REVIEW1` is `PASS`; cleanup cannot broaden scope or create documentation review.
   - Acceptance: `E3-P3B-CLEAN1` records removed/preserved/blocked items and accepted production/test identity remains unchanged.
 
-- [ ] P3-C: Detect, Create One Implementation Commit, And Hand Off Child 07.
-  - Goal: close Child 06A at one isolated implementation commit and make it Child 07's direct predecessor.
+- [ ] P3-C: Detect, Create One Campaign-Closure Commit, And Terminate.
+  - Goal: close Child 06A and the full campaign at one isolated implementation commit; do not create or open Child 07.
   - Work Steps:
     1. Refresh final ledgers and run post-cleanup `anvien detect-changes --repo E:\Anvien --scope all` on the accepted implementation boundary.
     2. Stage only accepted Child 06A implementation/tests/necessary instrumentation/evidence/benchmark/plan ledgers, create exactly one implementation commit, and verify its manifest.
-    3. Update Child 07 opening evidence to the exact Child 06A closure commit and hand off current benchmark/equivalence basis.
+    3. Record terminal `CAMPAIGN_CLOSED / CHILD07_NOT_OPENED_BY_OWNER` status against the exact Child 06A closure commit and current benchmark/equivalence basis.
   - Implementation Gate: P3-A remains valid, P3-B changed no accepted production/test bytes, detect passes, and staging excludes unrelated/protected work.
-  - Acceptance: `E3-P3C-DETECT1`, `E3-P3C-COMMIT1`, and `E3-P3C-HANDOFF1` record one detect, one implementation commit, and direct Child 07 handoff.
+  - Acceptance: `E3-P3C-DETECT1`, `E3-P3C-COMMIT1`, and historical-name `E3-P3C-HANDOFF1` record one detect, one campaign-closure commit, and `CAMPAIGN_CLOSED / CHILD07_NOT_OPENED_BY_OWNER` with no successor task.
 
 ## Risk Notes
 
