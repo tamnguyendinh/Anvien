@@ -1,6 +1,8 @@
 # Child 06A A006 Residual Architecture Decision
 
-Verdict: `ARCHITECT_A006_NEEDS_MEASUREMENT_INPUT`
+Current post-M1 verdict: `ARCHITECT_A006_NO_SAFE_DIRECTION`
+
+Historical pre-M1 verdict preserved below: `ARCHITECT_A006_NEEDS_MEASUREMENT_INPUT`
 
 ## Scope And Authority
 
@@ -309,4 +311,101 @@ STOP the measurement and return to Main if:
 - Next owner: Main Orchestration to verify this handoff and decide whether to authorize the measurement-only input.
 - Stage/commit: none.
 
-`ARCHITECT_A006_NEEDS_MEASUREMENT_INPUT`
+Historical pre-M1 terminal marker: `ARCHITECT_A006_NEEDS_MEASUREMENT_INPUT`
+
+---
+
+## Post-M1 Superseding Architecture Decision
+
+Final verdict: `ARCHITECT_A006_NO_SAFE_DIRECTION`
+
+This section consumes the completed `A006-M1-D001-DIRECT-CALLEE-ATTRIBUTION` packet and supersedes the historical pre-M1 request above. The historical request, its constraints, and its measurement contract remain preserved as provenance. This decision releases no production direction, does not terminalize D001, and does not request Planner or Coder.
+
+### Current Scope, State, And Freshness
+
+- Lane: fresh A006 System Architect, architecture only.
+- Slice: `P2-A / A006 / B1-P1A-OP001 resolution / B2-P2A-A001-D001 resolve_calls`.
+- Current checkpoint HEAD: `80ced4d7191fc70eb97187f626b89f64e2fd779e`; worktree clean; staged count `0` before this report-only update.
+- Accepted implementation and measurement basis: A003 checkpoint `b6bf45bce95323aa6b53b182edfea8628bd8b463`.
+- Entering campaign state: A004/A005 `SUPERVISOR_PASS / NO_KEEP / ROLLBACK_COMPLETE`; D001 unsuccessful streak `2`; parent/D001 unchecked; D002-D017 queued and unopened; P3 and Child 07 closed.
+- Startup authority was reread through EOF in the mandated order: `AGENTS.md`, `working-rules`, `System-Architect`, `plan-rules.md`, all four standard Child 06A ledgers, this historical A006 report, the full M1 report, and the M1 handoff Supervisor report.
+- `anvien --help` passed. Exactly one fresh `anvien analyze --force` then exited `0`: `2264` scanned, `766` parsed code, `0` failed; graph `124418` nodes / `171284` relationships.
+- Fresh file-detail reports `internal/resolution/resolve.go` current, non-stale, unchanged since analyze, and `HIGH`: `200` symbols, inbound/outbound/local relationships `134 / 289 / 87`, `26` linked flows, and `40` linked tests.
+- Fresh upstream impact including tests reports `resolveCall` `CRITICAL`: `31` impacted symbols, `1` direct caller, `13` affected files, `7` modules, and `32` processes. HIGH/CRITICAL is a blast-radius warning, not an edit prohibition; no source edit is authorized here.
+
+### M1 Input Accepted Without Promotion
+
+The M1 handoff is valid Architect input:
+
+- the preserved initial `AttemptId=A006-M1` builder-input failure created no executable, target launch, value, attempt, or streak event;
+- the one authorized recovery reused the unchanged overlay, manifest, builder, production, and tests with provenance `AttemptId=A006`;
+- recovery build/root exits are `0/0`; provenance exposes exact overlay/candidate/native identities `2/4/3`;
+- executable version/bytes/SHA-256 are `1.2.8 / 73,836,032 / 0362FE211C2E072988EF61B662FC4F0D2160437F520F4525CDA59DDE52FB57A7`;
+- Cheapapp and Restaurant Manager each launched once and exited `0`, sequentially, with cross-target overlap `0`;
+- each packet has `30/30` operations, `17/17` children, exact ten-group-to-D001 conservation, parent conservation, zero intra-target overlap, exact A003 Graph JSON/stdout/stderr identity, and exact non-timing graph/DB/resolution/diagnostic/outcome/evidence parity.
+
+The instrumented D001, parent, analyzer, process, and resource values remain attribution-only. They are not a candidate improvement, accepted-baseline promotion, Supervisor result, production failure, or D001 streak event.
+
+### Selection Gate Result
+
+A production direction is eligible only if all of these are true at once:
+
+1. M1 proves nonzero exclusive work on Cheapapp and Restaurant Manager separately.
+2. The exact removable mechanism and exact current production owner are separated from A001-A005 ownership and from semantically mandatory carrier work.
+3. One synchronous production algorithm removes that work rather than deferring it into finalization, another resolution child, a later analyzer phase, persistence, or CLI publication.
+4. The direction is materially new rather than a cosmetic cache/index/byte/order variant of A001-A005.
+5. The resulting resource lifetime and deterministic ordering can be bounded without global/cross-run state, concurrency, fallback behavior, output drift, or a second semantic authority.
+
+No M1 group satisfies all five conditions. Nonzero aggregate timing alone is insufficient when the measured group combines several owners or when the proposed change would retain, defer, or merely rename required work.
+
+### Exact Group-By-Group Disqualification
+
+| M1 group | Cheapapp duration / invocations | Restaurant duration / invocations | Post-M1 architecture finding |
+|---|---:|---:|---|
+| `source_context` | `43,637,500 ns / 27,890` | `204,263,300 ns / 86,030` | Nonzero on both, but it measures `sourceForScopeOrFile` as a whole. Current source delegates to `callerForScope`, which walks parent scopes and owned definitions, then falls back to a file ref. M1 exposes no distinct-scope count, scope-hop count, repeated-key count, or caller-versus-file split. A cache/precomputed scope context could add a map and construction work without proving any repeated work is eliminated on either target. No exact removable mechanism is established. |
+| `binding_receiver` | `78,596,800 ns / 26,079` | `185,310,600 ns / 105,656` | Composite of `repositoryReceiverClaimed`, binding-occurrence lookup, and binding-reference emission. The first may traverse scope/type/global claims and consumes accepted A001 import-claim semantics; the latter two create required reference/outcome/graph carriers. M1 does not split lookup from mandatory emission, report receiver keys/hops, or prove a repeated result safe to cache. |
+| `scoped_same_file` | `53,094,400 ns / 29,686` | `266,276,000 ns / 65,948` | Composite of `resolveScopedName` and both `resolveSameFileName` sites. Source shows scope-chain binding lookup and a per-file definition traversal, but M1 gives neither per-callee elapsed/invocations nor binding hops, definitions visited, lookup-name distribution, or unique keys. A new memo/index direction would be an unproven A001-style variant and could move construction cost into `buildWorkspace`/resolution setup. |
+| `member_import` | `186,935,000 ns / 47,123` | `308,333,200 ns / 167,208` | Composite of member resolution, imported-member/export proof, accepted A001 claim helpers, and five import-call-state sites. It does not isolate `defsByFile` traversal, semantic export resolution, receiver typing, inheritance lookup, or A001-preserved work. No candidate-visit or unique-key evidence proves one new scan/index mechanism on both targets. |
+| `go_same_package` | `972,300 ns / 8,501` | `3,946,043,200 ns / 16,011` | Current source proves a whole `defsByFile` traversal in `resolveGoSamePackageFunction`, so the mechanism is concrete. It is nevertheless Restaurant-dominant and near-zero on Cheapapp. It cannot alone satisfy the mandatory two-target selection rule, and folding it into a broader definition-index proposal would rely on unmeasured portions of other composite groups. |
+| `global_lookup` | `14,767,200 ns / 4,118` | `11,392,500 ns / 13,781` | Nonzero but small and already uses the existing `defsByName` index plus required label, arity, uniqueness, and ambiguity checks. M1 identifies no redundant scan, repeated key, or removable carrier work. A cache would add state without evidence of duplicate queries or net work removal. |
+| `typescript_lookup_record` | `686,469,300 ns / 23,430` | `435,161,600 ns / 44,775` | Material and nonzero on both, but one interval deliberately combines catalog lookup, target-text argument evaluation, `recordTypeScriptLookup`, authority-result/external-site carriage, outcome recording, and conditional diagnostic emission. The record/diagnostic/outcome descendants include accepted A002/A003 and rejected A005 ownership. M1 does not separate catalog lookup from per-site recording, expose member/global/status splits, or report unique lookup keys/cache hits. A lookup cache might retain result state while mandatory per-site recording remains; a record-side change would repeat A002/A003/A005. No exact newly actionable owner is proven. |
+| `evidence_emission` | `1,954,984,600 ns / 44,488` | `2,774,855,300 ns / 164,333` | Largest common group, but explicitly composite: `appendExportBindingEvidence`, `emitUnresolvedReference`, `emitReference`, `recordRepositoryUnresolvedOutcome`, `retainedExportResolutionForScopedBinding`, argument identity work, graph/reference-index mutation, outcome/diagnostic carriers, and relationship merge. Its descendants include accepted A002 appender, accepted A003 decoder, rejected A004 evidence dedupe/key/sort, and rejected A005 canonical outcome-byte lifecycle. The remainder creates semantically required graph/reference/outcome/diagnostic state. M1 provides no sub-owner timing that separates a new redundant synchronous operation from those attempted or mandatory paths. Deferral/batching would shift work downstream and alter write-through/order/failure timing. |
+| `direct_site_identity` | `9,858,900 ns / 40,360` | `120,948,600 ns / 156,976` | Nonzero on both and source shows branch-local `callTargetText`/`sourceSiteID` construction. The group still combines required stable identity creation with any repeated target-text construction, and M1 does not separate the removable repeat. Stack-local target-text reuse would be a cosmetic micro-change, not a material new architecture direction, while source-site IDs and carrier target text must still be produced exactly. |
+| `resolve_call_residual` | `19,683,300 ns / 27,890` | `44,540,800 ns / 86,030` | Exact nonnegative residual, but by definition it combines branch/control flow, assignments, metrics, recorder overhead, and any unlisted work. It has no exact production symbol or removable mechanism. Selecting it would be attribution by subtraction, not architecture evidence. |
+
+The ten rows sum exactly to each target's instrumented D001 (`3,048,999,300 ns` and `8,297,125,100 ns`). That conservation validates the inventory; it does not turn a composite row into a safe production owner.
+
+### Rejected Post-M1 Directions
+
+1. **Go package/function index:** exact source mechanism, but no material Cheapapp signal. Rejected by the two-target rule.
+2. **General definition lookup index using existing `defsByName`:** could touch same-file, imported-member, and Go paths, but M1 does not isolate their definition-scan share or candidate visits. It would combine three measured groups to manufacture a direction and risk becoming a cosmetic A001-style index extension.
+3. **TypeScript lookup-result cache:** authority lookups are synchronous and deterministic, but duplicate/unique keys, member/global mix, status mix, lookup-only elapsed, clone/alias requirements, and retained memory are unmeasured. Per-site authority/outcome/diagnostic carriage remains mandatory and overlaps A002/A003/A005.
+4. **Scope/caller memoization:** M1 proves aggregate source/scope work, not repeated scope keys or hops. A run-scoped cache may add as much lookup/retention work as it removes and lacks an evidenced resource bound tied to actual uniqueness.
+5. **Call target/source-site reuse:** source proves limited repeated construction, but M1 does not isolate the duplicate portion from required identity work; the measured direct group is not a material production direction and cannot plausibly justify another full attempt after two NO_KEEP results.
+6. **Emission batching or deferred projection:** forbidden because it moves the largest local group into finalization/later phases and changes write-through visibility, ordering, failure timing, graph/reference/outcome/diagnostic ownership, or downstream cost.
+7. **Parallel call resolution:** forbidden without deterministic ownership of shared graph, relationship merge state, reference indexes, metrics, outcomes, diagnostics, TypeScript result slices, and ordered carriers. No such ownership proof exists.
+
+### Full Preserved Product Path
+
+The unchanged path remains:
+
+`CLI analyze -> analyze.Run -> runPhase(PhaseResolution) -> ResolveBoundInto -> w.files -> ir.Calls -> resolveCall -> resolution/evidence/outcome/diagnostic/reference/graph carriers -> finalizeTypeScriptAuthorityResults -> emitTypeScriptExternalSymbols -> resolutionOutcomeCollector.finalize -> projectResolutionOutcomes -> resolution.Result -> analyze.Result -> MRO -> communities -> processes -> semantic enrichment -> Graph.Compact -> Ladybug/native load and readback -> canonical Graph JSON -> CLI/public output`.
+
+No local D001 direction may transfer cost into another resolution child, final projection, graph mutation, DB load, snapshot, semantic processing, Ladybug, Graph JSON, or CLI publication. Every semantic, order, failure, lifecycle, and resource invariant named in the historical decision remains preserve-only.
+
+### State Effect, Rollback, And Mandatory STOP
+
+- Production direction: none.
+- Production owner/test owner/algorithm: none released.
+- Expected observable production gain: none claimed.
+- Planner/Coder/Supervisor/measurement transition: none requested by this lane.
+- Accepted state: exact A003 checkpoint remains authoritative.
+- A006-M1 effect: Architect input only; not a failed production attempt.
+- D001 streak: remains `2`; it is not incremented or terminalized.
+- Checklist/queue: P2-A, parent, and D001 remain unchecked; D002-D017 remain queued/unopened; P3 and Child 07 remain closed.
+- Production rollback: none, because this decision changes no production/test/script/plan/ledger/target byte. Report rollback, if Owner rejects the architecture record, is limited to this appended post-M1 section and the two verdict-label lines at the top/history boundary.
+- Next owner: Main Orchestration. Main decides governance without treating M1 as an unsuccessful production attempt and without opening Planner/Coder from this verdict.
+
+Mandatory STOP: do not infer a third A006 production attempt, `SYSTEM_CHARACTERISTIC`, child check, parent transition, Planner/Coder handoff, new measurement request, source/test edit, or downstream phase from this report. Any later production edit would require new evidence and a separately authorized fresh attempt chain; this A006 lane releases none.
+
+`ARCHITECT_A006_NO_SAFE_DIRECTION`
