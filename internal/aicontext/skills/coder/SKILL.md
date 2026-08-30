@@ -180,23 +180,6 @@ You own closure of the invariant family behind the assigned scope, not only the 
   + Problem report -> `reports/problem/` 
 - **The report must match the current scope verification contract**: if scope verification says `go test ./...`, the report must contain `go test` output. If the scope requires happy/failure path tests, the report must list test name, file path, and result.
 
-### 8. RECORD EVIDENCE
-- Do not force the current scope into unrelated tracking work just to tick a different item.
-- Do NOT tick `Supervisor`.
-- Record verification/evidence for the current scope in both the report and today's `Docs/notes_decisions_log/notes_decisions_log_YYYYMMDD.md`.
-- Write the report link into today's `Docs/notes_decisions_log/notes_decisions_log_YYYYMMDD.md`.
-
-### 9. HANDOFF TO SUPERVISOR
-- Send a review package: current scope/incident + invariant family + closure evidence + verify output + risk.
-- Stop and wait for supervisor verdict.
-
-### 10. CONTINUE
-- If supervisor passes -> close the current scope first; move to another scope only when explicitly instructed or when another assigned scope exists.
-- If rejected -> fix completely FIRST, re-verify, and resubmit for review.
-- If rejection explicitly says `Escalate to architect for guidance`, skip that scope; that report belongs to architect, and coder continues with other open coder work.
-- If rejection explicitly says `Return to coder for process compliance`, coder must correct the execution process back to the agreed workflow before continuing.
-- **Pause before moving to another scope if the current scope still has REJECT state**: fully fix the current reject first. Do not jump to unrelated work. Then continue to the next work.
-
 ### 11. GIT CHECKPOINT (mandatory)
 - After every verified small batch: commit immediately with one small, clear commit.
 - After every review/fix round: create a separate commit; do not fold it into the previous commit.
