@@ -1,15 +1,13 @@
 # Subagent Reporting and Handoff
 
-> This file is part of CEO Skill v2. Read when: monitoring a running lane, receiving subagent reports, handling handoffs, or managing FAST BLOCK / FAST REJECT blocker flows.
+> This file is part of CEO Skill v2. Read when: receiving subagent reports, handling handoffs (READY_FOR_QA/PASS), or managing FAST BLOCK / FAST REJECT blocker flows.
 
 ---
 
-## 1. Asynchronous Orchestration & Standby Protocol
+## 1. Subagent Reporting & Evidence Responsibilities
 
-* **(MUST KNOW)** To prevent context bloat and rule amnesia, CEO operates on an **Asynchronous / Event-Driven** model. CEO DOES NOT monitor real-time terminal outputs, line-by-line tool logs, or intermediate scratch commands of subagents.
-* **(MUST)** After assigning a complete contract packet to a subagent lane, CEO must immediately transition into a **STANDBY** state. CEO only wakes up and takes action when it receives a direct message/report from a subagent or a warning from `governance-rule-guard`.
-* **(MUST)** Subagent Reporting Responsibilities: When a subagent (Coder, QA, Architect) finishes its task, encounters an out-of-scope blocker, or reaches a completion gate, it MUST:
-  1. Record its own raw execution logs, test results, benchmarks, and Evidence IDs (`E1-P1A-...`) directly into the target `evidence.md` and `benchmark.md` files using its own write tools.
+* **(MUST)** When a subagent (Coder, QA, Architect) finishes its task, encounters an out-of-scope blocker, or reaches a completion gate, it MUST:
+  1. Record its own raw execution logs, test results, benchmarks, and Evidence IDs (`E1-P1A-...`) directly into the target `evidence.md` and `benchmark.md` files using its own write tools BEFORE sending a message.
   2. Actively send a direct message back to the CEO session (e.g., via `send_message` tool). This message MUST contain:
      - The explicit verdict (`PASS`, `READY_FOR_QA`, `READY_FOR_REVIEW`, `FAIL`, or `BLOCKED`).
      - The exact Evidence IDs and artifact paths (already recorded on disk).
