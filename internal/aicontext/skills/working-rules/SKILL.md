@@ -67,15 +67,17 @@ Before modifying code, documentation, QA, artifacts, or committing:
 - Subagent output is only verification input; it never automatically becomes a conclusion.
 - Main agent must independently verify results using evidence and the Supervisor protocol.
 
-## 8. Plan Before Code
-- When creating, writing, or editing a plan, use `planner`.
-- The plan must be a real document in `DOCS/plans`.
-- Must read all relevant ledgers of the plan completely.
-- Only implement the currently open slice.
-- Never autonomously advance phases or slices.
-- When discovering issues that alter slice scope, update the plan before continuing to code.
-- Checklists, actual status, evidence, and benchmarks must be updated immediately as corresponding states change.
-- Only transition to the next slice after the current slice completes the full acceptance and commit workflow.
+## 8. Plan Proportionally Before Code
+- Before coding, use `planner` and create a real `docs/plans` plan when the work is multi-step, affects multiple files or modules, changes behavior, contracts, or architecture, carries meaningful risk, or when the user explicitly requests a plan.
+- Do not require a plan for a trivial, atomic, low-risk edit with obvious scope, such as correcting a few words, deleting one redundant line, or making a self-contained one-line change that does not alter behavior, contracts, architecture, or cross-module boundaries.
+- Validate a trivial planless edit at the nearest relevant boundary.
+- When uncertain whether a change is trivial, create a plan.
+- When creating, writing, or editing a plan, use `planner`; the plan must be a real document in `docs/plans`.
+- When a plan governs the work, read all relevant ledgers completely and only implement the currently open slice.
+- Never autonomously advance phases or slices in planned work.
+- When discovering issues that alter a planned slice's scope, update the plan before continuing to code.
+- Update plan checklists, actual status, evidence, and benchmarks immediately as corresponding states change.
+- Only transition to the next planned slice after the current slice completes the full acceptance and commit workflow.
 
 ## 9. Rules When Working with Prototypes
 ### a. Prototype leads the way:

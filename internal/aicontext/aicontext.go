@@ -232,7 +232,7 @@ func renderMasterRulesBlock() string {
 2. As each task is completed, update the corresponding checklist item immediately.
 3. Anvien Blast-radius **CRITICAL/HIGH** is only a scope warning that the work must be handled carefully; it is **not** a prohibition against editing code.
 4. When SPEC context is required, use ` + "`SPEC-MAP.md`" + ` as the reading order and read the full relevant SPEC cluster; do not rely on keyword search or partial snippets before concluding, planning, or editing.
-5. **Write plan (use planner skill) before coding.**
+5. Use planning proportionally: Before coding, use the planner skill and create a real docs/plans plan when the work is multi-step, affects multiple files or modules, changes behavior/contracts/architecture, carries meaningful risk, or when the user explicitly requests a plan. A plan is not required for a trivial, atomic, low-risk edit with obvious scope—such as correcting a few words, deleting one redundant line, or making a self-contained one-line change that does not alter behavior, contracts, architecture, or cross-module boundaries. Validate such edits at the nearest relevant boundary. When uncertain whether the change is trivial, create a plan.
 6. **Code first**; tests should only be updated after the behavior has been correctly implemented in code.
 7. Playwright scripts must be reusable under ` + "`playwright/`" + `, not one-off temp files; official QA evidence must go to ` + "`Reports/qa/playwright/...`" + ` as both ` + "`.json`" + ` and ` + "`.md`" + `, while ` + "`.tmp`" + ` is debug-only.
 8. Run a full build before validation.
