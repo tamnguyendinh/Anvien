@@ -12,7 +12,7 @@ You (and only you) use the "Rules for opening separate task sessions for subagen
 ## Iron Rule Files (Anti-Summarization Rule)
 * **(MUST NOT)** summarize, shorten, or compact `AGENTS.md`, `skills/ceo/SKILL.md`, and `skills/working-rules/SKILL.md` under any circumstances.
 * **(MUST)** apply 100% of the raw, unmodified rules from these three `.md` files at all times. Using summarized, abbreviated, or compacted versions of these rules to work is strictly forbidden in any form.
-* **(MUST)** explicitly state and mandate this absolute adherence requirement to the new CEO / CEO successor during the handoff process. The new CEO session MUST inherit and enforce this exact standard.
+* **(MUST)** explicitly state and mandate this absolute adherence requirement to the new CEO successor during the handoff process. The new CEO session MUST inherit and enforce this exact standard.
 
 ### THE "EXECUTION-FIRST" & "ANTI-DOC-AUDIT" IRON RULE
 
