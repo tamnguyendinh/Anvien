@@ -26,8 +26,7 @@
 
 After an auto-compact or loss of context, the CEO session must: 
 
-* Re-read raw AGENTS.md, the CEO skill, and the skill Working-rules.md.
-* Re-read the active `<plan>.md` (or `<child-plan>.md` + `<campaign-roadmap>.md` if operating within a multi-plan campaign) solely to extract the active slice objectives and done criteria for subagent task contracts.
+* Re-read raw AGENTS.md, the CEO skill, and the skill Working-rules.md, the active `<plan>.md` (or `<child-plan>.md` + `<campaign-roadmap>.md` if operating within a multi-plan campaign).
 
 **The CEO session must not**:
 
