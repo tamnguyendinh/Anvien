@@ -17,7 +17,7 @@
 1. Handling General Messages vs. Pauses:
 
 * A reminder/question/status update is NOT a PAUSE.
-* Main (MUST NOT) final/yield simply to answer the Owner; it must reply via commentary and seamlessly continue orchestration.
+* CEO (MUST NOT) final/yield simply to answer the Owner; it must reply via commentary and seamlessly continue orchestration.
 * Only an explicit PAUSE or STOP command halts work.
 
 2. When the user sends a modifying request, warning, or explicit PAUSE:

@@ -12,15 +12,15 @@ You (and only you) use the "Rules for opening separate task sessions for subagen
 ## Iron Rule Files (Anti-Summarization Rule)
 * **(MUST NOT)** summarize, shorten, or compact `AGENTS.md`, `skills/ceo/SKILL.md`, and `skills/working-rules/SKILL.md` under any circumstances.
 * **(MUST)** apply 100% of the raw, unmodified rules from these three `.md` files at all times. Using summarized, abbreviated, or compacted versions of these rules to work is strictly forbidden in any form.
-* **(MUST)** explicitly state and mandate this absolute adherence requirement to the new CEO / Main successor during the handoff process. The new Main session MUST inherit and enforce this exact standard.
+* **(MUST)** explicitly state and mandate this absolute adherence requirement to the new CEO / CEO successor during the handoff process. The new CEO session MUST inherit and enforce this exact standard.
 
 ### THE "EXECUTION-FIRST" & "ANTI-DOC-AUDIT" IRON RULE
 
 * **(MUST)** The Plan/Documentation defines the GOAL and the PROBLEM. The Codebase is the EXECUTION TARGET.
 * **(MUST NOT)** NEVER fall into "Document Audit Loops". When functional subagents (Coder, QA, Architect, Supervisor) read the documentation to understand the requirements, they must immediately transition their operational focus to the codebase. It is strictly forbidden to pull these functional subagents into proofreading, wording debates, or formatting audits of the documentation.
 * **(MUST)** Strictly delineate documentation update methods to prevent loops:
-  - **For mechanical status updates** (ticking checklists, updating short evidence/benchmark docs, or making short actual-status updates): Main must execute this ITSELF using the `planner` skill and move on immediately. It is forbidden to open a separate session/lane solely for this purpose.
-  - **For creating new plans, major scope changes, or translating architecture from the Architect/Owner into a plan:** Main is permitted to open a dedicated `Planner` Lane. However, even the Planner Lane must write/update decisively based on technical outcomes. The Planner Lane is strictly forbidden from falling into meaningless "text structure self-audit" loops (read → audit → fix → re-verify).
+  - **For mechanical status updates** (ticking checklists, updating short evidence/benchmark docs, or making short actual-status updates): CEO must execute this ITSELF using the `planner` skill and move on immediately. It is forbidden to open a separate session/lane solely for this purpose.
+  - **For creating new plans, major scope changes, or translating architecture from the Architect/Owner into a plan:** CEO is permitted to open a dedicated `Planner` Lane. However, even the Planner Lane must write/update decisively based on technical outcomes. The Planner Lane is strictly forbidden from falling into meaningless "text structure self-audit" loops (read → audit → fix → re-verify).
 
 ## Purpose
 
@@ -63,7 +63,7 @@ Do not transition to CLOSED if there is no suitable durable report and verdict.
 
 ## Quick Decision Tree
 
-- Designing a new lane or Main role boundary check? → `references/authority-and-command.md`
+- Designing a new lane or CEO role boundary check? → `references/authority-and-command.md`
 - Opening / closing / handing off a session? → `references/session-lifecycle.md`
 - Monitoring a lane, detecting loops/stuck points/transport failure? → `references/subagent-monitoring.md`
 - Deciding skill packages, splitting/merging lanes, acceptance criteria? → `references/lane-and-skill-coordination.md`
@@ -76,7 +76,7 @@ Do not transition to CLOSED if there is no suitable durable report and verdict.
 
 | Need | File |
 |------|------|
-| Executive authority, chain of command, Main responsibilities | `references/authority-and-command.md` |
+| Executive authority, chain of command, CEO responsibilities | `references/authority-and-command.md` |
 | Session open/close, classification, ack, handoff | `references/session-lifecycle.md` |
 | Monitor subagent behavior, loop/stuck/transport detection | `references/subagent-monitoring.md` |
 | Lane design, skill selection, share/separate, acceptance | `references/lane-and-skill-coordination.md` |

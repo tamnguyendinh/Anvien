@@ -8,7 +8,7 @@
 
 **Mandatory for:**
 
-* orchestration (main agent)
+* orchestration (CEO agent)
 * coder
 * architect
 * Supervisor review;
@@ -36,7 +36,7 @@ Do not use internal subagents to hold a long Supervisor gate and then require al
 
 A new session (lane) must fully receive:
 
-* (MUST) Each lane must receive a complete, explicit contract from Main: exact goal, slice, ownership, authority, exact input/path/hash, permitted commands, expected output, stop conditions, verdict criteria, and next owner. Do not leave the lane to invent its own workflow or expand the task into a general audit.
+* (MUST) Each lane must receive a complete, explicit contract from CEO: exact goal, slice, ownership, authority, exact input/path/hash, permitted commands, expected output, stop conditions, verdict criteria, and next owner. Do not leave the lane to invent its own workflow or expand the task into a general audit.
 * exact goal;
 * currently open plan and slice;
 * scope and non-goals;
@@ -74,9 +74,9 @@ Each handoff must point to:
 * commit or HEAD;
 * current worktree;
 * open blockers;
-* next to Orchestration agent (main agent).
+* next to Orchestration agent (CEO agent).
 
-The subagent's result is not automatically a conclusion. The Orchestration agent (main agent) must read the durable output and verify it according to the Supervisor protocol.
+The subagent's result is not automatically a conclusion. The Orchestration agent (CEO agent) must read the durable output and verify it according to the Supervisor protocol.
 
 ## 10. Verification Policy
 
@@ -85,7 +85,7 @@ A session must not evaluate itself as completed. Completion evaluation belongs t
 * Supervisor;
 * QA;
 * Architect;
-* Main session.
+* CEO session.
 
 Do not continue just because the subagent "seems to be done" or has successfully run tests.
 

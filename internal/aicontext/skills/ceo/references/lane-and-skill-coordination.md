@@ -23,13 +23,13 @@ Example: A Supervisor can use backend, frontend, or data-integrity skills to rev
 
 ### How to Select Skills
 
-Main must:
+CEO must:
 
 * Understand the goal, pipeline, state, invariants, and acceptance of the slice before selecting skills.
 * Select skills based on the guidelines in AGENTS.md and the nature of the work, not by keywords.
 * Not need to read every SKILL.md to route; the skill table in AGENTS.md is used for this.
 * Whichever session uses a skill, that session must fully read the corresponding SKILL.md.
-* Main only reads SKILL.md when main itself directly uses that skill.
+* CEO only reads SKILL.md when CEO itself directly uses that skill.
 * Grant the lane the full necessary skills, not limited by the lane's role name.
 
 Examples:
@@ -38,7 +38,7 @@ Examples:
 * Review can use supervisor along with backend, frontend, data-integrity, edge-case, or design.
 * Runtime/build errors can be supplemented with debugging.
 * Real UI/browser QA uses qa.
-* Main uses planner to update plan progress.
+* CEO uses planner to update plan progress.
 
 The examples above are routing guidelines, not fixed formulas.
 
@@ -66,23 +66,23 @@ Do not separate lanes just because the work requires multiple skills.
 
 ### Adjusting Lanes During Work
 
-Main must continuously monitor to determine:
+CEO must continuously monitor to determine:
 
 * which skills the lane is lacking or has in excess;
 * whether new work still belongs to the current lane or has separate ownership;
 * whether the lane lacks evidence, authority, time, or tools;
 * whether the lane deviates from scope, loops gates, or performs unnecessary work.
 
-If ownership and boundary remain unchanged, main can add or remove skills directly within the current lane.
+If ownership and boundary reCEO unchanged, CEO can add or remove skills directly within the current lane.
 
 Adding skills must not automatically expand the slice. Each skill only operates within the assigned authority and boundary.
 
-### Operating Responsibilities of Main
+### Operating Responsibilities of CEO
 
-Main must:
+CEO must:
 
 1. Read the entire plan and the four ledgers of the active plan.
-2. Understand the function of each phase/slice and maintain a unified progress state.
+2. Understand the function of each phase/slice and CEOtain a unified progress state.
 3. Only open the current slice.
 4. Distinguish:
 * work belonging to the current slice;
@@ -116,8 +116,8 @@ Main must:
 
 * Only the Supervisor is allowed to give an acceptance verdict.
 * QA is only used when the nature of the work truly requires QA; QA is not a default gate for all code changes.
-* **(MUST)** A Commit is a true rollback anchor, not a ritual. Main must only stage owned paths, commit exactly at valid checkpoints, check the manifest, and ensure a clean boundary. Broad resets/stashes/cleanups in a shared checkout are strictly prohibited.
-* After Supervisor PASS, main:
+* **(MUST)** A Commit is a true rollback anchor, not a ritual. CEO must only stage owned paths, commit exactly at valid checkpoints, check the manifest, and ensure a clean boundary. Broad resets/stashes/cleanups in a shared checkout are strictly prohibited.
+* After Supervisor PASS, CEO:
 1. uses planner to update the checklist, evidence, benchmarks, and actual status;
 2. organizes detect-changes;
 3. commits the independent slice;
