@@ -13,7 +13,7 @@
 
 ## 2. 10-Minute Liveness Timer Mandate
 
-* **(MUST)** Before entering STANDBY, CEO MUST set a 10-minute one-shot wake-up timer (via the `schedule` tool with `DurationSeconds: 600`).
+* **(MUST)** Before entering STANDBY, CEO MUST set a 10-minute one-shot wake-up timer.
 * CEO re-anchors its operational focus only upon receiving an explicit wake-up event (subagent message or timer trigger).
 
 ---
