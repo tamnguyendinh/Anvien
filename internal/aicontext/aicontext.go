@@ -240,10 +240,9 @@ func renderMasterRulesBlock() string {
    - For UI behavior changes, open the real user-visible runtime first: the web app in the user's browser or the desktop app on the user's PC. Then record browser or Playwright evidence for the changed behavior.
 9. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, or graph inventory counts; build/test/e2e timings are validation evidence unless the slice changes those systems.
 10. Record evidence as each evidenced task is completed.
-11. For "doc commits" only, do not use Anvien. When write/edit "doc plan" must use Anvien.
+11. For "doc commits" only and mechanical ledger updates (ticking checklist items in plan.md, updating actual-status.md, evidence.md, or benchmark.md based on reports), do not use Anvien. When authoring new plans, modifying architectural scopes, or changing implementation approaches in plan.md, must use Anvien.
 12. After each completed implementation slice, commit the work, then continue until the full plan is complete.
 13. Before building, if any process is holding a build-related process or lock, terminate all such processes completely; start the build only after they are gone.
-(MUST) ONLY the session explicitly designated as the CEO can trigger the guard lane. As soon as this designated CEO session begins operation, it must immediately open a visible governance-rule-guard lane using the governance-rule-guard.md skill. Sessions that are not explicitly designated by the Owner as the CEO MUST NOT perform this action.
 `
 }
 
