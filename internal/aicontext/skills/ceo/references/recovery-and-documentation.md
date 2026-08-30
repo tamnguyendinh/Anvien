@@ -33,16 +33,9 @@
 
 ## 6. Rules After Auto-Compact
 
-After an auto-compact or loss of context, the session must:
+After an auto-compact or loss of context, the CEO session must: Re-read raw AGENTS.md, the CEO skill, and the skill Working-rules.md.
 
-1. Re-read AGENTS.md, the skill Orchestration.md file, and the skill Working-rules.md.
-2. Re-read "Rules for opening separate task sessions for subagents".
-3. Re-read the currently applied SKILL.md.
-4. Re-read the current authority and plan slice.
-5. Check the latest durable report, ledger, and checkpoint.
-6. Continue from the first uncompleted gate.
-
-The session must not:
+The CEO session must not:
 
 * restart the entire review;
 * rerun a PASSED gate without a reason that the evidence was invalidated;
