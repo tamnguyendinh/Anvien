@@ -38,7 +38,7 @@ Examples:
 * Review can use supervisor along with backend, frontend, data-integrity, edge-case, or design.
 * Runtime/build errors can be supplemented with debugging.
 * Real UI/browser QA uses qa.
-* CEO uses planner to update plan progress.
+* Mechanical status updates are delegated to a short-lived Mechanical Planner Lane.
 
 The examples above are routing guidelines, not fixed formulas.
 
@@ -73,7 +73,7 @@ CEO must continuously monitor to determine:
 * whether the lane lacks evidence, authority, time, or tools;
 * whether the lane deviates from scope, loops gates, or performs unnecessary work.
 
-If ownership and boundary reCEO unchanged, CEO can add or remove skills directly within the current lane.
+If ownership and boundary remain unchanged, CEO can add or remove skills directly within the current lane.
 
 Adding skills must not automatically expand the slice. Each skill only operates within the assigned authority and boundary.
 
@@ -81,8 +81,8 @@ Adding skills must not automatically expand the slice. Each skill only operates 
 
 CEO must:
 
-1. Read the entire plan and the four ledgers of the active plan.
-2. Understand the function of each phase/slice and CEOtain a unified progress state.
+1. Read the plan and relevant SPEC family on demand to understand the active slice and next objectives.
+2. Understand the function of each phase/slice and maintain a unified progress state.
 3. Only open the current slice.
 4. Distinguish:
 * work belonging to the current slice;
@@ -118,7 +118,13 @@ CEO must:
 * QA is only used when the nature of the work truly requires QA; QA is not a default gate for all code changes.
 * **(MUST)** A Commit is a true rollback anchor, not a ritual. CEO must only stage owned paths, commit exactly at valid checkpoints, check the manifest, and ensure a clean boundary. Broad resets/stashes/cleanups in a shared checkout are strictly prohibited.
 * After Supervisor PASS, CEO:
-1. uses planner to update the checklist, evidence, benchmarks, and actual status;
-2. organizes detect-changes;
+1. delegates a short-lived `Mechanical Planner Lane` to tick the checklist and update actual status in `plan.md`/`actual-status.md`;
+2. organizes change detection (`anvien detect-changes`);
 3. commits the independent slice;
-4. only after that opens the next slice.
+4. reads the updated section and next slice scope, packages the contract, and opens the next slice.
+
+### Special Lane Archetype: Mechanical Planner Lane
+
+* **Purpose:** Strictly for applying mechanical status updates to `plan.md` and `actual-status.md` upon receiving an official Supervisor PASS for an entire Slice/Phase.
+* **Characteristics:** Short-lived (executes in seconds to modify the exact specified item and self-terminates immediately).
+* **Iron Prohibition:** STRICTLY FORBIDDEN from auditing documents, proofreading text, or debating wording. It applies only the specified mechanical tick/state transition.

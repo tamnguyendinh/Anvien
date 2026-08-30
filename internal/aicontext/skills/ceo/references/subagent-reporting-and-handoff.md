@@ -15,10 +15,12 @@
 
 * **(MUST KNOW)** To prevent context bloat and rule amnesia, CEO operates on an **Asynchronous/Event-Driven** model. CEO DOES NOT monitor the real-time terminal output or step-by-step commands of subagents.
 * **(MUST)** After assigning a complete contract to a subagent lane, CEO must immediately transition into a STANDBY state. CEO only wakes up and takes action when it receives a direct message/report from a subagent or a warning from the `governance-rule-guard`.
-* **(MUST)** The responsibility of Subagents: When a subagent finishes its task, encounters an out-of-scope blocker, or reaches a completion gate, it MUST actively send a direct message back to the CEO session (e.g., via `send_message` tool). This message MUST contain:
-  1. The explicit verdict (PASS / FAIL / BLOCKED).
-  2. The exact Evidence IDs or artifact paths.
-  3. A concise summary of the outcome.
+* **(MUST)** The responsibility of Subagents: When a subagent (Coder, QA, Architect) finishes its task, encounters an out-of-scope blocker, or reaches a completion gate, it MUST:
+  1. Record its own raw execution logs, test results, benchmarks, and Evidence IDs (`E1-P1A-...`) directly into the target `evidence.md` and `benchmark.md` files using its own write tools.
+  2. Actively send a direct message back to the CEO session (e.g., via `send_message` tool). This message MUST contain:
+     - The explicit verdict (`PASS` / `FAIL` / `BLOCKED`).
+     - The exact Evidence IDs and artifact paths (already committed/recorded in the file).
+     - A concise summary of the technical outcome.
 * **(MUST)** CEO's response: Upon receiving the direct report, CEO wakes up, reads the durable output and evidence, self-verifies the handoff against the acceptance criteria, and then moves the state machine to the next workflow.
 * **(MUST)** If a transport failure occurs (the subagent dies or hangs without sending a message after a bounded timeout), CEO must handle it via evidence: revoke the authority and open a replacement session. Do not wait indefinitely.
 * Phase Pn-C of a plan is closure/handoff docs-only; It is forbidden to open additional Supervisor loops at this slice.

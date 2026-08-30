@@ -18,16 +18,16 @@
 
  > **Keep it simple:** Update the documentation/plan as quickly as possible so that the work progress always moves forward.
 
-3. Documentation updates must belong to the currently open slice and be executed by the correct orchestrator (CEO) using the planner when updating the plan/ledger; do not open additional lanes or jobs for "documentation audits."
+3. Documentation updates (`plan.md`/`actual-status.md`) must belong to the currently open slice and be executed by delegating a strict mechanical contract to a short-lived Planner Lane after Supervisor PASS; CEO does not directly edit markdown files to preserve its context window.
 4. Do not create durable reports, Supervisor loops, or evidence gates solely to prove that a few lines of documentation have been updated.
 5. Once a slice has achieved a Supervisor PASS, is committed, the next slice in the plan opens automatically. Do not re-audit to check if it "is allowed to be opened yet."
 6. Evidence is a step within a Phase/slice; it must not be turned into an intermediate gate.
-7. Do not halt implementation to wait for "planner authorization" after an impact if the scope reCEOs within the opened slice. Only pause when evidence proves there is an actual change to the boundary/contract.
+7. Do not halt implementation to wait for "planner authorization" after an impact if the scope remains within the opened slice. Only pause when evidence proves there is an actual change to the boundary/contract.
 8. Do not re-run a PASSed gate when the associated source, evidence, and boundary have not been invalidated. Re-anchoring after compaction is strictly for context recovery, not for restarting an audit on work that has already passed.
 9. Do not continuously cross-check hashes, HEAD, and wording just because the ledger was recently updated. Only check the Git boundary when it genuinely serves handoff, Supervisor, or commit operations.
 10. The responsibility of CEO is to understand the plan, delegate tasks, monitor commands/diffs/scopes, prevent deviations, and drive user or plan requirements toward results—do not turn yourself or the workers into documentation auditors (except for phases/slices dedicated specifically to documentation auditing).
-11. (MUST) Simple tasks must reCEO simple: fix the exact occurrence, perform minimal checks, and commit/transition. It is strictly forbidden to turn a simple status-sync into a chain of reading everything → auditing numbers/hashes → reporting → re-auditing.
-12. (MUST NOT) Lanes must only be assigned functional work. Planner creates/translates plans when there are new technical outcomes; CEO uses the planner skill to autonomously update a few mechanical status lines. Sending a 5-line documentation correction to the Planner and letting it audit for 30 minutes is a severe violation of role assignment and methodology.
+11. (MUST) Simple tasks must remain simple: Assign Planner Lane to apply the exact mechanical change at the specified location, perform minimal checks, and immediately close. It is strictly forbidden for Planner Lane to turn a simple checklist tick into an exhaustive full-file audit, proofreading session, or wording debate.
+12. (MUST) Data Entry Delegation: Functional subagents (Coder, QA, Architect) are strictly responsible for using their own tools to record raw execution logs, test outputs, and evidence IDs (`E1-P1A-...`) directly into `evidence.md` and `benchmark.md` BEFORE reporting PASS to CEO. CEO MUST NOT delegate Planner Lane to act as a log-copying secretary for functional workers.
 
 > **In short:** Documentation must follow actual progress; progress must not get stuck chasing documentation.
 
