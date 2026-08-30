@@ -53,7 +53,7 @@ The session must not deduce/assume a new architecture from audits, file names, o
 
 In the first response, the session must clearly answer with one of two states:
 
-UNDERSTOOD or NOT UNDERSTOOD (HIỂU or KHÔNG HIỂU)
+UNDERSTOOD or NOT UNDERSTOOD
 
 Then it must briefly state:
 
@@ -78,6 +78,15 @@ Each handoff must point to:
 
 The subagent's result is not automatically a conclusion. The Orchestration agent (main agent) must read the durable output and verify it according to the Supervisor protocol.
 
+## 10. Verification Policy
+
+A session must not evaluate itself as completed. Completion evaluation belongs to:
+
+* Supervisor;
+* QA;
+* Architect;
+* Main session.
+
 Do not continue just because the subagent "seems to be done" or has successfully run tests.
 
 ## 11. Conditions for Closing a Session (Lane)
@@ -95,6 +104,6 @@ Do not declare completion just because code/build/test can run.
 
 ## 13. Template Prompt for Opening a Session:
 
-- for codex: .agents/skills/orchestration/references/Template-Prompt-for-Opening-a-Session.md
-- for Claude code: .claude/skills/orchestration/references/Template-Prompt-for-Opening-a-Session-claude.md
-- for other models: .agents/skills/orchestration/references/Template-Prompt-for-Opening-a-Session.md
+- for codex: .agents/skills/ceo/references/Template-Prompt-for-Opening-a-Session.md
+- for Claude code: .claude/skills/ceo/references/Template-Prompt-for-Opening-a-Session-claude.md
+- for other models: .agents/skills/ceo/references/Template-Prompt-for-Opening-a-Session.md
