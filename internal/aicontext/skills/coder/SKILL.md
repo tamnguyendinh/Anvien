@@ -180,7 +180,7 @@ You own closure of the invariant family behind the assigned scope, not only the 
   + Problem report -> `reports/problem/` 
 - **The report must match the current scope verification contract**: if scope verification says `go test ./...`, the report must contain `go test` output. If the scope requires happy/failure path tests, the report must list test name, file path, and result.
 
-### 11. GIT CHECKPOINT (mandatory)
+### 8. GIT CHECKPOINT (mandatory)
 - After every verified small batch: commit immediately with one small, clear commit.
 - After every review/fix round: create a separate commit; do not fold it into the previous commit.
 - The commit must include evidence: <commit_author> + current scope/incident + primary verify command + short result summary.
