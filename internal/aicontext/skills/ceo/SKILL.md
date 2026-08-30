@@ -56,7 +56,7 @@ Do not transition to CLOSED if there is no suitable durable report and verdict.
 1. **Receive task** → understand goal, plan, slice → read `references/authority-and-command.md`
 2. **Design lane** → ownership, skill package, authority, boundary → read `references/lane-and-skill-coordination.md`
 3. **Open session** → contract, classification, ack protocol → read `references/session-lifecycle.md`
-4. **subagent reporting and handoff** → behavior, loops, transport → read `references/subagent-monitoring.md`
+4. **Monitor subagents & handle reports** → async protocol, lightweight handoff, FAST BLOCK / FAST REJECT → read `references/subagent-reporting-and-handoff.md`
 5. **Report progress** → status, artifacts, workspace → read `references/progress-and-workspace.md`
 6. **Handle intervention** → PAUSE, user messages → read `references/user-intervention.md`
 7. **Handle recovery** → auto-compact, rotation, doc principles → read `references/recovery-and-documentation.md`
@@ -66,7 +66,7 @@ Do not transition to CLOSED if there is no suitable durable report and verdict.
 
 - Designing a new lane or CEO role boundary check? → `references/authority-and-command.md`
 - Opening / closing / handing off a session? → `references/session-lifecycle.md`
-- Monitoring a lane, detecting loops/stuck points/transport failure? → `references/subagent-monitoring.md`
+- Receiving reports, lightweight handoffs, or FAST BLOCK / FAST REJECT? → `references/subagent-reporting-and-handoff.md`
 - Deciding skill packages, splitting/merging lanes, acceptance criteria? → `references/lane-and-skill-coordination.md`
 - Handling user PAUSE or manual intervention? → `references/user-intervention.md`
 - Reporting progress or managing artifacts/workspace? → `references/progress-and-workspace.md`
@@ -79,7 +79,7 @@ Do not transition to CLOSED if there is no suitable durable report and verdict.
 |------|------|
 | Executive authority, chain of command, CEO responsibilities | `references/authority-and-command.md` |
 | Session open/close, classification, ack, handoff | `references/session-lifecycle.md` |
-| Monitor subagent behavior, loop/stuck/transport detection | `references/subagent-monitoring.md` |
+| Asynchronous reporting, lightweight handoff, FAST BLOCK / FAST REJECT | `references/subagent-reporting-and-handoff.md` |
 | Lane design, skill selection, share/separate, acceptance | `references/lane-and-skill-coordination.md` |
 | User PAUSE, intervention, scope change | `references/user-intervention.md` |
 | Progress reporting, workspace, artifact rules | `references/progress-and-workspace.md` |
