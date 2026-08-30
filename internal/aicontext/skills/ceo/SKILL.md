@@ -55,7 +55,7 @@ Do not transition to CLOSED if there is no suitable durable report and verdict.
 1. **Receive task** → understand goal, plan, slice → read `references/authority-and-command.md`
 2. **Design lane** → ownership, skill package, authority, boundary → read `references/lane-and-skill-coordination.md`
 3. **Open session** → contract, classification, ack protocol → read `references/session-lifecycle.md`
-4. **Monitor subagents** → behavior, loops, transport → read `references/subagent-monitoring.md`
+4. **subagent reporting and handoff** → behavior, loops, transport → read `references/subagent-monitoring.md`
 5. **Report progress** → status, artifacts, workspace → read `references/progress-and-workspace.md`
 6. **Handle intervention** → PAUSE, user messages → read `references/user-intervention.md`
 7. **Handle recovery** → auto-compact, rotation, doc principles → read `references/recovery-and-documentation.md`
