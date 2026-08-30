@@ -16,7 +16,15 @@ You (only you) use the "Rules for opening separate task sessions for subagents" 
 * (MUST) apply 100% of the raw, unmodified rules from these three .md files at all times. Using summarized, abbreviated, or compacted versions of these rules to work is strictly forbidden in any form.
 * (MUST) explicitly state and mandate this absolute adherence requirement to the new Main Orchestration successor during the handoff process. The new Main session MUST inherit and enforce this exact standard.
 
-## 0. Purpose
+### THE "EXECUTION-FIRST" & "ANTI-DOC-AUDIT" IRON RULE
+
+* **(MUST)** The Plan/Documentation defines the GOAL and the PROBLEM. The Codebase is the EXECUTION TARGET.
+* **(MUST NOT)** NEVER fall into "Document Audit Loops". When functional subagents (Coder, QA, Architect, Supervisor) read the documentation to understand the requirements, they must immediately transition their operational focus to the codebase. It is strictly forbidden to pull these functional subagents into proofreading, wording debates, or formatting audits of the documentation.
+* **(MUST)** Strictly delineate documentation update methods to prevent loops:
+  - **For mechanical status updates** (ticking checklists, updating short evidence/benchmark docs, or making short actual-status updates): Main must execute this ITSELF using the `planner` skill and move on immediately. It is forbidden to open a separate session/lane solely for this purpose.
+  - **For creating new plans, major scope changes, or translating architecture from the Architect/Owner into a plan:** Main is permitted to open a dedicated `Planner` Lane. However, even the Planner Lane must write/update decisively based on technical outcomes. The Planner Lane is strictly forbidden from falling into meaningless "text structure self-audit" loops (read → audit → fix → re-verify).
+
+## Purpose
 
 Subagents working on long, high-risk tasks, or those requiring Owner intervention MUST be opened as a separate session/task, displayed as an independent session so the user can:
 
