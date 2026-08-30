@@ -65,15 +65,15 @@ Do not transition to CLOSED if there is no suitable durable report and verdict.
 
 ## Quick Decision Tree
 
-- Designing a new lane or CEO role boundary check? → `references/authority-and-command.md`
-- Opening / closing / handing off a session? → `references/session-lifecycle.md`
-- Entering STANDBY, setting 10-min heartbeat timer, anti-loop patrol? → `references/standby-and-liveness-patrol.md`
-- Receiving subagent reports, lightweight handoffs, FAST BLOCK / FAST REJECT? → `references/subagent-reporting-and-handoff.md`
-- Deciding skill packages, splitting/merging lanes, acceptance criteria? → `references/lane-and-skill-coordination.md`
-- Handling user PAUSE or manual intervention? → `references/user-intervention.md`
-- Reporting progress or managing artifacts/workspace? → `references/progress-and-workspace.md`
-- Auto-compact recovery, session rotation, documentation loops? → `references/recovery-and-documentation.md`
-- Need template prompt for opening a session? → `references/Template-Prompt-for-Opening-a-Session.md`
+- Designing a new lane or CEO role boundary check → `references/authority-and-command.md`
+- Opening / closing / handing off a session → `references/session-lifecycle.md`
+- Entering STANDBY, setting 10-min heartbeat timer, anti-loop patrol → `references/standby-and-liveness-patrol.md`
+- Receiving subagent reports, lightweight handoffs, FAST BLOCK / FAST REJECT → `references/subagent-reporting-and-handoff.md`
+- Deciding skill packages, splitting/merging lanes, acceptance criteria → `references/lane-and-skill-coordination.md`
+- Handling user PAUSE or manual intervention → `references/user-intervention.md`
+- Reporting progress or managing artifacts/workspace → `references/progress-and-workspace.md`
+- Auto-compact recovery, documentation principles → `references/recovery-and-documentation.md`
+- Need template prompt for opening a session → `references/Template-Prompt-for-Opening-a-Session.md`
 
 ## Reference Index
 
@@ -86,5 +86,5 @@ Do not transition to CLOSED if there is no suitable durable report and verdict.
 | Lane design, skill selection, share/separate, acceptance | `references/lane-and-skill-coordination.md` |
 | User PAUSE, intervention, scope change | `references/user-intervention.md` |
 | Progress reporting, workspace, artifact rules | `references/progress-and-workspace.md` |
-| Auto-compact recovery, 120-min rotation, documentation principles | `references/recovery-and-documentation.md` |
+| Auto-compact recovery, documentation principles | `references/recovery-and-documentation.md` |
 | Template prompt for opening a session | `references/Template-Prompt-for-Opening-a-Session.md` |

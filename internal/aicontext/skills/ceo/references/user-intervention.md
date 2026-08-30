@@ -2,9 +2,9 @@
 
 > This file is part of Orchestration Skill v2. Read when: user sends PAUSE, intervention, scope change, or any modifying request.
 
-## 5. User's Right to Intervene
+##  User's Right to Intervene
 
-### 5.1. The user has the right to:
+### 1. The user has the right to:
 
 * pause; 
 * change scope;
@@ -12,7 +12,7 @@
 * request the session (lane) to answer UNDERSTOOD/NOT UNDERSTOOD;
 * reject a verdict or request a re-review of a specific invariant.
 
-### 5.2. Sessions visible to the user must treat the user's message as the latest authority.
+### 2. Sessions visible to the user must treat the user's message as the latest authority.
 
 1. Handling General Messages vs. Pauses:
 

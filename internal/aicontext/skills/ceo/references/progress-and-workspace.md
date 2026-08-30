@@ -2,7 +2,7 @@
 
 > This file is part of Orchestration Skill v2. Read when: reporting progress, managing artifacts, workspace rules.
 
-## 7. Rules for Reporting Progress
+## Rules for Reporting Progress
 
 The session must clearly distinguish:
 

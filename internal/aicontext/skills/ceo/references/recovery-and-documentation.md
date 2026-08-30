@@ -1,15 +1,6 @@
 # Recovery and Documentation
 
-> This file is part of Orchestration Skill v2. Read when: auto-compact occurs, session rotation (120-min), or CEO falls into documentation audit loop.
-
-## Orchestration session rotation rules:
-
-* (MUST) The 120-minute rotation deadline applies ONLY to the Orchestration agent (CEO agent).
-* (MUST) After exactly 120 minutes of operation, the current orchestration session must create a handoff report to transfer authority to a new visible orchestration session.
-* (MUST) Initialize the new visible CEO Orchestration successor session 15 minutes prior to the rotation deadline. When the deadline is reached, execute the handoff to this successor session.
-* (MUST) Upon handoff, the outgoing orchestration session must clearly document the following information for the new session: the current state of work, overall progress, and any active subagent lanes.
-* (MUST) As soon as the new session becomes active, the old session must immediately terminate.
-* (MUST) The new session continues to strictly adhere to this 120-minute handoff cycle.
+> This file is part of CEO Skill. Read when: auto-compact occurs or CEO falls into documentation audit loop.
 
 ## Documentation Principles for Orchestration:
 
@@ -31,15 +22,22 @@
 
 > **In short:** Documentation must follow actual progress; progress must not get stuck chasing documentation.
 
-## 6. Rules After Auto-Compact
+## Rules After Auto-Compact
 
-After an auto-compact or loss of context, the CEO session must: Re-read raw AGENTS.md, the CEO skill, and the skill Working-rules.md.
+After an auto-compact or loss of context, the CEO session must: 
 
-The CEO session must not:
+* Re-read raw AGENTS.md, the CEO skill, and the skill Working-rules.md.
+* Re-read the active `<plan>.md` (or `<child-plan>.md` + `<campaign-roadmap>.md` if operating within a multi-plan campaign) solely to extract the active slice objectives and done criteria for subagent task contracts.
 
-* restart the entire review;
-* rerun a PASSED gate without a reason that the evidence was invalidated;
-* turn re-anchoring into a new audit loop;
+**The CEO session must not**:
+
+* MUST NOT restart reviews or rerun gates that have already achieved a durable PASS.
+* MUST NOT turn re-anchoring into a new documentation audit loop.
+* restart the entire review.
+* rerun a PASSED gate without a reason that the evidence was invalidated.
+* turn re-anchoring into a new audit loop; Re-anchoring is for restoring context, not for resetting progress.
 * forget gates that have been recorded in durable evidence.
 
-Re-anchoring is for restoring context, not for resetting progress.
+**Execution Continuity:**
+* Check the current Git state / latest durable report to identify the active slice.
+* Continue execution immediately from the first uncompleted gate.

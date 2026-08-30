@@ -23,6 +23,7 @@
 ### SCENARIO A: Subagent Reports Early (< 10 mins)
 * When a subagent finishes and sends a direct message (`PASS`, `READY_FOR_QA`, `BLOCKED`), this event wakes CEO immediately.
 * CEO automatically cancels the heartbeat timer and triggers the next workflow transition (see `references/subagent-reporting-and-handoff.md`).
+* After assigning work to the next subagent lane, CEO sets a new 10-minute one-shot wake-up timer and transitions back into the **STANDBY** state.
 
 ### SCENARIO B: 10-Minute Timer Fires (Periodic Liveness Check)
 * If no message has been received after 10 minutes, the timer wakes CEO to perform a **1-Step Bounded Health Check**:

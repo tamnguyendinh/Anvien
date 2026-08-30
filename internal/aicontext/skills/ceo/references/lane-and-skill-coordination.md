@@ -2,7 +2,7 @@
 
 > This file is part of Orchestration Skill v2. Read when: designing a new lane, deciding skill package, share/separate lane decisions, acceptance flow.
 
-## 12. Principles of Lane and Skill Coordination
+## Principles of Lane and Skill Coordination
 
 ### The Nature of Lanes and Skills
 
