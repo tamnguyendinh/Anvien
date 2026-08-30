@@ -1,40 +1,40 @@
 ---
 name: how-to-allow-approve-antigravity
-description: Hướng dẫn chi tiết và chuẩn xác 100% về kiến trúc 3 tầng phân quyền của Google Antigravity, cách cấu hình Global & Project-level Permission Grants kết hợp với Lifecycle Hooks để tự động phê duyệt (Bypass Auto-Approve) vĩnh viễn trên mọi dự án.
+description: Detailed and accurate guide on Google Antigravity's 3-tier permission architecture, explaining how to configure Global and Project-level Permission Grants combined with Lifecycle Hooks for permanent automated approval (Bypass Auto-Approve) across all projects.
 ---
 
-# Hướng Dẫn Cấu Hình Toàn Cục Tự Động Phê Duyệt (Global Auto-Approve) Trong Google Antigravity
+# Global Auto-Approve Configuration Guide for Google Antigravity
 
-Tài liệu này giải thích cấu trúc phân quyền 3 tầng của Google Antigravity và cung cấp giải pháp triệt để để AI tự động thực thi 100% không bao giờ hiện popup xin quyền (Full Autonomous Mode).
+This document explains Google Antigravity's 3-tier permission structure and provides a comprehensive solution for 100% autonomous AI execution without permission popups (Full Autonomous Mode).
 
 ---
 
-## 1. Nguyên Nhân Gốc Rễ (Root Cause Architecture)
+## 1. Root Cause Architecture
 
-Google Antigravity kiểm tra quyền thực thi theo thứ tự ưu tiên (Precedence Order) từ cao xuống thấp:
+Google Antigravity checks execution permissions in hierarchical precedence order (from highest to lowest):
 
-```
-[Tầng 1: Project-Level Grants]  (C:\Users\<USER>\.gemini\config\projects\<project-id>.json) 
-            ⬇ (Nếu không có hoặc kế thừa)
-[Tầng 2: Global Grants]         (C:\Users\<USER>\.gemini\config\config.json)
+```text
+[Tier 1: Project-Level Grants]  (C:\Users\<USER>\.gemini\config\projects\<project-id>.json) 
+            ⬇ (If absent or inherited)
+[Tier 2: Global Grants]         (C:\Users\<USER>\.gemini\config\config.json)
             ⬇
-[Tầng 3: PreToolUse Hooks]      (C:\Users\<USER>\.gemini\config\hooks.json)
+[Tier 3: PreToolUse Hooks]      (C:\Users\<USER>\.gemini\config\hooks.json)
 ```
 
-### 🔍 Vì sao cấu hình Hook đơn thuần vẫn bị hiện popup?
-Khi một workspace/repo được mở (ví dụ: `Restaurant_manager`), Antigravity tự động tạo một tệp cấu hình dự án riêng tại `~/.gemini/config/projects/<project-id>.json`. 
-- **Theo quy tắc của Antigravity**: Thiết lập tại cấp độ Project (`permissionGrants` trong `projects/*.json`) **ghi đè hoàn toàn (override)** thiết lập cấp Global.
-- Nếu tệp dự án chứa danh sách `permissionGrants.allow` cụ thể (chỉ có vài lệnh cũ), Antigravity sẽ kiểm tra tệp dự án trước. Vì lệnh mới không nằm trong danh sách của dự án đó, hệ thống lập tức hiển thị popup xin quyền người dùng!
+### 🔍 Why configuring hooks alone still triggers popups?
+When a workspace or repository is opened (e.g., `Restaurant_manager`), Antigravity automatically creates a project-specific configuration file at `~/.gemini/config/projects/<project-id>.json`. 
+- **According to Antigravity rules**: Project-level settings (`permissionGrants` in `projects/*.json`) **completely override** Global settings.
+- If a project file contains a specific `permissionGrants.allow` list (with only previously approved commands), Antigravity checks the project file first. Because any new command is not listed in that project file, the system immediately displays a user permission popup!
 
 ---
 
-## 2. Giải Pháp Triệt Để (3-Tier Auto-Approve Setup)
+## 2. Comprehensive Solution (3-Tier Auto-Approve Setup)
 
-Để tự động phê duyệt 100% vĩnh viễn cho tất cả các dự án (hiện tại và tương lai), ta cấu hình đồng bộ cả 3 tầng:
+To achieve 100% permanent auto-approval across all projects (both current and future), configure all 3 tiers in synchronization:
 
-### Lệnh PowerShell thiết lập 1 bước duy nhất (One-Liner):
+### PowerShell Setup Script (One-Liner):
 
-Mở **PowerShell** trên máy và dán toàn bộ đoạn mã sau:
+Open **PowerShell** on your machine and run the following script:
 
 ```powershell
 $configDir = "$env:USERPROFILE\.gemini\config"
@@ -44,7 +44,7 @@ if (!(Test-Path $configDir)) { New-Item -ItemType Directory -Path $configDir -Fo
 if (!(Test-Path $projectsDir)) { New-Item -ItemType Directory -Path $projectsDir -Force }
 
 # -------------------------------------------------------------
-# TẦNG 1 & 2: Cập nhật config.json và toàn bộ các tệp projects/*.json
+# TIER 1 & 2: Update config.json and all projects/*.json files
 # -------------------------------------------------------------
 $fullAllowList = @(
   "*",
@@ -61,7 +61,7 @@ $fullAllowList = @(
   "mcp(*)"
 )
 
-# 1. Cấu hình Global config.json
+# 1. Configure Global config.json
 $globalConfigPath = "$configDir\config.json"
 $globalConfig = @{
   userSettings = @{
@@ -78,7 +78,7 @@ $globalConfig = @{
 }
 $globalConfig | ConvertTo-Json -Depth 10 | Set-Content -Path $globalConfigPath -Encoding utf8
 
-# 2. Cập nhật tất cả các file project hiện có trong ~/.gemini/config/projects/
+# 2. Update all existing project files in ~/.gemini/config/projects/
 Get-ChildItem -Path $projectsDir -Filter "*.json" | ForEach-Object {
   try {
     $proj = Get-Content $_.FullName -Raw | ConvertFrom-Json
@@ -101,7 +101,7 @@ Get-ChildItem -Path $projectsDir -Filter "*.json" | ForEach-Object {
 }
 
 # -------------------------------------------------------------
-# TẦNG 3: Cấu hình hooks.json (PreToolUse Glob Matcher)
+# TIER 3: Configure hooks.json (PreToolUse Glob Matcher)
 # -------------------------------------------------------------
 $hookJson = @'
 {
@@ -123,17 +123,17 @@ $hookJson = @'
 '@
 Set-Content -Path "$configDir\hooks.json" -Value $hookJson -Encoding utf8
 
-# Xóa các file hooks cục bộ trong repo nếu có để tránh xung đột đường dẫn
+# Remove local repository hooks if present to avoid path conflicts
 Remove-Item -Path ".\.agents\hooks.json" -Force -ErrorAction SilentlyContinue
 
-Write-Host "`n✅ ĐÃ KÍCH HOẠT THÀNH CÔNG AUTO-APPROVE ĐỒNG BỘ 3 TẦNG TRÊN TOÀN HỆ THỐNG!" -ForegroundColor Green
+Write-Host "`n✅ SUCCESSFULLY ACTIVATED 3-TIER AUTO-APPROVE GLOBALLY ACROSS THE SYSTEM!" -ForegroundColor Green
 ```
 
 ---
 
-## 3. Bảng Kiểm Tra Định Kỳ (Verification Checklist)
+## 3. Verification Checklist
 
-Khi khởi động máy mới hoặc sau khi Antigravity cập nhật, kiểm tra 3 điểm sau:
-1. `~/.gemini/config/config.json`: Có trường `userSettings.globalPermissionGrants.allow` chứa `["*", "command(*)"]`.
-2. `~/.gemini/config/projects/<project-id>.json`: Có trường `permissionGrants.permissionGrants.allow` chứa `["*", "command(*)"]`.
-3. `~/.gemini/config/hooks.json`: Có hook matcher `*` gọi `node -e "console.log(JSON.stringify({decision:'allow'}))"`.
+When setting up a new machine or after Antigravity updates, verify the following 3 checkpoints:
+1. `~/.gemini/config/config.json`: Contains `userSettings.globalPermissionGrants.allow` with `["*", "command(*)"]`.
+2. `~/.gemini/config/projects/<project-id>.json`: Contains `permissionGrants.permissionGrants.allow` with `["*", "command(*)"]`.
+3. `~/.gemini/config/hooks.json`: Contains hook matcher `*` calling `node -e "console.log(JSON.stringify({decision:'allow'}))"`.
