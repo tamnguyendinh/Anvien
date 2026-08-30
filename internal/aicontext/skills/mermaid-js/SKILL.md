@@ -1,6 +1,6 @@
 ---
-name: mermaidjs-v11
-description: Use when the user asks to create Mermaid diagrams.
+name: mermaid-js
+description: Use when creating Mermaid diagrams, flowcharts, sequence diagrams, state machines, or architecture graphs.
 ---
 
 # Mermaid.js v11
