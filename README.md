@@ -1,5 +1,7 @@
 # Anvien (version: `1.3.0`)
 
+> **Anvien is a local MCP server that runs entirely on your machine.**
+
 > ## 2-in-1 tool for AI coding: code intelligence graphs + Powerful agent skills.
 
 ---
