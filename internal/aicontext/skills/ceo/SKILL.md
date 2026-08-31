@@ -56,7 +56,7 @@ Do not transition to CLOSED if there is no suitable durable report and verdict.
 1. **Receive task** → understand goal, plan, slice → read `references/authority-and-command.md`
 2. **Design lane** → ownership, skill package, authority, boundary → read `references/lane-and-skill-coordination.md`
 3. **Open session** → contract, classification, ack protocol → read `references/session-lifecycle.md`
-4. **Enter STANDBY & periodic patrol** → 10-min heartbeat, anti-loop snapshot, Scenarios A/B/C → read `references/standby-and-liveness-patrol.md`
+4. **Enter STANDBY & periodic patrol** → 5-min heartbeat, anti-loop snapshot, Scenarios A/B/C → read `references/standby-and-liveness-patrol.md`
 5. **Receive reports & handle handoff** → lightweight handoff, FAST BLOCK / FAST REJECT, rerouting → read `references/subagent-reporting-and-handoff.md`
 6. **Report progress** → status, artifacts, workspace → read `references/progress-and-workspace.md`
 7. **Handle intervention** → PAUSE, user messages → read `references/user-intervention.md`
@@ -67,7 +67,7 @@ Do not transition to CLOSED if there is no suitable durable report and verdict.
 
 - Designing a new lane or CEO role boundary check → `references/authority-and-command.md`
 - Opening / closing / handing off a session → `references/session-lifecycle.md`
-- Entering STANDBY, setting 10-min heartbeat timer, anti-loop patrol → `references/standby-and-liveness-patrol.md`
+- Entering STANDBY, setting 5-min heartbeat timer, anti-loop patrol → `references/standby-and-liveness-patrol.md`
 - Receiving subagent reports, lightweight handoffs, FAST BLOCK / FAST REJECT → `references/subagent-reporting-and-handoff.md`
 - Deciding skill packages, splitting/merging lanes, acceptance criteria → `references/lane-and-skill-coordination.md`
 - Handling user PAUSE or manual intervention → `references/user-intervention.md`
@@ -81,7 +81,7 @@ Do not transition to CLOSED if there is no suitable durable report and verdict.
 |------|------|
 | Executive authority, chain of command, CEO responsibilities | `references/authority-and-command.md` |
 | Session open/close, classification, ack, handoff | `references/session-lifecycle.md` |
-| Standby state, 10-minute heartbeat patrol, anti-loop snapshots | `references/standby-and-liveness-patrol.md` |
+| Standby state, 5-minute heartbeat patrol, anti-loop snapshots | `references/standby-and-liveness-patrol.md` |
 | Subagent reporting, lightweight handoff, FAST BLOCK / FAST REJECT | `references/subagent-reporting-and-handoff.md` |
 | Lane design, skill selection, share/separate, acceptance | `references/lane-and-skill-coordination.md` |
 | User PAUSE, intervention, scope change | `references/user-intervention.md` |
