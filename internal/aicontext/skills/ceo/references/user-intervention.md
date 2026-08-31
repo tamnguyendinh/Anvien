@@ -1,6 +1,6 @@
 # User Intervention
 
-> This file is part of Orchestration Skill v2. Read when: user sends PAUSE, intervention, scope change, or any modifying request.
+> This file is part of CEO Skill. Read when: user sends PAUSE, intervention, scope change, or any modifying request.
 
 ##  User's Right to Intervene
 

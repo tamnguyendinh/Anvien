@@ -1,6 +1,6 @@
 # Lane and Skill Coordination
 
-> This file is part of Orchestration Skill v2. Read when: designing a new lane, deciding skill package, share/separate lane decisions, acceptance flow.
+> This file is part of CEO Skill. Read when: designing a new lane, deciding skill package, share/separate lane decisions, acceptance flow.
 
 ## Principles of Lane and Skill Coordination
 

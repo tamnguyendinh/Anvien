@@ -1,6 +1,6 @@
 # Progress and Workspace
 
-> This file is part of Orchestration Skill v2. Read when: reporting progress, managing artifacts, workspace rules.
+> This file is part of CEO Skill. Read when: reporting progress, managing artifacts, workspace rules.
 
 ## Rules for Reporting Progress
 
@@ -18,9 +18,9 @@ Before long commands or long QA, the session must report:
 * where the artifact/output is located;
 * conditions to continue.
 
-Do not report assumptions as facts. Do not reCEO silent for prolonged periods while running a gate.
+Do not report assumptions as facts. Do not remain silent for prolonged periods while running a gate.
 
-## 8. Workspace and Artifact Rules
+## Workspace and Artifact Rules
 
 The session must:
 

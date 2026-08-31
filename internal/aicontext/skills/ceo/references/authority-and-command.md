@@ -1,6 +1,6 @@
 # Authority and Command
 
-> This file is part of Orchestration Skill v2. Read when: designing a new lane, when CEO is drifting from its role, or when clarifying CEO vs worker boundaries.
+> This file is part of CEO Skill. Read when: designing a new lane, when CEO is drifting from its role, or when clarifying CEO vs worker boundaries.
 
 ## Prompt Responsibilities
 

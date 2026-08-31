@@ -1,6 +1,6 @@
 # Session Lifecycle
 
-> This file is part of Orchestration Skill v2. Read when: opening a new session, closing a session, performing handoff between sessions.
+> This file is part of CEO Skill. Read when: opening a new session, closing a session, performing handoff between sessions.
 
 ## Session Classification
 
@@ -8,7 +8,7 @@
 
 **Mandatory for:**
 
-* orchestration (CEO agent)
+* CEO agent
 * coder
 * architect
 * Supervisor review;
@@ -77,17 +77,6 @@ Each handoff must point to:
 * next to Orchestration agent (CEO agent).
 
 The subagent's result is not automatically a conclusion. The Orchestration agent (CEO agent) must read the durable output and verify it according to the Supervisor protocol.
-
-## Verification Policy
-
-A session must not evaluate itself as completed. Completion evaluation belongs to:
-
-* Supervisor;
-* QA;
-* Architect;
-* CEO session.
-
-Do not continue just because the subagent "seems to be done" or has successfully run tests.
 
 ## Conditions for Closing a Session (Lane)
 

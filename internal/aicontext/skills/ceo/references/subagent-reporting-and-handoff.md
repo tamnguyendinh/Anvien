@@ -1,12 +1,12 @@
 # Subagent Reporting, Handoff & Emergency Blocker
 
-> This file is part of CEO Skill v2. Read when: receiving completion handoffs (READY_FOR_QA/PASS), performing management-level verification, or handling in-flight emergency blockers (FAST BLOCK / FAST REJECT).
+> This file is part of CEO Skill. Read when: receiving completion handoffs (READY_FOR_QA/PASS), performing management-level verification, or handling in-flight emergency blockers (FAST BLOCK / FAST REJECT).
 
 ---
 
 ## 1. Lightweight Handoff Protocol of CEO (Management-Level Verification)
 
-1. **CEO Objective Upon Receiving Completion Reports (e.g., `READY_FOR_QA`):**
+1. **CEO Objective Upon Receiving Completion Reports (e.g., `READY_FOR_CODER/QA/SUPERVISOR/PLANNER/ARCHITECT/<OTHER SUBAGENT>`):**
    - Verify strictly at the **Management Level**: Confirm that the subagent's message contains an explicit verdict (`READY_FOR_<SUBAGENT>`, `READY_FOR_REVIEW`, `PASS`), and that the declared report/artifact files exist on disk or in `git status`.
    - **Do not perform the specialist's job**: CEO does not need to run deep technical verification commands (such as importing code modules into the node runtime to inspect exported keys, parsing ASTs, executing full test runners, or deep-scanning internal scenario rows).
 

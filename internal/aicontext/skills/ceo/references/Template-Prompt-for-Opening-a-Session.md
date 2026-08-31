@@ -4,8 +4,7 @@ You are working in a separate session visible to the Owner.
 Goal:
 <write the exact goal of the slice>
 
-CEO Session ID (Return Address):
-<CEO_CONVERSATION_ID>
+CEO Session ID (Return Address): <CEO_CONVERSATION_ID>
 
 Authority:
 <AGENTS.md, plan, contract, report, evidence>
@@ -32,7 +31,7 @@ Stop conditions:
 - if detecting errors outside the scope, send a FAST BLOCK direct message to the CEO session, do not autonomously expand.
 
 Mandatory first response:
-1. UNDERSTOOD or NOT UNDERSTOOD;
+1. UNDERSTOOD or NOT UNDERSTOOD, and send a direct message to the CEO session;
 2. summarize the goal;
 3. boundary;
 4. first action.

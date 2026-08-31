@@ -1,6 +1,6 @@
 # Standby and Liveness Patrol
 
-> This file is part of CEO Skill v2. Read when: transitioning to STANDBY after delegating a task, configuring the 10-minute heartbeat timer, performing routine liveness snapshots, or issuing anti-loop corrections.
+> This file is part of CEO Skill. Read when: transitioning to STANDBY after delegating a task, configuring the 10-minute heartbeat timer, performing routine liveness snapshots, or issuing anti-loop corrections.
 
 ---
 
@@ -14,14 +14,14 @@
 ## 2. 10-Minute Liveness Timer Mandate
 
 * **(MUST)** Before entering STANDBY, CEO MUST set a 10-minute one-shot wake-up timer.
-* CEO re-anchors its operational focus only upon receiving an explicit wake-up event (subagent message or timer trigger).
+* **(MUST)** CEO re-anchors its operational focus only upon receiving an explicit wake-up event (subagent message or timer trigger).
 
 ---
 
 ## 3. The Three Wake-Up Scenarios
 
 ### SCENARIO A: Subagent Reports Early (< 10 mins)
-* When a subagent finishes and sends a direct message (`PASS`, `READY_FOR_QA`, `BLOCKED`), this event wakes CEO immediately.
+* When a subagent finishes and sends a direct message (`PASS`, `READY_FOR_<Role>`, `BLOCKED`), this event wakes CEO immediately.
 * CEO automatically cancels the heartbeat timer and triggers the next workflow transition (see `references/subagent-reporting-and-handoff.md`).
 * After assigning work to the next subagent lane, CEO sets a new 10-minute one-shot wake-up timer and transitions back into the **STANDBY** state.
 
