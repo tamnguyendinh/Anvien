@@ -31,6 +31,7 @@
 ## 3. FAST BLOCK / FAST REJECT Protocol (Emergency Blocker & Reinforcement Request)
 
 * **Nature:** This is **NOT a task completion handoff**, but an **in-flight emergency alert** indicating that a subagent is blocked by unexpected external/precondition defects and requires CEO to **dispatch an emergency reinforcement lane** to resolve the impediment.
+* (MUST KNOW) If a FAIL/UNAVAILABLE/NOT_RUN result does not cripple the subagent lane's ability to execute other rows, it is strictly classified as a "finding". The subagent lane must record this finding, step over it, and continue execution. A FAST BLOCK must ONLY be used when a true blocker prevents the entire lane from continuing safely, or completely invalidates the candidate/evidence.
 
 ### Trigger Conditions:
 A specialist lane (such as QA, Supervisor, or other functional lane) activates FAST BLOCK / FAST REJECT immediately upon encountering external defects:
@@ -46,6 +47,7 @@ A specialist lane (such as QA, Supervisor, or other functional lane) activates F
 [VERDICT: BLOCKED or REJECT] — In-Flight Blocker / Emergency Reinforcement Request
 - Blocker Type: <BLOCK_TYPE> or <REJECT_TYPE>
 - Exact Evidence: <blocker_or_rejection_details_and_evidence>
+- For a FAST BLOCK / FAST REJECT: record the evidence only, do not write a report.
 - Remedy Target & Action: Request CEO to dispatch subagent reinforcement to resolve the issue so execution can resume.
 ```
 
@@ -60,7 +62,7 @@ When CEO receives a `FAST BLOCK / FAST REJECT` message from a specialist lane:
 3. **Reroute to Remediation Owner:** CEO immediately opens or messages the responsible lane (typically Coder or DevOps):
    - *Command Pattern:* "`<reporting_lane>` reported BLOCKED due to `<blocker_reason_and_evidence>`. `<remediation_owner>` must resolve the root cause, update evidence/artifacts, and re-issue `READY_FOR_<reporting_lane>` upon completion."
    - *Example:* "QA reported BLOCKED due to stale manifest hash (F0D9... vs F308...). Coder must rebuild bindings, synchronize manifest hashes, update evidence.md, and re-issue `READY_FOR_QA` upon completion."
-4. **Resume Verification Flow:** As soon as the remediation lane reports completion, CEO re-opens the original specialist lane (QA/Supervisor) to seamlessly resume interrupted verification.
+4. **Resume Operational Workflow:** As soon as the recovery lane reports success (PASS), the CEO must immediately reactivate the original specialized lane (the session that issued the FAST BLOCK / FAST REJECT) so the Subagent session can seamlessly resume its interrupted work.
 
 ---
 
