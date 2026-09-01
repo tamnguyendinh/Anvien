@@ -1,3 +1,5 @@
+# (MUST) IRON RULE FOR TEMPLATE USAGE: This template is a strict, non-negotiable standard. The CEO MUST use this exact structure and wording verbatim. Any behavior that uses variations, summaries, approximations, or altered wording to open a session is strictly forbidden.
+
 ```text
 You are working in a separate session visible to the Owner.
 
