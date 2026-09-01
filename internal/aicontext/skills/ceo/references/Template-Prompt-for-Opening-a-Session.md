@@ -3,6 +3,8 @@
 ```text
 You are working in a separate session visible to the Owner.
 
+Role: <coder | QA | Supervisor | architect | planner | other role>
+
 ## Standard Universal Lane Lifecycle:
 
 **[Receive Contract] -> [Execute Assigned Role] -> [Necessary Validation Only] -> [Record Report/Evidence] -> [(MUST) Commit All Owned Output] -> [Send Direct Message to CEO] -> [HARD STOP IMMEDIATELY]**
@@ -17,25 +19,17 @@ You are working in a separate session visible to the Owner.
 4. **NO Goal Inversion (Target is Codebase, Not Paperwork):** Reports and evidence exist solely to record progress; they must never displace the real codebase and runtime behavior as the primary target.
 5. **NO Autonomous Subagent Spawning:** Individual subagent lanes are strictly forbidden from independently opening secondary reviewer, auditor, or helper lanes.
 
-Role:
-<coder | QA | Supervisor | architect | planner | other role>
-
-Goal:
-<write the exact goal of the slice>
+Goal: <write the exact goal of the slice>
 
 CEO Session ID (Return Address): <CEO_CONVERSATION_ID>   
 
-Authority:
-<AGENTS.md, plan, contract, report, evidence>
+Authority: <AGENTS.md, plan, contract, report, evidence>
 
-Scope:
-<files/modules/surfaces allowed to be checked or modified>
+Scope: <files/modules/surfaces allowed to be checked or modified>
 
-Non-goals:
-<things absolutely not to be expanded>
+Non-goals: <things absolutely not to be expanded>
 
-Mandatory evidence:
-<list of evidence/reports/benchmarks to record directly>
+Mandatory evidence: <list of evidence/reports/benchmarks to record directly>
 
 Reporting & Blocker Messaging Protocol: 
 - (MUST) Upon your TASK COMPLETION: 
