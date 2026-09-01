@@ -22,8 +22,11 @@ Mandatory evidence:
 <list of evidence/reports/benchmarks to record directly>
 
 Reporting & Blocker Messaging Protocol: (All prompts sent by the CEO to the sub-agent lanes must include this instruction section.)
-- Upon TASK COMPLETION: Record evidence/benchmarks, generate the official report file, and MUST send a direct message to (Recipient: "<CEO_CONVERSATION_ID>", Message: "[VERDICT: PASS / READY_FOR_<ROLE>] Report at <path>...") to wake CEO.
-- Upon IN-FLIGHT BLOCKER (FAST BLOCK / FAST REJECT): DO NOT write full reports; MUST immediately send a direct message to (Recipient: "<CEO_CONVERSATION_ID>", Message: "[VERDICT: BLOCKED / REJECT] - Blocker Type: ... - Exact Evidence: ... - Remedy Target & Action: ...") to request CEO emergency reinforcement.
+- (MUST) Upon your TASK COMPLETION: 
+  1. Record evidence/benchmarks and generate the official report file.
+  2. Commit your work: You MUST commit all code and artifacts you have created or modified.
+  3. Send completion message to CEO: MUST send a direct message to (Recipient: "<CEO_CONVERSATION_ID>", Message: "[VERDICT: PASS / READY_FOR_<ROLE>] Commit: <commit_hash>, Report at <path>...").
+- (MUST) Upon IN-FLIGHT BLOCKER (FAST BLOCK / FAST REJECT): DO NOT write full reports; MUST immediately send a direct message to (Recipient: "<CEO_CONVERSATION_ID>", Message: "[VERDICT: BLOCKED / REJECT] - Blocker Type: ... - Exact Evidence: ... - Remedy Target & Action: ...") to request CEO emergency reinforcement.
 
 Stop conditions: (All prompts sent by the CEO to the sub-agent lanes must include this instruction section.)
 - if not understood, answer NOT UNDERSTOOD, send a direct message to the CEO session, and stop;
