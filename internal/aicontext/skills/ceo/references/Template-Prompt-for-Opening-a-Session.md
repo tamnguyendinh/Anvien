@@ -3,6 +3,23 @@
 ```text
 You are working in a separate session visible to the Owner.
 
+## Standard Universal Lane Lifecycle:
+
+**[Receive Contract] -> [Execute Assigned Role] -> [Necessary Validation Only] -> [Record Report/Evidence] -> [(MUST) Commit All Owned Output] -> [Send Direct Message to CEO] -> [HARD STOP IMMEDIATELY]**
+
+**Subsequent Flow:** The CEO forwards the **Exact Handoff Packet** directly to the designated next specialist lane. The incoming lane focuses **100% on its own domain-specific Codebase & Runtime Invariants**, strictly prohibited from auditing the paperwork or wording of the previous lane.
+
+**The 5 Absolute Prohibitions (Applied Universally Across All Lanes):**
+
+1. **NO Post-Creation Self-Audits:** Strictly forbidden from self-auditing Git logs, hashes, or manifest files immediately after creating outputs.
+2. **NO Post-Completion Verification Cycles:** Strictly forbidden from entering redundant post-completion re-checking loops once task deliverables are generated.
+3. **NO CEO Deep-Technical Inspection:** CEO operates strictly at the management & routing level (checking verdict, report path, commit SHA); CEO never performs deep technical re-verifications of specialist outputs.
+4. **NO Goal Inversion (Target is Codebase, Not Paperwork):** Reports and evidence exist solely to record progress; they must never displace the real codebase and runtime behavior as the primary target.
+5. **NO Autonomous Subagent Spawning:** Individual subagent lanes are strictly forbidden from independently opening secondary reviewer, auditor, or helper lanes.
+
+Role:
+<coder | QA | Supervisor | architect | planner | other role>
+
 Goal:
 <write the exact goal of the slice>
 
@@ -16,9 +33,6 @@ Scope:
 
 Non-goals:
 <things absolutely not to be expanded>
-
-Role:
-<coder | QA | Supervisor | architect | planner | other role>
 
 Mandatory evidence:
 <list of evidence/reports/benchmarks to record directly>
