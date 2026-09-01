@@ -65,6 +65,7 @@ Then it must briefly state:
 If answering NOT UNDERSTOOD, the session must stop and accurately state the unclear point. It is not allowed to run commands, modify code, QA, cleanup, or commit before being explained.
 
 ## Standard Universal Lane Lifecycle:
+
 **[Receive Contract] -> [Execute Assigned Role] -> [Necessary Validation Only] -> [Record Report/Evidence] -> [(MUST) Commit All Owned Output] -> [Send Direct Message to CEO] -> [HARD STOP IMMEDIATELY]**
 
 **Subsequent Flow:** The CEO forwards the **Exact Handoff Packet** directly to the designated next specialist lane. The incoming lane focuses **100% on its own domain-specific Codebase & Runtime Invariants**, strictly prohibited from auditing the paperwork or wording of the previous lane.
