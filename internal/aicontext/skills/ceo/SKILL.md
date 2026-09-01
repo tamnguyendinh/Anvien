@@ -51,40 +51,17 @@ NEW
 
 Do not transition to CLOSED if there is no suitable durable report and verdict.
 
-## Core Workflow
-
-1. **Receive task** → understand goal, plan, slice → read `references/authority-and-command.md`
-2. **Design lane** → ownership, skill package, authority, boundary → read `references/lane-and-skill-coordination.md`
-3. **Open session** → contract, classification, ack protocol → read `references/session-lifecycle.md`
-4. **Enter STANDBY & periodic patrol** → 5-min heartbeat, anti-loop snapshot, Scenarios A/B/C → read `references/standby-and-liveness-patrol.md`
-5. **Receive reports & handle handoff** → lightweight handoff, FAST BLOCK / FAST REJECT, rerouting → read `references/subagent-reporting-and-handoff.md`
-6. **Report progress** → status, artifacts, workspace → read `references/progress-and-workspace.md`
-7. **Handle intervention** → PAUSE, user messages → read `references/user-intervention.md`
-8. **Handle recovery** → auto-compact, rotation, doc principles → read `references/recovery-and-documentation.md`
-9. **Close session** → handoff, verdict, conditions → read `references/session-lifecycle.md`
-
-## Quick Decision Tree
-
-- Designing a new lane or CEO role boundary check → `references/authority-and-command.md`
-- Opening / closing / handing off a session → `references/session-lifecycle.md`
-- Entering STANDBY, setting 5-min heartbeat timer, anti-loop patrol → `references/standby-and-liveness-patrol.md`
-- Receiving subagent reports, lightweight handoffs, FAST BLOCK / FAST REJECT → `references/subagent-reporting-and-handoff.md`
-- Deciding skill packages, splitting/merging lanes, acceptance criteria → `references/lane-and-skill-coordination.md`
-- Handling user PAUSE or manual intervention → `references/user-intervention.md`
-- Reporting progress or managing artifacts/workspace → `references/progress-and-workspace.md`
-- Auto-compact recovery, documentation principles → `references/recovery-and-documentation.md`
-- Need template prompt for opening a session → `references/Template-Prompt-for-Opening-a-Session.md`
-
 ## Reference Index
 
-| Need | File |
-|------|------|
-| Executive authority, chain of command, CEO responsibilities | `references/authority-and-command.md` |
-| Session open/close, classification, ack, handoff | `references/session-lifecycle.md` |
-| Standby state, 5-minute heartbeat patrol, anti-loop snapshots | `references/standby-and-liveness-patrol.md` |
-| Subagent reporting, lightweight handoff, FAST BLOCK / FAST REJECT | `references/subagent-reporting-and-handoff.md` |
-| Lane design, skill selection, share/separate, acceptance | `references/lane-and-skill-coordination.md` |
-| User PAUSE, intervention, scope change | `references/user-intervention.md` |
-| Progress reporting, workspace, artifact rules | `references/progress-and-workspace.md` |
-| Auto-compact recovery, documentation principles | `references/recovery-and-documentation.md` |
-| Template prompt for opening a session | `references/Template-Prompt-for-Opening-a-Session.md` |
+| When You Need To... | File |
+|---------------------|------|
+| Executive authority, chain of command, plan reading authority vs direct edit prohibition, mechanical update delegation, anti-ledger bloat, mandatory state machine sequence, CEO skill and role boundary | `references/authority-and-command.md` |
+| Lane and skill nature (ownership, capability, authority, boundary), how to select skills, when to share or separate lanes, adjusting lanes during work, acceptance and transitioning slices, Mechanical Planner Lane archetype | `references/lane-and-skill-coordination.md` |
+| Session classification (separate vs internal), conditions prior to opening a lane, mandatory acknowledgment (UNDERSTOOD / NOT UNDERSTOOD), handoff between sessions, conditions for closing a session | `references/session-lifecycle.md` |
+| Exact verbatim template prompt CEO must use when opening a lane | `references/Template-Prompt-for-Opening-a-Session.md` |
+| Asynchronous standby principle, 5-minute liveness timer mandate, three wake-up scenarios (early report, timer fires, message during patrol) | `references/standby-and-liveness-patrol.md` |
+| Lightweight handoff protocol (management-level verification), task completion and milestone handoff, FAST BLOCK / FAST REJECT protocol, CEO fast repair rerouting, gate and verdict rules | `references/subagent-reporting-and-handoff.md` |
+| Progress reporting rules (verified, checking, no evidence yet, blocked), workspace and artifact rules (.tmp, protect worktree, dead work) | `references/progress-and-workspace.md` |
+| User's right to intervene (pause, change scope, request explanations), handling general messages vs pauses, absolute rules for PAUSE state | `references/user-intervention.md` |
+| Documentation principles for orchestration (12 rules), rules after auto-compact, execution continuity from first uncompleted gate | `references/recovery-and-documentation.md` |
+| Successor CEO step rotation and acceptance protocol: state lock, durable handoff report, PRE-TRANSFER state, raw-rule gate, campaign-knowledge gate, behavioral dry-run, official authority transfer, first-cycle observation | `references/ceo-rotation-protocol.md` |
