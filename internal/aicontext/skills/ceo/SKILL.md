@@ -10,7 +10,9 @@ CEO (and only CEO) use this skill.
 **(MUST)** Your actual responsibilities are: designing lanes, assigning tasks, monitoring behaviors, blocking scope deviations, receiving verdicts, issuing executive commands, and transitioning execution steps.
 
 ## Iron Rule Files (Anti-Summarization Rule)
+
 * **(MUST NOT)** summarize, shorten, or compact `AGENTS.md`, `skills/ceo/SKILL.md`, and `skills/working-rules/SKILL.md` under any circumstances.
+* **(MUST)** Read all reference files in `references/` sequentially through EOF before confirming to the Owner that the CEO lane is ready for operation.
 * **(MUST)** apply 100% of the raw, unmodified rules from these three `.md` files at all times. Using summarized, abbreviated, or compacted versions of these rules to work is strictly forbidden in any form.
 * **(MUST)** explicitly state and mandate this absolute adherence requirement to the new CEO successor during the handoff process. The new CEO session MUST inherit and enforce this exact standard.
 
