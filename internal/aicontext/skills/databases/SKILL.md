@@ -1,12 +1,12 @@
 ---
 name: databases
-description: Use when creating, changing, or reviewing MongoDB/PostgreSQL database work in a real repository, including schema, models, migrations, queries, indexes, transactions, connection config, backup/restore assumptions, or performance; follow repo-native tooling and meet the production database bar unless the user explicitly asks for a prototype.
+description: Use when creating, changing, or reviewing MongoDB/PostgreSQL/SQLite database work in a real repository, including schema, models, migrations, queries, indexes, transactions, connection config, backup/restore assumptions, dual-database desktop sync, or performance; follow repo-native tooling and meet the production database bar unless the user explicitly asks for a prototype.
 license: MIT
 ---
 
 # Databases Skill
 
-Repo-first guidance for creating, changing, and reviewing MongoDB or PostgreSQL database work in real repositories.
+Repo-first guidance for creating, changing, and reviewing MongoDB, PostgreSQL, or SQLite database work in real repositories.
 
 ## Purpose
 
@@ -82,6 +82,7 @@ Even then, clearly mark which production concerns are intentionally omitted.
 ## Task Routing
 
 - Database selection: evaluate domain shape, consistency needs, query workload, operations, and team tooling.
+- Dual-database / Local-First sync: evaluate driver safety (pure-Go/prebuilt), SQLite WAL/lock configuration, dialect compatibility, and Repository abstraction.
 - Schema/model change: inspect models, migrations, constraints, indexes, serializers, API consumers, and tests.
 - Migration: use repo-native migration tooling; check data volume, locks, rollback/mitigation, and deploy order.
 - Query/index performance: inspect query shape, current indexes, table/collection size, cardinality, and plan evidence.
@@ -91,6 +92,7 @@ Even then, clearly mark which production concerns are intentionally omitted.
 ## Reference Navigation
 
 - [database-selection.md](references/database-selection.md) - MongoDB vs PostgreSQL selection and tradeoffs.
+- [dual-database-sqlite-postgres.md](references/dual-database-sqlite-postgres.md) - Dual database architecture: SQLite (offline client) & PostgreSQL (cloud sync) pitfalls and protocols.
 - [mongodb-crud.md](references/mongodb-crud.md) - MongoDB CRUD, query operators, atomic updates.
 - [mongodb-aggregation.md](references/mongodb-aggregation.md) - MongoDB aggregation pipeline patterns.
 - [mongodb-indexing.md](references/mongodb-indexing.md) - MongoDB index design and optimization.
