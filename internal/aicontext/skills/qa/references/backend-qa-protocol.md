@@ -1,30 +1,30 @@
-# Giao thức QA Backend (API & Database)
+# Backend QA Protocol (API & Database)
 
-> Áp dụng khi QA Backend, API, Database, non-UI service. Không mở trình duyệt, không chụp ảnh màn hình.
+> This file is part of QA Skill. Read when: verifying Backend runtime behavior, API endpoints, database mutations, transaction integrity, or non-UI services. Never open browsers or capture screenshots.
 
 ---
 
-### 1. Khi thực thi kiểm thử
-* **Trước khi gọi API:** Query DB lấy snapshot trạng thái ban đầu của thực thể mục tiêu.
-* **Khi gọi API:** Gửi request với đủ các biến thể payload (hợp lệ, sai schema, thiếu auth, boundary limits).
-* **Sau khi gọi API:** Query lại DB để đối chiếu State Diff thực tế (xác nhận đúng schema, không ghi đè dữ liệu, bảo toàn foreign keys).
+### 1. Test Execution (Action Loop)
+* **Pre-API Execution:** Query the database to capture the initial baseline state snapshot of the target entity.
+* **API Execution:** Send requests covering the full variation matrix (valid happy path, invalid schema, unauthorized/missing auth, boundary limits).
+* **Post-API Execution:** Query the database to verify the actual State Diff on disk (confirming correct schema adherence, zero accidental overwrites, and preservation of foreign key integrity).
 
-### 2. Khi ghi nhận bằng chứng (`evidence.md`)
-* Lưu mã HTTP status và Response payload.
-* Lưu log câu lệnh SQL/DB query và thời gian thực thi (phát hiện N+1 queries, unindexed sequential scans).
-* Lưu log xác nhận transaction kết thúc bằng `COMMIT` hoặc `ROLLBACK`.
+### 2. Evidence Recording (`evidence.md`)
+* Record exact HTTP status codes and structured response payloads.
+* Record executed SQL / DB query logs and execution duration (detecting unindexed sequential scans and N+1 query antipatterns).
+* Record explicit transaction boundary confirmation logs (`COMMIT` or clean `ROLLBACK`).
 
-### 3. Khi đo hiệu năng (`benchmark.md`)
-* Ghi lại độ trễ phản hồi: Latency p50, p95 (ms).
-* Ghi lại mức tiêu thụ RAM (Heap/RSS) và số lượng connection active trong Connection Pool.
-* Ghi lại tỷ lệ test pass (unit test, integration test, contract test).
+### 3. Metric Benchmarking (`benchmark.md`)
+* Record response latency distribution: Latency p50, p95 (ms).
+* Record memory footprint (Heap / RSS) and active connections within the Connection Pool.
+* Record automated test suite pass rates (unit tests, integration tests, contract tests).
 
-### 4. Khi rà soát bẫy lỗi kỹ thuật
-* **Kiểm tra Rollback:** Cố tình kích hoạt failure ở bước cuối của transaction $\rightarrow$ Query DB chứng minh không có partial write hoặc dữ liệu mồ côi (orphaned records).
-* **Kiểm tra Race Condition:** Bắn concurrent requests vào cùng một resource ID $\rightarrow$ Kiểm tra có xảy ra Lost Update hoặc vi phạm ràng buộc dữ liệu (constraint violation) không.
-* **Kiểm tra Rò rỉ tài nguyên:** Bắn dồn dập request lỗi $\rightarrow$ Kiểm tra có bị cạn kiệt connection pool (pool starvation/leak) hoặc RAM không được giải phóng không.
+### 4. Technical Trap Probes
+* **Rollback Verification:** Intentionally trigger a terminal failure at the final step of a multi-step transaction $\rightarrow$ Query the database to prove zero partial writes and zero orphaned records.
+* **Race Condition Probe:** Send concurrent requests competing for the exact same resource ID $\rightarrow$ Verify that atomic locks prevent Lost Updates or data constraint violations.
+* **Resource Leak Probe:** Send consecutive burst error requests $\rightarrow$ Verify that connection pool clients are cleanly released (preventing pool starvation/leaks) and RAM returns to baseline.
 
-### 5. Khi nào chuyển giao sang `Edge-Case`
-* Khi phạm vi chứa các mutation tranh chấp cao (high-contention resources), atomic counters, distributed lock, hoặc multi-table ACID transactions:
-  * QA xác nhận baseline functional đúng theo hợp đồng.
-  * Ghi chú đề xuất CEO kích hoạt lane `Edge-Case` để thực hiện chaos attacks (hostile timing, out-of-order execution, process crash mid-flight).
+### 5. Escalation to `Edge-Case`
+* When the verified scope involves high-contention resources, atomic counters, distributed locks, or complex multi-table ACID transactions:
+  * Complete baseline functional verification and record standard PASS.
+  * Record an explicit recommendation in the report for CEO to dispatch an `Edge-Case` lane to perform hostile chaos attacks (microsecond timing collisions, out-of-order execution, process crash mid-flight).
