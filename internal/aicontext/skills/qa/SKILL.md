@@ -62,7 +62,7 @@ Pass/fail requires runtime evidence.
 1. **Preflight** → build, runtime, browser (`references/frontend-runtime-and-build-rules.md`)
 2. **Inventory** → surfaces, controls, states (`references/frontend-coverage-model.md`)
 3. **Automation** → screenshots, control sweep (`references/frontend-automation-and-control-sweep.md`)
-4. **Data flow** → field/button tracing, DOM state (`references/frontend-data-flow.md`)
+4. **Data flow** → field/button tracing, E2E roundtrip (`references/e2e-data-flow.md`)
 5. **Source-of-truth** → verify against real DB state (`references/source-of-truth-rules.md`)
 6. **Locale** → if i18n in scope (`references/frontend-i18n-and-locale.md`)
 7. **Evidence & Report** → screenshots, visual blockers, report, handoff (`references/reporting.md`)

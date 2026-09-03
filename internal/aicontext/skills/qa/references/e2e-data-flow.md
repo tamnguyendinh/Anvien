@@ -1,10 +1,10 @@
-# Frontend Data Flow
+# E2E Data Flow
 
-> This file is part of QA Skill. Read when: tracing UI input data flow, mounted runtime mapping, or verifying field/button data paths.
+> This file is part of QA Skill. Read when: tracing end-to-end data flow from user interaction, client validation, network transport, to backend mutations and UI re-rendering.
 
 ## Mounted Runtime Map
 
-For each inventoried UI item, record the runtime map:
+For each inventoried UI/E2E item, record the runtime map:
 
 - runtime entry point
 - user trigger
