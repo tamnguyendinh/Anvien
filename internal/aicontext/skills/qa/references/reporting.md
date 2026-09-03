@@ -57,24 +57,24 @@ Report template:
 
 Scope:
 Runtime:
-Browser:
+Target (Browser / API / DB):
 Build evidence:
-Anvien evidence:
+Discovery evidence:
 No-fix boundary: QA reports only. No code fixes were made.
 
 ## Runtime Contexts
-- persona:
+- persona / client:
 - owner/app/scope:
-- role:
+- role / auth:
 - shift/session/subscription:
-- dataset/fixture:
-- locale:
-- viewport:
+- dataset/fixture / seed:
+- locale / headers:
+- viewport / endpoint target:
 
 ## Inventory Summary
-- visible surfaces:
-- interactive elements:
-- actions:
+- visible surfaces / API endpoints:
+- interactive elements / payload scenarios:
+- actions / mutations:
 - data/source-of-truth checks:
 - blocked:
 - out of scope:
@@ -88,7 +88,13 @@ No-fix boundary: QA reports only. No code fixes were made.
 - 100% of declared scope: yes/no
 
 ## Action Ledger
-| Surface | Route/flow | Control/action | Context | Expected | Actual | Verdict | Evidence |
+
+### Frontend Action Ledger (UI scopes)
+| Surface | Route/flow | Control/action | Context | Expected | Actual | Verdict | Evidence (PNG) |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+
+### Backend Action Ledger (API & DB scopes)
+| Endpoint & Method | Payload Scenario | Expected Status & Schema | Actual Status & Payload | DB Diff Verified | Latency (ms) | Verdict | Evidence/Log |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 
 ## Findings
@@ -106,7 +112,7 @@ Downstream blocked scope:
 Suggested fix direction:
 
 ## Source-Of-Truth Checks
-| Visible value/action | Runtime source/API/DB | Expected source state | Actual source state | Verdict | Evidence |
+| Target (UI / Endpoint) | Runtime source / DB Table | Expected source state | Actual source state | Verdict | Evidence |
 | --- | --- | --- | --- | --- | --- |
 
 ## Console/Network/Runtime Evidence
@@ -114,7 +120,7 @@ Suggested fix direction:
 ## Blockers And Unverified Scope
 
 ## Handoff
-Handoff: <architect|supervisor|coder> - <reason>
+Handoff: <architect|supervisor|coder|edge-case> - <reason>
 
 ## Final Decision
 Pass / Fail / Blocked for declared scope only.
@@ -126,6 +132,7 @@ Pass / Fail / Blocked for declared scope only.
 - Handoff to `architect` when the next step needs architecture, source-of-truth, spec, system-flow, or rule decisions.
 - Handoff to `supervisor` when the next step needs acceptance, priority, scope, coordination, or QA/fix order decisions.
 - Handoff to `coder` when the issue is a confirmed implementation bug with enough evidence to start a fix.
+- Handoff to `edge-case` (via CEO routing) when baseline functional verification passes but the scope involves high-contention mutations, critical locks, atomic counters, or requires hostile chaos / stress testing.
 - If there is no finding or blocker, use `Handoff to supervisor - QA scope completed; awaiting acceptance decision.`
 
 ## Artifact And Commit Rules
@@ -133,5 +140,4 @@ Pass / Fail / Blocked for declared scope only.
 - QA artifacts may be written if requested by the user or required by the active QA plan.
 - Commit QA artifacts only when active repo/user rules explicitly require it.
 - If the user says not to commit, do not commit.
-- Do not commit screenshots, Playwright artifacts, `.tmp/`, generated evidence, or unrelated files unless explicitly requested.
 - QA must stop after reporting and wait for a separate user fix order.
