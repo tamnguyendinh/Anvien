@@ -3,7 +3,7 @@
 ```text
 You are working in a separate session visible to the Owner.
 
-Role: <coder | QA | Supervisor | architect | planner | other role>
+Role: <coder | QA | Supervisor | architect | planner | edge case | other role>
 
 Mandatory Skills: <primary_role_skill> + <domain_specialist_skills> (MUST read corresponding SKILL.md before execution)
 
