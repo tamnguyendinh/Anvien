@@ -83,6 +83,7 @@ Even then, clearly mark which production concerns are intentionally omitted.
 
 - Database selection: evaluate domain shape, consistency needs, query workload, operations, and team tooling.
 - Dual-database / Local-First sync: evaluate driver safety (pure-Go/prebuilt), SQLite WAL/lock configuration, dialect compatibility, and Repository abstraction.
+- SQLite production engineering: apply mandatory PRAGMA baseline (WAL, synchronous=NORMAL, busy_timeout=5000, foreign_keys=ON), eliminate upgrade deadlocks with BEGIN IMMEDIATE, enforce STRICT schemas, and execute hot zero-downtime backups.
 - Schema/model change: inspect models, migrations, constraints, indexes, serializers, API consumers, and tests.
 - Migration: use repo-native migration tooling; check data volume, locks, rollback/mitigation, and deploy order.
 - Query/index performance: inspect query shape, current indexes, table/collection size, cardinality, and plan evidence.
@@ -91,14 +92,17 @@ Even then, clearly mark which production concerns are intentionally omitted.
 
 ## Reference Navigation
 
-- [database-selection.md](references/database-selection.md) - MongoDB vs PostgreSQL selection and tradeoffs.
-- [dual-database-sqlite-postgres.md](references/dual-database-sqlite-postgres.md) - Dual database architecture: SQLite (offline client) & PostgreSQL (cloud sync) pitfalls and protocols.
-- [mongodb-crud.md](references/mongodb-crud.md) - MongoDB CRUD, query operators, atomic updates.
-- [mongodb-aggregation.md](references/mongodb-aggregation.md) - MongoDB aggregation pipeline patterns.
-- [mongodb-indexing.md](references/mongodb-indexing.md) - MongoDB index design and optimization.
-- [mongodb-atlas.md](references/mongodb-atlas.md) - MongoDB Atlas setup, monitoring, and operational reference.
-- [postgresql-best-practices.md](references/postgresql-best-practices.md) - PostgreSQL FK indexes, join indexes, partial indexes.
-- [postgresql-queries.md](references/postgresql-queries.md) - PostgreSQL query patterns.
-- [postgresql-performance.md](references/postgresql-performance.md) - PostgreSQL EXPLAIN and performance workflow.
-- [postgresql-psql-cli.md](references/postgresql-psql-cli.md) - psql commands and scripting reference.
-- [postgresql-administration.md](references/postgresql-administration.md) - PostgreSQL administration, backup, replication, and maintenance.
+| Engine / Domain | Target Task / Production Scenario | Mandatory Reference File |
+| :--- | :--- | :--- |
+| **Architectural Choice** | Evaluating MongoDB vs PostgreSQL vs SQLite tradeoffs | [`references/database-selection.md`](references/database-selection.md) |
+| **Local-First / Sync** | Desktop SQLite + Cloud PostgreSQL dual architecture & sync invariants | [`references/dual-database-sqlite-postgres.md`](references/dual-database-sqlite-postgres.md) |
+| **SQLite Production** | SQLite PRAGMAs, WAL concurrency, `BEGIN IMMEDIATE`, STRICT tables, hot backup | [`references/sqlite-best-practices.md`](references/sqlite-best-practices.md) |
+| **PostgreSQL Schema** | Schema design, safe migrations, constraints, pool settings | [`references/postgresql-best-practices.md`](references/postgresql-best-practices.md) |
+| **PostgreSQL Tuning** | `EXPLAIN (ANALYZE, BUFFERS)`, indexing (B-Tree, GIN, GiST, BRIN), configs | [`references/postgresql-performance.md`](references/postgresql-performance.md) |
+| **PostgreSQL Ops** | User roles, RLS, `pg_dump`, Streaming/Logical replication, PITR, Vacuum | [`references/postgresql-administration.md`](references/postgresql-administration.md) |
+| **PostgreSQL SQL** | CTEs, Recursive queries, Window functions, JSONB operators | [`references/postgresql-queries.md`](references/postgresql-queries.md) |
+| **PostgreSQL CLI** | `psql` meta-commands, script execution, batch imports, `.psqlrc` | [`references/postgresql-psql-cli.md`](references/postgresql-psql-cli.md) |
+| **MongoDB Operations** | CRUD, atomic operators, array filters, transactions, write concern | [`references/mongodb-crud.md`](references/mongodb-crud.md) |
+| **MongoDB Performance**| ESR indexing rule, `executionStats`, covered queries, index types | [`references/mongodb-indexing.md`](references/mongodb-indexing.md) |
+| **MongoDB Aggregation** | Multi-stage aggregation pipelines, `$lookup`, `$facet`, window stages | [`references/mongodb-aggregation.md`](references/mongodb-aggregation.md) |
+| **MongoDB Cloud** | Atlas tiers (M0 vs M10+), VPC peering, Atlas Vector Search, backups | [`references/mongodb-atlas.md`](references/mongodb-atlas.md) |
