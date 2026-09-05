@@ -221,3 +221,131 @@ PRAGMA auto_vacuum = INCREMENTAL;
 -- Periodically run during idle times to release free pages in chunks:
 PRAGMA incremental_vacuum(1000); -- Frees up to 1,000 pages at a time
 ```
+
+---
+
+## 7. High-Throughput & Extreme Performance Tuning (10x - 1000x Speedup)
+
+When dealing with large volumes of data, real-time telemetry, local sync pipelines, or high-concurrency desktop/edge workloads, standard query patterns create severe bottlenecks. The following patterns deliver orders-of-magnitude performance gains.
+
+### 7.1. Bulk Insert Acceleration: From 50 to 250,000+ writes/sec
+
+#### The Root Cause of Slow Inserts
+Without an explicit transaction, SQLite operates in auto-commit mode: every individual `INSERT` statement is treated as a separate transaction requiring a full disk sync (`fsync`). This limits throughput to physical drive rotational/flush latency (**50 - 100 writes/second**).
+
+#### Level 1: Explicit Transaction Encapsulation (~100x speedup: 50,000+ writes/sec)
+Wrapping batches inside a single transaction groups disk flushes into one contiguous WAL write:
+
+```sql
+-- DANGEROUS: 1,000 separate disk syncs -> takes 15-20 seconds
+INSERT INTO events (id, payload) VALUES ('id-1', 'data-1');
+INSERT INTO events (id, payload) VALUES ('id-2', 'data-2');
+-- ...
+
+-- PRODUCTION STANDARD: 1 single disk sync -> takes 15 milliseconds
+BEGIN TRANSACTION;
+INSERT INTO events (id, payload) VALUES ('id-1', 'data-1');
+INSERT INTO events (id, payload) VALUES ('id-2', 'data-2');
+-- ... up to 10,000 records
+COMMIT;
+```
+
+#### Level 2: Prepared Statement Reuse & Multi-Row Syntax (~300x speedup: 150,000+ writes/sec)
+Eliminate repeated SQL parsing and query planning overhead:
+1. **Prepare Once, Bind Many**: Compile SQL once (`sqlite3_prepare_v2`), bind parameters in a loop, call `sqlite3_step()`, then `sqlite3_reset()`.
+2. **Multi-Row Batches**: Insert up to 500–1,000 tuples per statement:
+```sql
+INSERT INTO events (id, payload) VALUES
+  ('id-1', 'data-1'),
+  ('id-2', 'data-2'),
+  ('id-3', 'data-3');
+```
+
+#### Level 3: Drop-and-Rebuild Index Pattern for Massive ETL (~1000x speedup)
+When importing millions of records:
+- Maintaining B-Tree indexes dynamically during massive ingestion forces constant re-balancing, node splits, and cache thrashing.
+- **The Invariant**:
+  1. Drop secondary indexes: `DROP INDEX IF EXISTS idx_events_timestamp;`
+  2. Ingest raw data inside batched transactions.
+  3. Recreate indexes in a single pass: `CREATE INDEX idx_events_timestamp ON events(timestamp);`
+  *Rebuilding an index once from an existing table is 5x to 10x faster than updating it incrementally.*
+
+### 7.2. Multi-Threaded Query Execution (`PRAGMA threads`)
+
+By default, SQLite evaluates queries strictly on a single CPU thread. SQLite 3.8.7+ supports helper threads to parallelize sorting, hash joins, and index creation:
+
+```sql
+-- Allocate up to 4 worker threads for sorting and parallel index building
+PRAGMA threads = 4;
+```
+*Note: SQLite threads do not parallelize simple B-Tree point lookups; they accelerate intensive CPU operations such as `ORDER BY` on large unindexed sets, window functions, and `CREATE INDEX`.*
+
+### 7.3. Keyset Pagination (Cursor) vs The `OFFSET` Degeneration Trap
+
+#### The `OFFSET` Anti-Pattern
+```sql
+-- TERRIBLE: As page number grows, SQLite must scan and discard 500,000 B-Tree entries
+SELECT * FROM orders
+ORDER BY created_at DESC, id DESC
+LIMIT 20 OFFSET 500000; -- High disk read, high CPU, linear O(N) slowdown
+```
+
+#### The Production Invariant: Keyset (Seek) Pagination
+Use indexed column comparisons to jump directly to the target B-Tree leaf node in $O(\log N)$ time:
+```sql
+-- Optimal Compound Index required:
+CREATE INDEX idx_orders_pagination ON orders (created_at DESC, id DESC);
+
+-- Keyset Query: Instantaneous execution (< 1ms) regardless of page depth
+SELECT * FROM orders
+WHERE (created_at, id) < (:last_seen_created_at, :last_seen_id)
+ORDER BY created_at DESC, id DESC
+LIMIT 20;
+```
+
+### 7.4. WAL Checkpoint Tuning (Eliminating I/O Freezes)
+
+In high-write environments, default automatic checkpointing (every 1,000 pages / ~4MB) can cause micro-stalls when writes are continuous:
+
+1. **Increase Autocheckpoint Threshold**:
+   ```sql
+   -- Smooth out high-burst ingestion by allowing WAL to grow up to ~40MB before triggering checkpoint
+   PRAGMA wal_autocheckpoint = 10000;
+   ```
+2. **Non-Blocking Background Checkpointing**:
+   Schedule idle background workers to merge WAL frames back into the main database without blocking active readers or writers:
+   ```sql
+   -- Checkpoints as many frames as possible without waiting for readers/writers
+   PRAGMA wal_checkpoint(PASSIVE);
+   ```
+
+### 7.5. Page Size Hardware Alignment (`PRAGMA page_size`)
+
+SQLite reads and writes data in units of pages. Aligning page size with your workload prevents write amplification and eliminates overflow overhead:
+
+- **Default Standard (Recommended for 95% of OLTP workloads)**: Keep **`4096`** (4KB).
+  *Rationale*: Matches the native 4KB cluster/block size of Windows NTFS, Linux ext4, and macOS APFS. Minimizes write amplification when updating small rows and maximizes RAM page cache capacity.
+- **Document / JSON-Heavy Exception**: Set explicitly to **`8192`** (8KB).
+  *Rationale*: When average row size exceeds 2KB (e.g., storing JSON payloads, rich text), 8KB prevents SQLite from spilling data into **Overflow Pages** (which require extra I/O seek hops), while avoiding the severe write amplification of 16KB.
+
+```sql
+-- MUST be executed BEFORE creating tables in a new database:
+PRAGMA page_size = 8192; -- Only for JSON/Document-heavy databases
+```
+*Note: For existing databases, changing page size requires running `VACUUM;` immediately afterward.*
+
+### 7.6. Query Predicate SARGability (Search Argument Able)
+
+Ensure expressions in `WHERE` clauses preserve index utilization:
+- ❌ **Breaks Index**: `WHERE lower(email) = 'user@example.com'` (Forces a full table scan `SCAN TABLE`).
+- ✅ **Option 1 (Collation Index)**:
+  ```sql
+  CREATE TABLE users (email TEXT COLLATE NOCASE);
+  CREATE INDEX idx_users_email ON users(email);
+  SELECT * FROM users WHERE email = 'user@example.com'; -- Uses index
+  ```
+- ✅ **Option 2 (Expression Index)**:
+  ```sql
+  CREATE INDEX idx_users_lower_email ON users(lower(email));
+  SELECT * FROM users WHERE lower(email) = 'user@example.com'; -- Uses index
+  ```
