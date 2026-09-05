@@ -5,6 +5,8 @@ You are working in a separate session visible to the Owner.
 
 Role: <coder | QA | Supervisor | architect | planner | other role>
 
+Mandatory Skills: <primary_role_skill> + <domain_specialist_skills> (MUST read corresponding SKILL.md before execution)
+
 ## Standard Universal Lane Lifecycle:
 
 **[Receive Contract] -> [Execute Assigned Role] -> [Necessary Validation Only] -> [Record Report/Evidence] -> [(MUST) Commit All Owned Output] -> [Send Direct Message to CEO] -> [HARD STOP IMMEDIATELY]**
