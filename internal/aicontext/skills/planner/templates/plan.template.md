@@ -5,7 +5,6 @@
 - Date: `{{YYYY-MM-DD}}`
 - Status: `draft`
 - Plan: `{{PLAN_PATH}}`
-- Rules: `{{RULES_PATH}}`
 - Evidence: `{{EVIDENCE_PATH}}`
 - Benchmark: `{{BENCHMARK_PATH}}`
 - Actual status: `{{ACTUAL_STATUS_PATH}}`
@@ -16,11 +15,49 @@
 
 ## Rules
 
-- All work in this plan must strictly comply with the companion rules defined in `{{RULES_PATH}}`.
 - Complete P0 actual status before implementation work.
-- Every slice must follow the 6-step lifecycle: Code (atomic tasks + wip checkpoint commits) → Inspect → Update tests → Build → QA → Acceptance & Commit.
+- Update each checklist item immediately when it is completed.
+- Record evidence as work completes.
+- Record benchmarkable counts or measurements when they are taken.
+- Update later phase status assumptions, next actions, and work steps when actual-status evidence changes the repo state.
+- After completing a phase or implementation slice and refreshing `actual-status.md`, update the next affected phase's work steps as needed to match the latest repo reality, while preserving that phase's original goal, scope, acceptance criteria, and major phase order.
 - Anvien only helps localize candidate boundaries; relationships and blast radius must be cross-checked against imports, call paths, and actual code before deciding scope.
-- Refer to `{{RULES_PATH}}` for complete scoping invariants, slice decomposition rules, Docker runtime requirements, and validation standards.
+- Run Anvien detect-changes before every implementation-slice commit when implementation work was performed.
+- For public runtime or UI-facing changes, validate the real user-visible runtime with browser or Playwright evidence.
+- For app/runtime validation, full build must include Docker image/container build. If Docker is missing or not run, full build is incomplete.
+- Any Playwright validation must target the real built Docker/container runtime. Running Playwright against a host dev server, framework dev mode, mocked server, or source-run shortcut is not valid runtime evidence.
+- If the Docker runtime cannot be built or started, the slice/plan is blocked; do not replace it with dev-server Playwright evidence.
+- Playwright evidence must record the Docker build/run or compose command, container/service name, exposed URL, Playwright command, and screenshot/trace/result.
+- Keep the standard planner structure. These detail rules only make phase checklist items concrete enough to implement safely.
+- Every implementation phase must be decomposed into multiple implementation slices that are as small as practical. A phase is a grouping and ordering container; a slice is the executable implementation unit.
+- Do not implement a phase directly. Work starts from a slice ID such as `P1-A`, `P1-B`, or `P2-C`.
+- Prefer many narrow slices over one broad slice. A single-slice implementation phase is allowed only when the plan explicitly states why the phase cannot be split further without creating empty or non-executable slices.
+- Each implementation slice must include:
+  + Goal
+  + Scope Boundary
+  + Non-Goals when useful
+  + Pre-flight Questions
+  + Work Steps (must act as a strict "control plane" following the 6-step execution lifecycle: Code → Inspect → Update tests → Build → QA → Acceptance/Commit. Step 1 (Code) must be decomposed into leaf atomic tasks, where each leaf task defines: Action, Inputs, Allowed Edit Scope, Outputs, and Verification Condition).
+  + Implementation Gate
+  + Acceptance
+  + Evidence Targets
+  + Actual-status Update
+  + Commit Boundary
+- Every slice's Work Steps must strictly follow the 6-step execution lifecycle:
+  1. Code: Execute leaf atomic tasks in core source files only. Each leaf atomic task must explicitly specify Action, Inputs, Allowed Edit Scope, Outputs, local Verification Condition, and a Checkpoint Commit with explicit prefix (e.g. wip(<slice_id>): task 1.x - <verified task outcome>). Do not touch test files during this step.
+  2. Code Inspection & Lint: Review diff, syntax, linter, typecheck, and ensure edits remain strictly within assigned boundary.
+  3. Update Tests: Following Master Rule 6 (Code first, test second), add or update unit/integration tests to verify the newly implemented code behavior.
+  4. Build: Run the repository's full build to ensure type contracts, package bundles, and binaries compile cleanly.
+  5. QA (Mini QA): Verify user-visible runtime behavior (browser, desktop app, API, CLI, or Playwright evidence).
+  6. Acceptance & Commit: Verify acceptance criteria, record evidence in evidence.md, refresh actual-status.md, and create the slice commit.
+- Split planned work into separate slices when it contains more than one primary user-visible behavior, user trigger, render location, permission or visibility rule, DB write target, DB state transition, API/CLI/MCP contract, async/event/webhook flow, external side effect, cleanup/quarantine domain, behavior test target, independent acceptance gate, or independent commit boundary.
+-  Hidden fallback is forbidden. Prefer a visible failure over a fallback that hides a broken primary path.
+- When touching DB-backed content, verify the full loop when applicable: UI input -> submit action -> DB write -> DB read after reload/new request -> correct UI render or omission. If there is no UI, replace UI steps with the real caller/consumer flow.
+- Tests must prove product behavior. Delete or replace tests that only assert implementation details, helper output, static DOM existence, or mocked plumbing without proving trigger -> process -> observable result.
+- If a planned item uses wording such as `and`, `also`, `then wire`, `plus update`, `both`, or `handle all`, check whether it is actually multiple slices.
+- Do not write broad actionable items such as `Implement checkout, webhook, entitlement update, and billing UI`; split them into narrow slices such as `Create checkout session request`, `Persist checkout session state`, `Handle provider webhook`, `Update entitlement from webhook event`, and `Render billing status from entitlement`.
+- Each slice work step must include UI flow, DB/data flow, render location, and evidence target checks. Use `N/A` with a reason when a check does not apply.
+- If tests write DB rows, app state, files, queues, provider state, or other persistent data, the slice must define cleanup or quarantine before implementation.
 
 ## Problem
 
@@ -125,7 +162,6 @@
     6. Acceptance & Commit:
        - Verify slice acceptance criteria, record evidence in {{EVIDENCE_PATH}}, refresh {{ACTUAL_STATUS_PATH}}, and create slice commit.
   - Implementation Gate:
-    - Comply with all rules in `{{RULES_PATH}}`.
     - Before editing target files, run the relevant Anvien impact/file-detail command for files, symbols, routes, tools, or contracts touched by this slice, and record the evidence IDs.
     - Anvien only helps localize candidate boundaries; relationships and blast radius must be cross-checked against imports, call paths, and actual code before deciding scope.
     - {{SLICE_1_GATE}}
