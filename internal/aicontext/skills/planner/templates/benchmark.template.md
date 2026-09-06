@@ -4,6 +4,7 @@
 
 - Date: `{{YYYY-MM-DD}}`
 - Plan: `{{PLAN_PATH}}`
+- Rules: `{{RULES_PATH}}`
 - Evidence: `{{EVIDENCE_PATH}}`
 - Benchmark: `{{BENCHMARK_PATH}}`
 - Actual status: `{{ACTUAL_STATUS_PATH}}`

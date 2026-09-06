@@ -4,6 +4,7 @@ Title: {{TITLE}}
 Date: {{YYYY-MM-DD}}
 Status: Draft / P0 Complete / Blocked
 Companion plan: `{{PLAN_PATH}}`
+Companion rules: `{{RULES_PATH}}`
 Companion evidence: `{{EVIDENCE_PATH}}`
 Companion benchmark: `{{BENCHMARK_PATH}}`
 

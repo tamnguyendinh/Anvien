@@ -11,11 +11,12 @@ This skill is a workflow gate for plan/evidence/benchmark/actual-status authorin
 
 ## Standard Plan Set
 
-A standard plan is a four-file set with the same date and slug:
+A standard plan is a five-file set with the same date and slug:
 
 ```text
 docs/plans/YYYY-MM-DD-<slug>/
   YYYY-MM-DD-<slug>-plan.md
+  YYYY-MM-DD-<slug>-rules.md
   YYYY-MM-DD-<slug>-evidence.md
   YYYY-MM-DD-<slug>-benchmark.md
   YYYY-MM-DD-<slug>-actual-status.md
@@ -23,19 +24,20 @@ docs/plans/YYYY-MM-DD-<slug>/
 
 Rules:
 
-- Put all four standard files in `docs/plans/YYYY-MM-DD-<slug>/`.
+- Put all five standard files in `docs/plans/YYYY-MM-DD-<slug>/`.
 - Use ISO date format: `YYYY-MM-DD`.
 - Use lowercase ASCII kebab-case for the slug.
-- Keep the same slug in all four standard files; only the suffix changes.
-- When writing a plan, you must follow the template exactly 100% (planner\templates\actual-status.template.md, planner\templates\benchmark.template.md, planner\templates\evidence.template.md, planner\templates\plan.template.md).
-- Use the matching H1: `Plan`, `Evidence Ledger`, `Benchmark Ledger`, or `Actual Status`.
-- Auxiliary files such as `*-remaining-files.md` can exist, but they are not part of the standard four-file set.
+- Keep the same slug in all five standard files; only the suffix changes.
+- When writing a plan, you must follow the template exactly 100% (planner\templates\actual-status.template.md, planner\templates\benchmark.template.md, planner\templates\evidence.template.md, planner\templates\plan.template.md, planner\templates\rules.template.md).
+- Use the matching H1: `Plan`, `Plan Rules`, `Evidence Ledger`, `Benchmark Ledger`, or `Actual Status`.
+- Auxiliary files such as `*-remaining-files.md` can exist, but they are not part of the standard five-file set.
 
 ## Template Files
 
 Use the bundled templates before writing a new standard plan set:
 
 - `templates/plan.template.md`
+- `templates/rules.template.md`
 - `templates/evidence.template.md`
 - `templates/benchmark.template.md`
 - `templates/actual-status.template.md`
@@ -75,11 +77,29 @@ Every checklist item must be a complete mini-plan by itself. Do not write generi
 Each checklist item must include:
 
 - Goal: what the phase achieves.
-- Work Steps: concrete ordered work, including the implementation sequence.
+- Scope Boundary: editable, inspect-only, preserve-only, and out-of-scope surfaces.
+- Non-Goals: what must not be expanded.
+- Pre-flight Questions: data source, render location, DB flow, runtime targets, cleanup/quarantine.
+- Work Steps: must strictly follow the invariant 6-step execution lifecycle (`Code → Inspect → Update tests → Build → QA → Acceptance/Commit`). Step 1 (Code) must be decomposed into leaf atomic tasks, where each leaf task explicitly defines: Action, Inputs, Allowed Edit Scope, Outputs, and local Verification Condition.
 - Implementation Gate: the condition that must be true before editing or moving forward.
 - Acceptance: the condition that proves the phase is done.
+- Evidence Targets, Actual-status Update, and Commit Boundary.
+
+Scoping Rule: Anvien only helps localize candidate boundaries; relationships and blast radius must be cross-checked against imports, call paths, and actual code before deciding scope.
 
 Do not use the plan file as a command log, benchmark ledger, changelog, or place to store long metric tables.
+
+## Rules File
+
+The rules file (`YYYY-MM-DD-<slug>-rules.md`) holds the plan rules and execution invariants so that the plan file remains a concise execution control plane.
+
+It should contain:
+- metadata and companion files;
+- execution rules and scoping invariants;
+- slice decomposition rules;
+- the mandatory 6-step slice execution lifecycle (`Code → Inspect → Update tests → Build → QA → Acceptance/Commit`) and leaf atomic task specifications.
+
+Before executing any implementation slice, the agent must read `rules.md` to comply with all execution rules.
 
 ## Actual Status File
 
