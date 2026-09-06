@@ -37,7 +37,6 @@ Rules:
 Use the bundled templates before writing a new standard plan set:
 
 - `templates/plan.template.md`
-- `templates/rules.template.md`
 - `templates/evidence.template.md`
 - `templates/benchmark.template.md`
 - `templates/actual-status.template.md`
