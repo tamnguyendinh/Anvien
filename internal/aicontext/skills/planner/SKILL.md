@@ -79,7 +79,7 @@ Each checklist item must include:
 - Scope Boundary: editable, inspect-only, preserve-only, and out-of-scope surfaces.
 - Non-Goals: what must not be expanded.
 - Pre-flight Questions: data source, render location, DB flow, runtime targets, cleanup/quarantine.
-- Work Steps: must strictly follow the invariant 6-step execution lifecycle (`Code → Inspect → Update tests → Build → QA → Acceptance/Commit`). Step 1 (Code) must be decomposed into leaf atomic tasks, where each leaf task explicitly defines: Action, Inputs, Allowed Edit Scope, Outputs, and local Verification Condition.
+- Work Steps: must strictly follow the invariant 6-step execution lifecycle (`Code → Inspect → Update tests → Build → QA → Acceptance/Commit`). Step 1 (Code) must be decomposed into leaf atomic tasks, where each leaf task explicitly defines: Action, Inputs, Allowed Edit Scope, Outputs, local Verification Condition, and a micro WIP task checkpoint (NOT a slice completion commit).
 - Implementation Gate: the condition that must be true before editing or moving forward.
 - Acceptance: the condition that proves the phase is done.
 - Evidence Targets, Actual-status Update, and Commit Boundary.

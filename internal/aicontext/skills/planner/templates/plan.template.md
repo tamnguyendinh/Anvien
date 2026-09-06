@@ -44,12 +44,12 @@
   + Actual-status Update
   + Commit Boundary
 - Every slice's Work Steps must strictly follow the 6-step execution lifecycle:
-  1. Code: Execute leaf atomic tasks in core source files only. Each leaf atomic task must explicitly specify Action, Inputs, Allowed Edit Scope, Outputs, local Verification Condition, and a Checkpoint Commit with explicit prefix (e.g. wip(<slice_id>): task 1.x - <verified task outcome>). Do not touch test files during this step.
+  1. Code: Execute leaf atomic tasks in core source files only. Each leaf atomic task must explicitly specify Action, Inputs, Allowed Edit Scope, Outputs, local Verification Condition, and a Task Checkpoint with explicit prefix (e.g. wip(<slice_id>): task 1.x - <verified task outcome>; micro WIP commit for granular task progress, NOT a slice completion commit). Do not touch test files during this step.
   2. Code Inspection & Lint: Review diff, syntax, linter, typecheck, and ensure edits remain strictly within assigned boundary.
   3. Update Tests: Following Master Rule 6 (Code first, test second), add or update unit/integration tests to verify the newly implemented code behavior.
   4. Build: Run the repository's full build to ensure type contracts, package bundles, and binaries compile cleanly.
   5. QA (Mini QA): Verify user-visible runtime behavior (browser, desktop app, API, CLI, or Playwright evidence).
-  6. Acceptance & Commit: Verify acceptance criteria, record evidence in evidence.md, refresh actual-status.md, and create the slice commit.
+  6. Slice Acceptance & Official Milestone Commit: Verify slice acceptance criteria, record evidence in evidence.md, refresh actual-status.md, and create the official slice completion commit (e.g. feat(<slice_id>): <slice outcome>).
 - Split planned work into separate slices when it contains more than one primary user-visible behavior, user trigger, render location, permission or visibility rule, DB write target, DB state transition, API/CLI/MCP contract, async/event/webhook flow, external side effect, cleanup/quarantine domain, behavior test target, independent acceptance gate, or independent commit boundary.
 -  Hidden fallback is forbidden. Prefer a visible failure over a fallback that hides a broken primary path.
 - When touching DB-backed content, verify the full loop when applicable: UI input -> submit action -> DB write -> DB read after reload/new request -> correct UI render or omission. If there is no UI, replace UI steps with the real caller/consumer flow.
@@ -128,21 +128,21 @@
          + Allowed Edit Scope: {{EXACT_FILE_AND_FUNCTION_SCOPE}}
          + Outputs: {{OUTPUT_ARTIFACT_OR_BEHAVIOR}}
          + Verification Condition: {{LOCAL_VERIFICATION_COMMAND}}
-         + Checkpoint Commit (explicit prefix): wip(P1-A): task 1.1 - {{VERIFIED_TASK_OUTCOME}}
+         + Task Checkpoint (Micro WIP commit for granular task progress; NOT a slice completion commit): wip(P1-A): task 1.1 - {{VERIFIED_TASK_OUTCOME}}
        - Task 1.2: {{ATOMIC_TASK_2_NAME}}
          + Action: {{EXACT_ACTION_DESCRIPTION}}
          + Inputs: {{INPUT_SYMBOLS_OR_DATA}}
          + Allowed Edit Scope: {{EXACT_FILE_AND_FUNCTION_SCOPE}}
          + Outputs: {{OUTPUT_ARTIFACT_OR_BEHAVIOR}}
          + Verification Condition: {{LOCAL_VERIFICATION_COMMAND}}
-         + Checkpoint Commit (explicit prefix): wip(P1-A): task 1.2 - {{VERIFIED_TASK_OUTCOME}}
+         + Task Checkpoint (Micro WIP commit for granular task progress; NOT a slice completion commit): wip(P1-A): task 1.2 - {{VERIFIED_TASK_OUTCOME}}
        - Task 1.n: {{ATOMIC_TASK_N_NAME}} (n = final sequential task index within Step 1 of this slice)
          + Action: {{EXACT_ACTION_DESCRIPTION}}
          + Inputs: {{INPUT_SYMBOLS_OR_DATA}}
          + Allowed Edit Scope: {{EXACT_FILE_AND_FUNCTION_SCOPE}}
          + Outputs: {{OUTPUT_ARTIFACT_OR_BEHAVIOR}}
          + Verification Condition: {{LOCAL_VERIFICATION_COMMAND}}
-         + Checkpoint Commit (explicit prefix): wip(P1-A): task 1.n - {{VERIFIED_TASK_OUTCOME}}
+         + Task Checkpoint (Micro WIP commit for granular task progress; NOT a slice completion commit): wip(P1-A): task 1.n - {{VERIFIED_TASK_OUTCOME}}
     2. Code Inspection & Lint:
        - Review code diff, syntax, linter, typecheck, and confirm no edits exceeded assigned boundary.
     3. Update Tests (Code first, test second):
@@ -159,8 +159,8 @@
          For Claude or other agents:
            - Use the equivalent browser, Chrome/session, or computer-control capability exposed by that agent/runtime or Playwright-like capability available in that environment.
        - Evidence target: {{SLICE_1_QA_EVIDENCE_TARGET}}
-    6. Acceptance & Commit:
-       - Verify slice acceptance criteria, record evidence in {{EVIDENCE_PATH}}, refresh {{ACTUAL_STATUS_PATH}}, and create slice commit.
+    6. Slice Acceptance & Official Milestone Commit:
+       - Run detect-changes, verify slice acceptance criteria, record evidence in {{EVIDENCE_PATH}}, refresh {{ACTUAL_STATUS_PATH}}, and create the official slice completion commit (e.g. feat(P1-A): {{SLICE_OUTCOME}}).
   - Implementation Gate:
     - Before editing target files, run the relevant Anvien impact/file-detail command for files, symbols, routes, tools, or contracts touched by this slice, and record the evidence IDs.
     - Anvien only helps localize candidate boundaries; relationships and blast radius must be cross-checked against imports, call paths, and actual code before deciding scope.
