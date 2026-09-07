@@ -9,83 +9,118 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 
+	"github.com/knights-analytics/hugot/backends/modelconfig"
 	"github.com/knights-analytics/hugot/options"
 	"github.com/knights-analytics/hugot/util/fileutil"
 )
 
-type Model struct {
+// ModelMetadata contains model identity and inference metadata.
+type ModelMetadata struct {
 	ID                    string
-	ORTModel              *ORTModel
-	GoMLXModel            *GoMLXModel
-	Tokenizer             *Tokenizer
-	Destroy               func() error
-	Pipelines             map[string]Pipeline
-	IDLabelMap            map[int]string
-	SeparatorToken        string
 	Path                  string
 	OnnxFilename          string
 	OnnxPath              string
-	OnnxReader            io.ReadCloser
+	UnknownToken          string
 	InputsMeta            []InputOutputInfo
 	OutputsMeta           []InputOutputInfo
+	IDLabelMap            map[int]string
+	SeparatorToken        string
 	MaxPositionEmbeddings int
 	IsGenerative          bool
 }
 
-func LoadModel(ctx context.Context, path string, onnxFilename string, options *options.Options, isGenerative bool) (*Model, error) {
+// ModelResources owns the backend and tokenizer resources for a model.
+type ModelResources struct {
+	Backend    Backend
+	ORTModel   *ORTModel
+	GoMLXModel *GoMLXModel
+	Tokenizer  *Tokenizer
+	OnnxReader io.ReadCloser
+	Pipelines  map[string]Pipeline
+}
+
+type Model struct {
+	ModelMetadata
+	ModelResources
+	closeMu sync.Mutex
+	closed  bool
+}
+
+func LoadModel(ctx context.Context, path string, onnxFilename string, opts *options.Options, isGenerative bool) (*Model, error) {
 	model := &Model{
 		ID:           path + ":" + onnxFilename,
 		Path:         path,
 		OnnxFilename: onnxFilename,
-		Pipelines:    map[string]Pipeline{},
 		IsGenerative: isGenerative,
+		Pipelines:    map[string]Pipeline{},
 	}
+	backend, backendErr := newBackend(opts)
+	if backendErr != nil {
+		return nil, backendErr
+	}
+	model.Backend = backend
 
 	if isGenerative {
 		// creation of the session. Only one output (either token or sentence embedding).
-		if options.Backend != "ORT" {
+		if opts.Backend != options.BackendORT {
 			return nil, fmt.Errorf("generative models are only supported with ORT backend currently")
 		}
 		if onnxFilename != "" {
 			return nil, fmt.Errorf("onnx filename should not be provided for generative models as we currently rely on genai_config for the onnx backend")
 		}
 
-		err := createORTGenerativeSession(ctx, model, options)
+		err := createORTGenerativeSession(ctx, model, opts)
 		if err != nil {
-			return nil, err
+			return nil, errors.Join(err, model.Close())
 		}
 	} else {
 		err := loadModelConfig(ctx, model)
 		if err != nil {
-			return nil, err
+			return nil, errors.Join(err, model.Close())
 		}
-		err = CreateModelBackend(ctx, model, options)
+		err = CreateModelBackend(ctx, model, opts)
 		if err != nil {
-			return nil, err
+			return nil, errors.Join(err, model.Close())
 		}
-		tkErr := LoadTokenizer(ctx, model, options)
+		tkErr := LoadTokenizer(ctx, model, opts)
 		if tkErr != nil {
-			return nil, tkErr
+			return nil, errors.Join(tkErr, model.Close())
 		}
 	}
 
-	model.Destroy = func() error {
-		var destroyErr error
-		if model.Tokenizer != nil {
-			destroyErr = model.Tokenizer.Destroy()
-		}
-		switch options.Backend {
-		case "ORT":
-			destroyErr = errors.Join(destroyErr, model.ORTModel.Destroy())
-			model.ORTModel = nil
-		case "GO", "XLA":
-			model.GoMLXModel.Destroy()
-			model.GoMLXModel = nil
-		}
-		return destroyErr
-	}
 	return model, nil
+}
+
+// Close releases all resources owned by the model. It is safe to call more
+// than once, which makes session and pipeline cleanup composable.
+func (model *Model) Close() error {
+	model.closeMu.Lock()
+	defer model.closeMu.Unlock()
+	if model.closed {
+		return nil
+	}
+	model.closed = true
+
+	var closeErr error
+	if model.Tokenizer != nil {
+		closeErr = errors.Join(closeErr, model.Tokenizer.Close())
+		model.Tokenizer = nil
+	}
+	if model.OnnxReader != nil {
+		closeErr = errors.Join(closeErr, model.OnnxReader.Close())
+		model.OnnxReader = nil
+	}
+	if model.ORTModel != nil {
+		closeErr = errors.Join(closeErr, model.ORTModel.Close())
+		model.ORTModel = nil
+	}
+	if model.GoMLXModel != nil {
+		model.GoMLXModel.Close()
+		model.GoMLXModel = nil
+	}
+	return closeErr
 }
 
 func GetOnnxModelPath(ctx context.Context, model *Model) error {
@@ -123,7 +158,7 @@ func getOnnxFiles(ctx context.Context, path string) ([][]string, error) {
 		}
 		return true, nil
 	}
-	err := fileutil.WalkDir()(ctx, path, walker)
+	err := fileutil.WalkDir(ctx, path, walker)
 	return onnxFiles, err
 }
 
@@ -139,29 +174,29 @@ func loadModelConfig(ctx context.Context, model *Model) error {
 		if readErr != nil {
 			return readErr
 		}
-		configMap := map[string]any{}
+		var configMap modelconfig.Config
 		readErr = json.Unmarshal(configBytes, &configMap)
 		if readErr != nil {
 			return readErr
 		}
-		if maxPositionEmbeddingsRaw, existsOk := configMap["max_position_embeddings"]; existsOk {
-			if maxPositionEmbeddings, castOk := maxPositionEmbeddingsRaw.(float64); castOk {
-				model.MaxPositionEmbeddings = int(maxPositionEmbeddings)
+		// Some multimodal models store text model config under text_config, so standardise that now
+		if configMap.TextConfig != nil {
+			configMap.MaxPositionEmbeddings = configMap.TextConfig.MaxPositionEmbeddings
+			if configMap.TextConfig.ID2Label != nil {
+				configMap.ID2Label = configMap.TextConfig.ID2Label
 			}
 		}
-		if id2LabelRaw, existsOk := configMap["id2label"]; existsOk {
-			if id2Label, castOk := id2LabelRaw.(map[string]any); castOk {
-				id2labelCast := map[int]string{}
-				for k, v := range id2Label {
-					kInt, kErr := strconv.Atoi(k)
-					if kErr != nil {
-						return kErr
-					}
-					id2labelCast[kInt] = v.(string)
+		if configMap.MaxPositionEmbeddings > 0 {
+			model.MaxPositionEmbeddings = configMap.MaxPositionEmbeddings
+		}
+		if configMap.ID2Label != nil {
+			model.IDLabelMap = map[int]string{}
+			for k, label := range configMap.ID2Label {
+				kInt, kErr := strconv.Atoi(k)
+				if kErr != nil {
+					return fmt.Errorf("invalid id2label key %q: %w", k, kErr)
 				}
-				model.IDLabelMap = id2labelCast
-			} else {
-				return fmt.Errorf("id2label is not a map")
+				model.IDLabelMap[kInt] = label
 			}
 		}
 	}
@@ -175,28 +210,14 @@ func loadModelConfig(ctx context.Context, model *Model) error {
 		if readErr != nil {
 			return readErr
 		}
-		var configMap map[string]interface{}
+		var configMap modelconfig.SpecialTokensConfig
 		readErr = json.Unmarshal(configBytes, &configMap)
 		if readErr != nil {
 			return readErr
 		}
-		if sepToken, exists := configMap["sep_token"]; exists {
-			switch v := sepToken.(type) {
-			case map[string]interface{}:
-				t, contentOk := v["content"]
-				if !contentOk {
-					return fmt.Errorf("sep_token is map but no content field is available")
-				}
-				tString, stringOk := t.(string)
-				if !stringOk {
-					return fmt.Errorf("sep_token cannot be converted to string: %v", t)
-				}
-				model.SeparatorToken = tString
-			case string:
-				model.SeparatorToken = v
-			default:
-				return fmt.Errorf("sep_token has unexpected type: %v", v)
-			}
+
+		if configMap.SepToken.Content != "" {
+			model.SeparatorToken = configMap.SepToken.Content
 		}
 	}
 	// Fallback 1: tokenizer_config.json may contain sep_token (common in HF models).
@@ -211,14 +232,15 @@ func loadModelConfig(ctx context.Context, model *Model) error {
 			if tcReadErr != nil {
 				return tcReadErr
 			}
-			var tcMap map[string]interface{}
+			var tcMap modelconfig.TokenizerConfig
 			if tcReadErr = json.Unmarshal(tcBytes, &tcMap); tcReadErr != nil {
 				return tcReadErr
 			}
-			if sepToken, ok := tcMap["sep_token"]; ok {
-				if s, isStr := sepToken.(string); isStr && s != "" {
-					model.SeparatorToken = s
-				}
+			if tcMap.SepToken.Content != "" {
+				model.SeparatorToken = tcMap.SepToken.Content
+			}
+			if tcMap.UnknownToken.Content != "" {
+				model.UnknownToken = tcMap.UnknownToken.Content
 			}
 		}
 	}
@@ -235,18 +257,14 @@ func loadModelConfig(ctx context.Context, model *Model) error {
 			if tjReadErr != nil {
 				return tjReadErr
 			}
-			var tjMap map[string]interface{}
+			var tjMap modelconfig.TokenizerJSONConfig
 			if tjReadErr = json.Unmarshal(tjBytes, &tjMap); tjReadErr != nil {
 				return tjReadErr
 			}
-			if pp, ok := tjMap["post_processor"].(map[string]interface{}); ok {
-				if specialTokens, ok := pp["special_tokens"].(map[string]interface{}); ok {
-					for _, candidate := range []string{"[SEP]", "</s>"} {
-						if _, found := specialTokens[candidate]; found {
-							model.SeparatorToken = candidate
-							break
-						}
-					}
+			for _, candidate := range []string{"[SEP]", "</s>"} {
+				if _, found := tjMap.PostProcessor.SpecialTokens[candidate]; found {
+					model.SeparatorToken = candidate
+					break
 				}
 			}
 		}
@@ -312,7 +330,7 @@ func flatDataTo3D[T float32 | int64 | int32](input []T, paddingMask [][]bool, se
 			}
 			// valid token, create embedding
 			embedding := make([]T, dimension)
-			for i := 0; i < dimension; i++ {
+			for i := range dimension {
 				embedding[i] = input[counter]
 				counter++
 			}
@@ -357,15 +375,18 @@ func flatDataTo3DGeneric[T float32 | int64 | int32](input []T, batchSize int, di
 }
 
 func flatDataTo4D[T float32 | int64 | int32](input []T, paddingMask [][]bool, groupSize int, dimension int) [][][][]T {
-	batchSize := len(paddingMask)         // B
+	batchSize := len(paddingMask) // B
+	if batchSize == 0 || groupSize <= 0 || dimension <= 0 {
+		return make([][][][]T, batchSize)
+	}
 	sequenceLength := len(paddingMask[0]) // S
 	output := make([][][][]T, batchSize)
 	counter := 0
-	for b := 0; b < batchSize; b++ {
+	for b := range batchSize {
 		group := make([][][]T, groupSize) // A
-		for a := 0; a < groupSize; a++ {
+		for a := range groupSize {
 			sequence := make([][]T, sequenceLength)
-			for s := 0; s < sequenceLength; s++ {
+			for s := range sequenceLength {
 				if !paddingMask[b][s] {
 					// skip this entire vector
 					counter += dimension
@@ -373,7 +394,7 @@ func flatDataTo4D[T float32 | int64 | int32](input []T, paddingMask [][]bool, gr
 					continue
 				}
 				vector := make([]T, dimension)
-				for d := 0; d < dimension; d++ {
+				for d := range dimension {
 					vector[d] = input[counter]
 					counter++
 				}

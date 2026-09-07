@@ -1,0 +1,234 @@
+// Copyright 2023-2026 The GoMLX Authors. SPDX-License-Identifier: Apache-2.0
+
+package tensors
+
+import (
+	"bytes"
+	"fmt"
+	"reflect"
+	"strings"
+
+	"github.com/gomlx/compute/dtypes/bfloat16"
+	"github.com/gomlx/compute/dtypes/float16"
+	"github.com/gomlx/compute/support/envutil"
+	"github.com/gomlx/compute/support/xslices"
+	"k8s.io/klog/v2"
+)
+
+var (
+	typeFloat16  = reflect.TypeFor[float16.Float16]()
+	typeBFloat16 = reflect.TypeFor[bfloat16.BFloat16]()
+)
+
+// SummarySampleHalfSize holds the default number of elements to print from the beginning and from the
+// end of each dimension, by Tensor.Summary() (same as Tensor.String())
+// The default is 3, so for a 1D tensor of size 10, the first 3 and last 3 elements will be printed,
+// in between the first and last 3 elements, "..." will be printed.
+//
+// It can be changed by setting the SummarySampleHalfSize parameter in the
+// context, or by setting the environment variable GOMLX_TENSOR_SUMMARY_SAMPLE_SIZE.
+var SummarySampleHalfSize = 3
+
+const SummarySampleHalfSizeEnv = "GOMLX_TENSOR_SUMMARY_SAMPLE_SIZE"
+
+func init() {
+	var err error
+	SummarySampleHalfSize, err = envutil.ReadInt(SummarySampleHalfSizeEnv, SummarySampleHalfSize)
+	if err != nil {
+		klog.Fatalf("Failed to initialize %q: %+v", SummarySampleHalfSizeEnv, err)
+	}
+}
+
+// Summary returns a multi-line summary of the Tensor's content.
+// Inspired by numpy output.
+func (t *Tensor) Summary(precision int) string {
+	if t.Shape().IsZeroSize() {
+		return t.Shape().String()
+	}
+
+	// Easy string building.
+	var buf bytes.Buffer
+	w := func(format string, args ...any) { _, _ = fmt.Fprintf(&buf, format, args...) }
+
+	// Print value with appropriate formatting:
+	wValue := func(v reflect.Value) {
+		if v.Type() == typeFloat16 {
+			w("%.*g", precision, v.Interface().(float16.Float16).Float32())
+			return
+		} else if v.Type() == typeBFloat16 {
+			w("%.*g", precision, v.Interface().(bfloat16.BFloat16).Float32())
+			return
+		}
+		switch v.Kind() {
+		case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+			w("%d", v.Int())
+		case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+			w("%d", v.Uint())
+		case reflect.Complex64, reflect.Complex128:
+			c := v.Complex()
+			w("(%.*g+%.*gi)", precision, real(c), precision, imag(c))
+		case reflect.Bool:
+			w("%v", v.Bool())
+		default:
+			w("%.*g", precision, v.Interface())
+		}
+	}
+
+	// Access the contents of the tensor without copy:
+	dims := t.Shape().Dimensions
+	dtype := t.shape.DType
+	isPacked := dtype.IsPacked()
+	t.MustConstFlatData(func(flat any) {
+		var packed []uint8
+		for _, dim := range dims {
+			w("[%d]", dim)
+		}
+		if isPacked {
+			w("%s", t.shape.DType)
+			packed = flat.([]uint8)
+		} else {
+			w("%s", reflect.ValueOf(flat).Type().Elem())
+		}
+		values := reflect.ValueOf(flat)
+		wValueAt := func(at int) {
+			if isPacked {
+				v := UnpackSubByteAt(packed, dtype, at)
+				w("%d", v)
+			} else {
+				wValue(values.Index(at))
+			}
+		}
+		if len(dims) == 0 {
+			// Scalar value.
+			w("(")
+			wValueAt(0)
+			w(")")
+			return
+		}
+
+		// Recursive function to print elements
+		var printElements func(int, int, []int)
+		printElements = func(index, indent int, currentShape []int) {
+			if len(currentShape) == 1 {
+				// One row of data:
+				w("{")
+				if currentShape[0] > 2*SummarySampleHalfSize {
+					// Apply ellipsis for large arrays
+					for i := range SummarySampleHalfSize {
+						if i > 0 {
+							w(", ")
+						}
+						wValueAt(index + i)
+					}
+					w(", ..., ")
+					for i := currentShape[0] - SummarySampleHalfSize; i < currentShape[0]; i++ {
+						if i > currentShape[0]-SummarySampleHalfSize {
+							w(", ")
+						}
+						wValueAt(index + i)
+					}
+
+				} else {
+					// Print full row:
+					for i := 0; i < currentShape[0]; i++ {
+						if i > 0 {
+							w(", ")
+						}
+						wValueAt(index + i)
+					}
+				}
+				w("}")
+				return
+			}
+
+			// Outer axes:
+			numRows := 1
+			for _, dim := range currentShape[:len(currentShape)-1] {
+				numRows *= dim
+			}
+			stride := 1
+			for _, dim := range currentShape[1:] {
+				stride *= dim
+			}
+
+			w("{")
+			if indent == -1 {
+				if numRows > 1 {
+					// Break the line before outputting data if we are using more than one row.
+					w("\n ")
+				}
+				indent = 1
+			}
+			indentStr := strings.Repeat(" ", indent)
+
+			if numRows > 2*SummarySampleHalfSize {
+				if len(currentShape) > 2 {
+					// Only print first and last element of this outer dimension.
+					printElements(index, indent+1, currentShape[1:])
+					if currentShape[0] > 1 {
+						if currentShape[0] > 2 {
+							w(",\n%s...,\n%s", indentStr, indentStr)
+						} else {
+							w(",\n%s", indentStr)
+						}
+						printElements(index+(currentShape[0]-1)*stride, indent+1, currentShape[1:])
+					}
+					w("}")
+					return
+				}
+
+				// This is the one-before last dimension, first SummarySampleHalfSize and last SummarySampleHalfSize rows for this outer dimension.
+				firstNRows := min(SummarySampleHalfSize, currentShape[0])
+				var lastNRows int
+				if currentShape[0] <= 2*SummarySampleHalfSize {
+					firstNRows = currentShape[0]
+				} else {
+					lastNRows = SummarySampleHalfSize
+				}
+				for ii := 0; ii < firstNRows; ii++ {
+					if ii > 0 {
+						w(",\n%s", indentStr)
+					}
+					printElements(index+ii*stride, indent+1, currentShape[1:])
+				}
+				if lastNRows > 0 {
+					w(",\n%s...", indentStr)
+					for ii := currentShape[0] - lastNRows; ii < currentShape[0]; ii++ {
+						w(",\n%s", indentStr)
+						printElements(index+ii*stride, indent+1, currentShape[1:])
+					}
+				}
+				w("}")
+				return
+			}
+
+			// Print all rows of the outer edge:
+			for ii := range currentShape[0] {
+				if ii > 0 {
+					w(",\n%s", indentStr)
+				}
+				printElements(index, indent+1, currentShape[1:])
+				w("}")
+				index += stride
+			}
+		}
+		printElements(0, -1, dims)
+	})
+	return buf.String()
+}
+
+// GoStr converts to string, using a Go-syntax representation that can be copied&pasted back to code.
+//
+// Sub-byte packed values (Int1, Uint1, Int2, Uint2, Int4, Uint4) are unpacked to int8 before being printed as Go values.
+func (t *Tensor) GoStr() string {
+	t.AssertValid()
+	if t.Shape().IsZeroSize() {
+		// For zero-dimensioned tensors (for some axis), we simply return the shape.
+		return t.shape.String()
+	}
+	value := t.Value()
+	if t.IsScalar() {
+		return fmt.Sprintf("%s: %v", t.shape.DType, value)
+	}
+	return fmt.Sprintf("%s: %s", t.shape, xslices.SliceToGoStr(value))
+}

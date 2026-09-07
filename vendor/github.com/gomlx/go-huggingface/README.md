@@ -3,14 +3,15 @@
 [![GoDev](https://img.shields.io/badge/go.dev-reference-007d9c?logo=go&logoColor=white)](https://pkg.go.dev/github.com/gomlx/go-huggingface?tab=doc)
 [![Tests](https://github.com/gomlx/go-huggingface/actions/workflows/linux_amd64_tests.yaml/badge.svg)](https://github.com/gomlx/go-huggingface/actions/workflows/linux_amd64_tests.yaml)
 [![Slack](https://img.shields.io/badge/Slack-GoMLX-purple.svg?logo=slack)](https://app.slack.com/client/T029RQSE6/C08TX33BX6U)
-[![Sponsor gomlx](https://img.shields.io/badge/Sponsor-gomlx-white?logo=github&style=flat-square)](https://github.com/sponsors/gomlx)
+[![Documentation](https://img.shields.io/badge/docs-gomlx.github.io-blue.svg)](https://gomlx.github.io/)
+[![Sponsor GoMLX](https://img.shields.io/badge/Sponsor-GoMLX-white?logo=github&style=flat-square)](https://github.com/gomlx/gomlx/blob/main/README.md#-support-the-project)
 
 ## 📖 Overview
 
-Simple APIs for downloading (`hub`), tokenizing (`tokenizers`), (**experimental**) model conversion (`models/transformers`) of 
-[HuggingFace🤗](huggingface.co) transformer models using [GoMLX](https://github.com/gomlx/gomlx), and last but not least, simplified datasets (parquet based) downloading and scanning.
+Simple APIs for **downloading** (`hub`), **tokenizing** (`tokenizers`), (**experimental**) **model conversion** (`models/transformer`) of 
+[HuggingFace🤗](https://huggingface.co) transformer models using [GoMLX](https://github.com/gomlx/gomlx), and last but not least, **datasets (parquet-based) downloading and scanning**.
 
-Each component is independent, and only depends on what it needs -- `hub` has no dependency on `GoMLX`, `tokenizers` has no dependence on `parquet-go` (to parse datasets), etc.
+Each component is independent, and only depends on what it needs -- `hub` has no dependency on `GoMLX`, `tokenizers` has no dependency on `parquet-go` (to parse datasets), etc.
 
 It also provides a `bucket` library to bucketize sentences to be tokenized into buckets of increasing sizes (e.g.: powers-of-2, two-bits, etc.) with automatic padding, and
 maximum delay configuration (for online systems).
@@ -18,21 +19,34 @@ maximum delay configuration (for online systems).
 See examples:
  
 * [MS MARCO dataset](https://github.com/gomlx/go-huggingface/tree/main/examples/msmarco): 
-  a small library that makes it easy access to this specific dataset, and serves as an example to access others.
+  a small library that provides easy access to this specific dataset, and serves as an example of how to access others.
   It includes [benchmark_embed](https://github.com/gomlx/go-huggingface/tree/main/examples/msmarco/benchmark_embed/),
   a command-line benchmark of sentence embeddings, that also serves as an example of how to use the library.
 * [Tencent's KaLM-Embedding-Gemma3-12B-2511 Sentence Encoder](https://github.com/gomlx/go-huggingface/tree/main/examples/kalmgemma3): 
-  a small library that makes it trivial to use this model and serves as an example how to use others.
-* [BAAI (Beijing Academy of Artificial Intelligence) BGE Small Sentence Embedder (English) v1.5](https://github.com/gomlx/go-huggingface/tree/main/examples/BAAI-bge-small-en-v1.5): a small and very performatic sentence embedder (BERT based).
+  a small library that makes it trivial to use this model and serves as an example of how to use others.
+* [BAAI (Beijing Academy of Artificial Intelligence) BGE Small Sentence Embedder (English) v1.5](https://github.com/gomlx/go-huggingface/tree/main/examples/BAAI-bge-small-en-v1.5): a small and very performant sentence embedder (BERT-based).
   
-🚧 **EXPERIMENTAL and IN DEVELOPMENT**: By no means it covers all models/tokenizers/dataset types in HuggingFace, but support is continuously expanding (we add support for the models we are using, or when someone asks for). Models are easy to run, datasets are easy to scan, tokenizers come configured from HuggingFace, etc. But ... it is still under development -- and on that note: contributions and suggestions are most welcome.
+🚧 **EXPERIMENTAL and IN DEVELOPMENT**: By no means does it cover all models/tokenizers/dataset types in HuggingFace, but support is continuously expanding (we add support for the models we are using, or when someone asks for it). Models are easy to run, datasets are easy to scan, tokenizers come configured from HuggingFace, etc. But ... it is still under development -- and on that note: contributions and suggestions are most welcome.
 
-## Packages `hub`: Downloding info and files from a repository
+
+
+---
+
+## Info/Download from HuggingFace Hub
+
+**Package**: `github.com/gomlx/go-huggingface/hub`
+
+It provides information from any repo in the Hub (models, datasets, etc.), and provides a very simple
+API to download files, sharing the cache format with the original HuggingFace library (so both share the same cache).
 
 ### Preamble: Imports And Variables
 
 ```go
 import (
+    "fmt"
+    "os"
+
+    "github.com/gomlx/compute/support/humanize"
     "github.com/gomlx/go-huggingface/hub"
     "github.com/gomlx/go-huggingface/tokenizers"
 )
@@ -61,9 +75,9 @@ var (
 for _, modelID := range hfModelIDs {
 	fmt.Printf("\n%s:\n", modelID)
 	repo := hub.New(modelID).WithAuth(hfAuthToken)
-	for fileName, err := range repo.IterFileNames() {
+	for fileInfo, err := range repo.IterFileInfos() {
 		if err != nil { panic(err) }
-		fmt.Printf("\t%s\n", fileName)
+		fmt.Printf("\t%s - %s\n", fileInfo.Name, humanize.Bytes(fileInfo.Size))
 	}
 }
 ```
@@ -72,18 +86,121 @@ The result looks like this:
 
 ```
 google/gemma-2-2b-it:
-	.gitattributes
-	README.md
-	config.json
-	generation_config.json
-	model-00001-of-00002.safetensors
-	model-00002-of-00002.safetensors
-	model.safetensors.index.json
-	special_tokens_map.json
-	tokenizer.json
-	tokenizer.model
-	tokenizer_config.json
+	.gitattributes - 1.5 KiB
+	README.md - 28.4 KiB
+	config.json - 838 B
+	generation_config.json - 187 B
+	model-00001-of-00002.safetensors - 4.6 GiB
+	model-00002-of-00002.safetensors - 229.5 MiB
+	model.safetensors.index.json - 23.7 KiB
+	special_tokens_map.json - 636 B
+	tokenizer.json - 16.7 MiB
+	tokenizer.model - 4.0 MiB
+	tokenizer_config.json - 45.9 KiB
 …
+```
+
+### Local Copies and Saving Repositories
+
+You can save a complete local copy of a repository to a target directory, making it independent of the HuggingFace cache directory. This is useful when bundling models in version control, Docker containers, or offline distributions.
+
+#### Using `hubinfo` CLI tool
+
+You can use the `hubinfo` command-line tool (`./cmd/hubinfo`) to inspect, save, and manage local repositories:
+
+```bash
+# Save a repository to a local directory:
+go run ./cmd/hubinfo -save=/path/to/local/model Qwen/Qwen3-0.6B
+
+# Save using hard links (to save disk space on the same filesystem):
+go run ./cmd/hubinfo -save=/path/to/local/model -link_only Qwen/Qwen3-0.6B
+
+# Save and delete the downloaded cache afterwards:
+go run ./cmd/hubinfo -save=/path/to/local/model -delete_cache Qwen/Qwen3-0.6B
+
+# Inspect a local directory repository:
+go run ./cmd/hubinfo -local /path/to/local/model
+```
+
+#### Programmatically saving and loading local repositories
+
+```go
+// 1. Download and save the repository locally:
+repo := hub.New("Qwen/Qwen3-0.6B")
+if err := repo.Save("/path/to/local/model", false); err != nil {
+    log.Fatalf("Failed to save repo: %v", err)
+}
+
+// Optionally delete the downloaded cache if you no longer need it:
+if err := repo.DeleteCache(); err != nil {
+    log.Printf("Failed to delete cache: %v", err)
+}
+
+// 2. Load the repository directly from the saved local directory:
+localRepo := hub.NewLocal("/path/to/local/model")
+
+// Use localRepo just like a normal Repo (no network requests are ever made):
+tokenizer, err := tokenizers.New(localRepo)
+```
+
+### Embedded Models (`//go:embed`)
+
+You can also embed an entire model repository directly into your compiled Go binary using Go's standard `embed` package and `hub.NewEmbed()`:
+
+```go
+import (
+    "embed"
+    "github.com/gomlx/go-huggingface/hub"
+    "github.com/gomlx/go-huggingface/tokenizers"
+)
+
+// Embed the model files into the binary (e.g. tokenizer.json, config.json, model.safetensors):
+//go:embed my_model/*
+var embeddedModelFS embed.FS
+
+func main() {
+    // Create a Repo directly from the embedded filesystem:
+    embedRepo := hub.NewEmbed(embeddedModelFS, "my_model")
+
+    // Use embedRepo with any tokenizer or model parser without network requests or disk extraction:
+    tokenizer, err := tokenizers.New(embedRepo)
+    if err != nil {
+        log.Fatalf("Failed to load embedded tokenizer: %v", err)
+    }
+
+    // Read files directly from memory:
+    configBytes, err := embedRepo.ReadFile("config.json")
+}
+```
+
+
+---
+
+## HuggingFace Tokenizers
+
+**Package**: `github.com/gomlx/go-huggingface/tokenizers`
+
+The `tokenizers` package provides a generic `Tokenizer` API and a set of tokenizer implementations.
+
+### Tokenize using the Go-only "SentencePiece" tokenizer (for all Gemma models)
+
+* The output "Downloaded" message happens only when the tokenizer file is not yet cached, so only the first time:
+
+```go
+repo := hub.New("google/gemma-2-2b-it").WithAuth(hfAuthToken)
+tokenizer, err := tokenizers.New(repo)
+if err != nil { panic(err) }
+
+sentence := "The book is on the table."
+tokens := tokenizer.Encode(sentence)
+fmt.Printf("Sentence:\t%s\n", sentence)
+fmt.Printf("Tokens:  \t%v\n", tokens)
+```
+
+```
+Downloaded 1/1 files, 4.2 MB downloaded         
+Sentence:	The book is on the table.
+Tokens:  	[651 2870 603 611 573 3037 235265]
 ```
 
 ### List tokenizer classes for each model
@@ -112,28 +229,6 @@ protectai/deberta-v3-base-zeroshot-v1-onnx:
 …
 ```
 
-## Package `tokenizers`: an API and a set of tokenizer implementations
-
-### Tokenize for using Go-only "SentencePiece" tokenizer (for all Gemma models)
-
-* The output "Downloaded" message happens only the tokenizer file is not yet cached, so only the first time:
-
-```go
-repo := hub.New("google/gemma-2-2b-it").WithAuth(hfAuthToken)
-tokenizer, err := tokenizers.New(repo)
-if err != nil { panic(err) }
-
-sentence := "The book is on the table."
-tokens := tokenizer.Encode(sentence)
-fmt.Printf("Sentence:\t%s\n", sentence)
-fmt.Printf("Tokens:  \t%v\n", tokens)
-```
-
-```
-Downloaded 1/1 files, 4.2 MB downloaded         
-Sentence:	The book is on the table.
-Tokens:  	[651 2870 603 611 573 3037 235265]
-```
 
 ### Tokenize and "Bucketize" sentences (using "two-bits" bucketing strategy)
 
@@ -141,7 +236,7 @@ The library also provides the `github.com/gomlx/go-huggingface/tokenizers/bucket
 bucket sentences in similar length ones, which can then be used to create batches of tokens
 with minimal padding.
 
-If provides different bucketing strategies (e.g.: Power-of-2, Power-of-X, Two-Bits, etc.), 
+It provides different bucketing strategies (e.g.: Power-of-2, Power-of-X, Two-Bits, etc.), 
 and maximum latency waiting for buckets (for online usage), parallelization of tokenization,
 and is very simple to use:
 
@@ -168,10 +263,10 @@ wg.Go(func() {
 ...
 ```
 
-### Tokenize for a [Sentence Transformer](https://www.sbert.net/) derived model, using Rust's based [github.com/daulet/tokenizers](https://github.com/daulet/tokenizers) tokenizer
+### Tokenize for a [Sentence Transformer](https://www.sbert.net/) derived model, using the Rust-based [github.com/daulet/tokenizers](https://github.com/daulet/tokenizers) package
 
-For most tokenizers in HuggingFace though, there is no Go-only version yet, and for now we use the 
-[github.com/daulet/tokenizers](https://github.com/daulet/tokenizers), which is based on a fast tokenizer written in Rust.
+If you don't find a Go tokenizer, or if you need the most performant tokenizer (usually tokenization is not a bottleneck), you can also use the 
+[github.com/daulet/tokenizers](https://github.com/daulet/tokenizers) package, which is based on a fast tokenizer written in Rust.
 
 It requires installation of the built Rust library though, 
 see [github.com/daulet/tokenizers](https://github.com/daulet/tokenizers) on how to install it, 
@@ -179,8 +274,8 @@ they provide prebuilt binaries.
 
 > **Note**: `daulet/tokenizers` also provides a simple downloader, so `go-huggingface` is not strictly necessary -- 
 > if you don't want the extra dependency and only need the tokenizer, you don't need to use it. `go-huggingface` 
-> helps by allowing also downloading other files (models, datasets), and a shared cache across different projects 
-> and `huggingface-hub` (the python downloader library).
+> helps by also allowing the download of other files (models, datasets), and sharing the cache across different projects 
+> with `huggingface-hub` (the Python downloader library).
 
 ```go
 import dtok "github.com/daulet/tokenizers"
@@ -188,8 +283,8 @@ import dtok "github.com/daulet/tokenizers"
 %%
 modelID := "KnightsAnalytics/all-MiniLM-L6-v2"
 repo := hub.New(modelID).WithAuth(hfAuthToken)
-localFile := must.M1(repo.DownloadFile("tokenizer.json"))
-tokenizer := must.M1(dtok.FromFile(localFile))
+tokenizerBytes := must.M1(repo.ReadFile("tokenizer.json"))
+tokenizer := must.M1(dtok.FromBytes(tokenizerBytes))
 defer tokenizer.Close()
 tokens, _ := tokenizer.Encode(sentence, true)
 
@@ -202,113 +297,71 @@ Sentence:	The book is on the table.
 Tokens:  	[101 1996 2338 2003 2006 1996 2795 1012 102 0 0 0…]
 ```
 
-## Package [`onnx-gomlx`](https://github.com/gomlx/onnx-gomlx): convert ONNX models to GoMLX
 
-### Download and execute ONNX model for [`sentence-transformers/all-MiniLM-L6-v2`](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
 
-Only the first 3 lines are actually demoing `go-huggingface`.
-The remainder lines uses [`github.com/gomlx/onnx-gomlx`](https://github.com/gomlx/onnx-gomlx)
-to parse and convert the ONNX model to GoMLX, and then
-[`github.com/gomlx/gomlx`](github.com/gomlx/gomlx) to execute the converted model
-for a couple of sentences.
+---
 
-```go
-// Get ONNX model.
-repo := hub.New("sentence-transformers/all-MiniLM-L6-v2").WithAuth(hfAuthToken)
-onnxFilePath, err := repo.DownloadFile("onnx/model.onnx")
-if err != nil { panic(err) }
-onnxModel, err := onnx.ReadFile(onnxFilePath)
-if err != nil { panic(err) }
+## Importing HuggingFace Transformer Models in GoMLX
 
-// Convert ONNX variables to GoMLX context (which stores variables):
-ctx := context.New()
-err = onnxModel.VariablesToContext(ctx)
-if err != nil { panic(err) }
+**Package**: `github.com/gomlx/go-huggingface/models/transformer`
 
-// Test input.
-sentences := []string{
-	"This is an example sentence",
-	"Each sentence is converted"}
-inputIDs := [][]int64{
-	{101, 2023, 2003, 2019, 2742, 6251,  102},
-	{ 101, 2169, 6251, 2003, 4991,  102,    0}}
-tokenTypeIDs := [][]int64{
-	{0, 0, 0, 0, 0, 0, 0},
-	{0, 0, 0, 0, 0, 0, 0}}
-attentionMask := [][]int64{
-	{1, 1, 1, 1, 1, 1, 1},
-	{1, 1, 1, 1, 1, 1, 0}}
-
-// Execute GoMLX graph with model.
-embeddings := context.ExecOnce(
-	backends.New(), ctx,
-	func (ctx *context.Context, inputs []*graph.Node) *graph.Node {
-		modelOutputs := onnxModel.CallGraph(ctx, inputs[0].Graph(), map[string]*graph.Node{
-			"input_ids": inputs[0],
-			"attention_mask": inputs[1],
-			"token_type_ids": inputs[2]})
-		return modelOutputs[0]
-	}, 
-	inputIDs, attentionMask, tokenTypeIDs)
-
-fmt.Printf("Sentences: \t%q\n", sentences)
-fmt.Printf("Embeddings:\t%s\n", embeddings)
-```
-
-```
-Sentences: 	["This is an example sentence" "Each sentence is converted"]
-Embeddings:	[2][7][384]float32{
- {{0.0366, -0.0162, 0.1682, ..., 0.0554, -0.1644, -0.2967},
-  {0.7239, 0.6399, 0.1888, ..., 0.5946, 0.6206, 0.4897},
-  {0.0064, 0.0203, 0.0448, ..., 0.3464, 1.3170, -0.1670},
-  ...,
-  {0.1479, -0.0643, 0.1457, ..., 0.8837, -0.3316, 0.2975},
-  {0.5212, 0.6563, 0.5607, ..., -0.0399, 0.0412, -1.4036},
-  {1.0824, 0.7140, 0.3986, ..., -0.2301, 0.3243, -1.0313}},
- {{0.2802, 0.1165, -0.0418, ..., 0.2711, -0.1685, -0.2961},
-  {0.8729, 0.4545, -0.1091, ..., 0.1365, 0.4580, -0.2042},
-  {0.4752, 0.5731, 0.6304, ..., 0.6526, 0.5612, -1.3268},
-  ...,
-  {0.6113, 0.7920, -0.4685, ..., 0.0854, 1.0592, -0.2983},
-  {0.4115, 1.0946, 0.2385, ..., 0.8984, 0.3684, -0.7333},
-  {0.1374, 0.5555, 0.2678, ..., 0.5426, 0.4665, -0.5284}}}
-```
-
-## Package `models/transformers`: import HuggingFace transformer models as GoMLX ones
-
-> **EXPERIMENTAL**: fresh from the oven, and likely only works for few models now, but it should be easy to extend the support for other models.
+> 🚧 **EXPERIMENTAL**: fresh from the oven, and likely only works for a few models now, but it should be easy to extend the support for other models -- feel free add an issue to any model you want to use.
 
 The `models/transformer` package allows downloading and inspecting HuggingFace transformer models, reading their configurations and weights, and building a `GoMLX` computation graph dynamically based on the model architectures (such as `sentence_transformers` pipelines).
 
 ### Example with `tencent/KaLM-Embedding-Gemma3-12B-2511`
 
+See full example in [`./examples/kalmgemma3/kalmgemma3_test.go`](https://github.com/gomlx/go-huggingface/blob/main/examples/kalmgemma3/kalmgemma3_test.go)
+
 ```go
 import (
 	"github.com/gomlx/go-huggingface/hub"
 	"github.com/gomlx/go-huggingface/models/transformer"
-	"github.com/gomlx/gomlx/pkg/ml/context"
+	"github.com/gomlx/gomlx/ml/model"
 )
 
 // 1. Download configuration and weights from HuggingFace
 repo := hub.New("tencent/KaLM-Embedding-Gemma3-12B-2511").WithAuth(hfAuthToken)
-model, err := transformer.LoadModel(repo)
+hfModel, err := transformer.LoadModel(repo)
 if err != nil { panic(err) }
+hfModel.WithCausalMask(true)
+tokenizer := must1(hfModel.GetTokenizer())
+padID, err := tokenizer.SpecialTokenID(api.TokPad)
 
 // Print a summary of the model features and sizes:
-fmt.Println(model.Description())
+fmt.Println(hfModel.Description())
 
 // 2. Load the loaded weights to a GoMLX context
-ctx := context.New()
-model.LoadContext(ctx)
+backend := compute.MustNew()
+store := model.NewStore()
+err := hfModel.LoadStore(backend, store)  // Load model weights into the store.
 
-// 3. Build a GoMLX graph for the model. 
-// Assuming `inputTokens` is a `*graph.Node` with shape [batch_size, sequence_length]
-// embeddings := model.BuildGraph(ctx, inputTokens)
+// 3. Build a GoMLX graph and executor for the model.
+kalmExec, err := model.NewExec1(testBackend, testStore, func(scope *model.Scope, tokens *graph.Node) *graph.Node {
+	x := hfModel.SentenceEmbeddingGraph(scope, tokens, nil)
+	return graph.ConvertDType(x, dtypes.Float32)
+})
+
+// 4. Embed sentences ...
+tokens := tokenzier.Encode(prompt)
+embeddings := kalmExec.MustCall(tokens)
+
+//...
 ```
 
-## Package `datasets`: download info, files or iterate directly over Parquet records of HuggingFace datasets
 
-The `datasets` package provides functionality to retrieve dataset information and download files, integrated with `hub`. We are going to use the [HuggingFaceFW/fineweb](https://huggingface.co/datasets/HuggingFaceFW/fineweb) as an example, exploring its structure and downloading one of its sample files (~2.5Gb of data) to parse the `.parquet` file.
+
+---
+
+## HuggingFace Datasets
+
+**Package**: `github.com/gomlx/go-huggingface/datasets`
+
+The `datasets` package provides functionality to retrieve dataset information, download files and iterate over
+individual records in a performant way.
+
+We are going to use [HuggingFaceFW/fineweb](https://huggingface.co/datasets/HuggingFaceFW/fineweb) as an example,
+exploring its structure and downloading one of its sample files (~2.0 GiB of data) to parse the `.parquet` file.
 
 First, you can use the `datasets` package to understand the dataset structure:
 
@@ -320,65 +373,95 @@ ds := datasets.New("HuggingFaceFW/fineweb").WithAuth(hfAuthToken)
 fmt.Println(ds.String())
 ```
 
-### Structure of file
+Outputs:
 
-You can auto-generate the Go struct for the dataset using the `generate_dataset_structs` command line tool:
+```
+Dataset ID: HuggingFaceFW/fineweb
+... (a large list of historical versions) ...
+Config: default
+  Features: date, dump, file_path, id, language, language_score, text, token_count, url
+  Splits: train (25.9G records, 85.7 TiB, 675 files)
 
-```bash
-go run github.com/gomlx/go-huggingface/cmd/generate_dataset_structs -dataset HuggingFaceFW/fineweb -config sample-10BT
+Config: sample-100BT
+  Features: date, dump, file_path, id, language, language_score, text, token_count, url
+  Splits: train (147.6M records, 438.4 GiB)
+
+Config: sample-10BT
+  Features: date, dump, file_path, id, language, language_score, text, token_count, url
+  Splits: train (14.9M records, 46.7 GiB)
+
+Config: sample-350BT
+  Features: date, dump, file_path, id, language, language_score, text, token_count, url
+  Splits: train (518.5M records, 1.4 TiB)
 ```
 
-Result:
+### Dataset Downloading Tool
+
+The `./cmd/dataset_download` tool can be used to manage dataset downloads: it downloads, lists (`-list`) and deletes
+(`-delete`) downloaded files.
+
+```
+$ go run ./cmd/dataset_download microsoft/ms_marco
+Retrieving information for dataset "microsoft/ms_marco"...
+
+Available configurations/splits for "microsoft/ms_marco":
+  -config v1.1                      -split test            (1 files, total size: 19.5 MiB)
+  -config v1.1                      -split train           (1 files, total size: 167.3 MiB)
+  -config v1.1                      -split validation      (1 files, total size: 20.4 MiB)
+  -config v2.1                      -split test            (1 files, total size: 194.9 MiB)
+  -config v2.1                      -split train           (7 files, total size: 1.6 GiB)
+  -config v2.1                      -split validation      (1 files, total size: 199.9 MiB)
+```
+
+### Parquet Structure 
+
+The `./cmd/generate_dataset_structs` tool generates Go `struct`s to read the Parquet files for a dataset:
+
+```bash
+go run ./cmd/generate_dataset_structs -dataset HuggingFaceFW/fineweb
+```
+
+Outputs:
+
+```go
+//... (some info messages)...
+type FinewebRecord struct {
+	Text string `json:"text" parquet:"text"`
+	ID string `json:"id" parquet:"id"`
+	Dump string `json:"dump" parquet:"dump"`
+	URL string `json:"url" parquet:"url"`
+	Date string `json:"date" parquet:"date"`
+	FilePath string `json:"file_path" parquet:"file_path"`
+	Language string `json:"language" parquet:"language"`
+	LanguageScore float64 `json:"language_score" parquet:"language_score"`
+	TokenCount int64 `json:"token_count" parquet:"token_count"`
+}
+```
+
+### Iterating (Reading) Over Parquet Files
+
+With the `struct FinewebRecord` created, we can now iterate over the parquet files. The `IterParquetFromDataset` will 
+iterate over all parquet records if allowed, but it will only download one file at a time, so since we only list 10 
+rows, it will only download the first file (about 2.2Gb).
 
 ```go
 var (
     FineWebID = "HuggingFaceFW/fineweb"
-    FineWebSampleFile = "sample/10BT/000_00000.parquet"
+    FineWebConfig = "sample-10BT"
+    FineWebSplit = "train"
 )
 
-// FinewebRecord was auto-generated by cmd/generate_dataset_structs.
-// The parquet annotations are described in: https://pkg.go.dev/github.com/parquet-go/parquet-go#SchemaOf
+// FinewwebRecord generated with github.com/gomlx/go-huggingface/cmd/generate_dataset_structs
 type FinewebRecord struct {
-	Date          string  `json:"date" parquet:"date"`
-	Dump          string  `json:"dump" parquet:"dump"`
-	FilePath      string  `json:"file_path" parquet:"file_path"`
-	ID            string  `json:"id" parquet:"id"`
-	Language      string  `json:"language" parquet:"language"`
+	Text string `json:"text" parquet:"text"`
+	ID string `json:"id" parquet:"id"`
+	Dump string `json:"dump" parquet:"dump"`
+	URL string `json:"url" parquet:"url"`
+	Date string `json:"date" parquet:"date"`
+	FilePath string `json:"file_path" parquet:"file_path"`
+	Language string `json:"language" parquet:"language"`
 	LanguageScore float64 `json:"language_score" parquet:"language_score"`
-	Text          string  `json:"text" parquet:"text,snappy"`
-	TokenCount    int64   `json:"token_count" parquet:"token_count"`
-	URL           string  `json:"url" parquet:"url,snappy"`
-}
-```
-
-Now we can read the `parquet` files into the `FinewebRecord` records:
-
-```go
-import (
-    "fmt"
-    "github.com/gomlx/go-huggingface/datasets"
-)
-
-func main() {
-    // Initialize the dataset reference.
-    ds := datasets.New(FineWebID).WithAuth(hfAuthToken)
-    
-    // Iterate over all records in the dataset:
-    // Warning: for FineWeb this will download the entire 15TB dataset. 
-    // You can break early, but the initial download request might still be large.
-    // For manual samples, you can also use datasets.IterParquetFromFile(localFile).
-    ii := 0
-    for row, err := range datasets.IterParquetFromDataset[FinewebRecord](ds, "sample-10BT", "train") {
-        if err != nil {
-            panic(err)
-        }
-        fmt.Printf("Row %0d:\tScore=%.3f Text=[%q], URL=[%s]\n", ii, row.LanguageScore, TrimString(row.Text, 50), TrimString(row.URL, 40))
-        ii++
-        if ii >= 10 {
-            break
-        }
-    }
-    fmt.Printf("%d rows read\n", ii)
+	TokenCount int64 `json:"token_count" parquet:"token_count"`
 }
 
 // TrimString returns s trimmed to at most maxLength runes. If trimmed it appends "…" at the end.
@@ -389,15 +472,158 @@ func TrimString(s string, maxLength int) string {
     runes := []rune(s)
     return string(runes[:maxLength-1]) + "…"
 }
+
+%%
+ds := datasets.New(FineWebID)
+ds.Verbosity = 2
+count := 0
+const limit = 10
+for row, err := range datasets.IterParquetFromDataset[FinewebRecord](ds, FineWebConfig, FineWebSplit) {
+    if err != nil { panic(err) }
+	fmt.Printf("Record #%02d:\tScore=%.3f Text=%q, URL=[%s]\n", count+1, row.LanguageScore, TrimString(row.Text, 50), TrimString(row.URL, 40))
+    count++
+    if count >= limit { break }
+}
+fmt.Printf("%d records read!", count)
 ```
 
-Results:
+Outputs:
 
 ```
-10 rows read
-Row 0:	Score=0.823 Text=["|Viewing Single Post From: Spoilers for the Week …"], URL=[http://daytimeroyaltyonline.com/single/…]
-Row 1:	Score=0.974 Text=["*sigh* Fundamentalist community, let me pass on s…"], URL=[http://endogenousretrovirus.blogspot.co…]
-Row 2:	Score=0.873 Text=["A novel two-step immunotherapy approach has shown…"], URL=[http://news.cancerconnect.com/]
-Row 3:	Score=0.932 Text=["Free the Cans! Working Together to Reduce Waste\nI…"], URL=[http://sharingsolution.com/2009/05/23/f…]
+Record #01:	Score=0.823 Text="|Viewing Single Post From: Spoilers for the Week …", URL=[http://daytimeroyaltyonline.com/single/…]
+Record #02:	Score=0.974 Text="*sigh* Fundamentalist community, let me pass on s…", URL=[http://endogenousretrovirus.blogspot.co…]
+Record #03:	Score=0.873 Text="A novel two-step immunotherapy approach has shown…", URL=[http://news.cancerconnect.com/]
+Record #04:	Score=0.932 Text="Free the Cans! Working Together to Reduce Waste\nI…", URL=[http://sharingsolution.com/2009/05/23/f…]
+Record #05:	Score=0.955 Text="ORLANDO, Fla. — While the Rapid Recall Exchange, …", URL=[http://supermarketnews.com/food-safety/…]
+Record #06:	Score=0.954 Text="September 28, 2010\n2010 Season - Bowman pulls dow…", URL=[http://www.augustana.edu/x22236.xml]
+Record #07:	Score=0.967 Text="Kraft Foods has taken the Cadbury chocolate brand…", URL=[http://www.fdin.org.uk/2012/01/kraft-la…]
+Record #08:	Score=0.874 Text="You must be a registered member to view this page…", URL=[http://www.golivewire.com/forums/profil…]
+Record #09:	Score=0.912 Text="|Facility Type:||Full Service Restaurant|\n|Inspec…", URL=[http://www.healthspace.com/Clients/VDH/…]
+Record #10:	Score=0.925 Text="News of the Week\nBarrie Spring Studio Tour\nApril …", URL=[http://www.jillpricestudios.ca/artist/w…]
+10 records read!
 …
 ```
+
+
+
+---
+
+## HuggingFace ONNX models
+
+**Package**: `github.com/gomlx/onnx-gomlx/onnx/`
+
+The [ONNX-GoMLX project](https://github.com/gomlx/onnx-gomlx) can convert ONNX models to GoMLX.
+It can be used for simple inference, fine-tuning, combining models, etc.
+It can even export updated-weights back to the ONNX model.
+
+The example below reads the `.onnx` model using a repo created with the package `hub`, creates a `tokenizer`,
+uses the `bucket` to package a list of sentences into a padded batch, converts the model to a GoMLX model
+and then executes it on the batch.
+
+
+**Model**:  ONNX model for [`sentence-transformers/all-MiniLM-L6-v2`](https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2)
+
+Only the first 3 lines are actually demoing `go-huggingface`.
+The remainder lines uses [`github.com/gomlx/onnx-gomlx`](https://github.com/gomlx/onnx-gomlx)
+to parse and convert the ONNX model to GoMLX, and then
+[`github.com/gomlx/gomlx`](github.com/gomlx/gomlx) to execute the converted model
+for a couple of sentences.
+
+```go
+import (
+    "github.com/gomlx/compute"
+    "github.com/gomlx/go-huggingface/tokenizers/bucket"
+    onnxparser "github.com/gomlx/onnx-gomlx/onnx/parser"
+    "github.com/gomlx/gomlx/core/graph"
+    "github.com/gomlx/gomlx/ml/model"
+
+    // Default backends.
+    _ "github.com/gomlx/gomlx/backends/default"
+)
+
+%%
+// Get ONNX model.
+repo := hub.New("sentence-transformers/all-MiniLM-L6-v2").WithAuth(hfAuthToken)
+onnxFile, err := repo.Open("onnx/model.onnx")
+if err != nil { panic(err) }
+defer onnxFile.Close()
+onnxModel, err := onnxparser.FromReadSeeker(onnxFile)
+if err != nil { panic(err) }
+
+// Convert ONNX variables to a GoMLX store:
+store := model.NewStore()
+err = onnxModel.VariablesToScope(store.RootScope())
+if err != nil { panic(err) }
+
+// Tokenize sentences.
+tokenizer := must.M1(tokenizers.New(repo))
+sentences := []string{
+    "This is an example sentence", 
+    "Each sentence is converted"}
+batchSize := len(sentences)
+sentencesChan := make(chan bucket.SentenceRef, batchSize)
+bucketChan := make(chan bucket.Bucket, 1)
+bucketizer := bucket.New(tokenizer).ByTwoBitBucket(batchSize, 8)
+var wg sync.WaitGroup
+wg.Go(func() { bucketizer.Run(sentencesChan, bucketChan) })
+wg.Go(func() { 
+    for i, s := range sentences { sentencesChan <- bucket.SentenceRef{s, i} }
+    close(sentencesChan)
+})
+
+// Create GoMLX model, and its executor:
+miniLMExec := model.MustNewExec1(
+    compute.MustNew(), store, 
+    func (scope *model.Scope, tokenIDs *graph.Node) *graph.Node {
+        tokenIDs = graph.Reshape(tokenIDs, batchSize, -1)
+        mask := graph.LogicalNot(graph.IsZero(tokenIDs))
+        return onnxModel.CallGraph(scope, tokenIDs.Graph(), map[string]*graph.Node{
+            "input_ids": tokenIDs,
+            "attention_mask": graph.ConvertDType(mask, dtypes.Int64),
+            "token_type_ids": graph.ZerosLike(tokenIDs)})[0]
+    })
+
+// Loop over batches:
+for bucket := range bucketChan {
+    tokenIDs := bucket.Batch
+    embeddings := miniLMExec.MustCall(tokenIDs)
+    fmt.Printf("Tokens: \t%v\n", tokenIDs)
+    fmt.Printf("Embeddings:\t%s\n", embeddings)
+}
+```
+
+Output:
+
+```
+Tokens: 	[101 2023 2003 2019 2742 6251 102 0 101 2169 6251 2003 4991 102 0 0]
+Embeddings:	[2][8][384]float32{
+ {{0.03652, -0.01617, 0.1683, ..., 0.05541, -0.1644, -0.2968},
+  {0.7242, 0.6394, 0.189, ..., 0.5943, 0.6209, 0.4898},
+  {0.006568, 0.02115, 0.04448, ..., 0.3471, 1.318, -0.1673},
+  ...,
+  {0.5212, 0.6566, 0.561, ..., -0.03989, 0.04128, -1.404},
+  {1.083, 0.714, 0.3987, ..., -0.2289, 0.3248, -1.031},
+  {-0.1745, 0.1791, 0.5735, ..., 0.1578, 0.002306, -0.4539}},
+ {{0.2801, 0.1163, -0.04202, ..., 0.271, -0.1684, -0.2962},
+  {0.8735, 0.4541, -0.1089, ..., 0.1362, 0.4584, -0.2045},
+  {0.475, 0.5726, 0.6299, ..., 0.6521, 0.5611, -1.327},
+  ...,
+  {0.4114, 1.094, 0.2384, ..., 0.8982, 0.3684, -0.7336},
+  {0.1354, 0.5587, 0.2699, ..., 0.5424, 0.47, -0.5306},
+  {0.2323, 0.2985, 0.1732, ..., 0.4245, 0.07187, -0.3455}}}
+  ```
+
+## 💖 Support the Project
+
+If you find this project helpful, please consider donating (using Stripe.com):
+
+- [GoMLX Sponsorship for Users](https://donate.stripe.com/aFa6oGcrmghAaItbo4gnK00)
+- [GoMLX Sponsorship for Organizations](https://donate.stripe.com/dRmdR80IEc1k5o92RygnK01)
+
+Your contribution helps us (currently mostly [me](https://github.com/janpfeifer)) dedicate more time to maintenance
+and add new features for the entire GoMLX ecosystem.
+
+It also helps us acquire access (buying or cloud) to hardware for more portability: e.g.: ROCm, Apple Metal (GPU), 
+Multi-GPU/TPU, NVidia DGX Spark, Tenstorrent, etc.
+
+And we are happy to prioritize features for donations.

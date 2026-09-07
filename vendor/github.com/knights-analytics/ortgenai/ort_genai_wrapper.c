@@ -2,7 +2,6 @@
 
 static GenAiApiTable g_api = {0}; // api table
 static int g_initialized = 0;
-static int g_engine_initialized = 0;
 
 int SetGenAiApi(void* createModel,
 				void* resultGetError,
@@ -50,8 +49,31 @@ int SetGenAiApi(void* createModel,
 			void* destroyStringArray,
 			void* stringArrayAddString,
 			void* processorProcessImagesAndPrompts,
-	// Guidance/constrained-generation (optional — may be NULL on older runtimes)
-	void* generatorParamsSetGuidance) {
+	// Guidance/constrained-generation
+	void* generatorParamsSetGuidance,
+	void* shutdown,
+	void* setTelemetryEnabled,
+	void* createConfigFromPackageEp,
+	void* tokenizerGetPadTokenId,
+	void* tokenizerGetBotTokenId,
+	void* tokenizerGetEotTokenId,
+	void* tokenizerGetBorTokenId,
+	void* tokenizerGetEorTokenId,
+	// Engine API
+	void* createEngine,
+	void* destroyEngine,
+	void* engineStep,
+	void* engineHasPendingRequests,
+	void* engineAddRequest,
+	void* engineRemoveRequest,
+	void* createRequest,
+	void* destroyRequest,
+	void* requestAddTokens,
+	void* requestSetOpaqueData,
+	void* requestGetOpaqueData,
+	void* requestHasUnseenTokens,
+	void* requestGetUnseenToken,
+	void* requestIsDone) {
 	if (g_initialized) return 0; // already initialized
 	// Validate all required pointers (header comment: all must be non-null)
 	if (!createModel || !resultGetError || !destroyResult || !destroyModel ||
@@ -65,7 +87,16 @@ int SetGenAiApi(void* createModel,
 		// Multimodal
 		!loadImage || !loadImages || !loadImagesFromBuffers || !destroyImages ||
 		!createMultiModalProcessor || !destroyMultiModalProcessor || !processorProcessImages ||
-		!destroyNamedTensors || !createStringArray || !destroyStringArray || !stringArrayAddString || !processorProcessImagesAndPrompts) {
+		!destroyNamedTensors || !createStringArray || !destroyStringArray || !stringArrayAddString || !processorProcessImagesAndPrompts ||
+		// Extended API
+		!shutdown || !setTelemetryEnabled || !createConfigFromPackageEp ||
+		!tokenizerGetPadTokenId || !tokenizerGetBotTokenId || !tokenizerGetEotTokenId ||
+		!tokenizerGetBorTokenId || !tokenizerGetEorTokenId ||
+		// Engine API
+		!createEngine || !destroyEngine || !engineStep || !engineHasPendingRequests ||
+		!engineAddRequest || !engineRemoveRequest || !createRequest || !destroyRequest ||
+		!requestAddTokens || !requestSetOpaqueData || !requestGetOpaqueData ||
+		!requestHasUnseenTokens || !requestGetUnseenToken || !requestIsDone) {
 		return 1;
 	}
 	g_api.CreateModel = (PFN_OgaCreateModel) createModel;
@@ -115,6 +146,28 @@ int SetGenAiApi(void* createModel,
 	g_api.StringArrayAddString = (PFN_OgaStringArrayAddString) stringArrayAddString;
 	g_api.ProcessorProcessImagesAndPrompts = (PFN_OgaProcessorProcessImagesAndPrompts) processorProcessImagesAndPrompts;
 	if (generatorParamsSetGuidance) g_api.GeneratorParamsSetGuidance = (PFN_OgaGeneratorParamsSetGuidance) generatorParamsSetGuidance;
+	g_api.Shutdown = (PFN_OgaShutdown) shutdown;
+	g_api.SetTelemetryEnabled = (PFN_OgaSetTelemetryEnabled) setTelemetryEnabled;
+	g_api.CreateConfigFromPackageEp = (PFN_OgaCreateConfigFromPackageEp) createConfigFromPackageEp;
+	g_api.TokenizerGetPadTokenId = (PFN_OgaTokenizerGetPadTokenId) tokenizerGetPadTokenId;
+	g_api.TokenizerGetBotTokenId = (PFN_OgaTokenizerGetBotTokenId) tokenizerGetBotTokenId;
+	g_api.TokenizerGetEotTokenId = (PFN_OgaTokenizerGetEotTokenId) tokenizerGetEotTokenId;
+	g_api.TokenizerGetBorTokenId = (PFN_OgaTokenizerGetBorTokenId) tokenizerGetBorTokenId;
+	g_api.TokenizerGetEorTokenId = (PFN_OgaTokenizerGetEorTokenId) tokenizerGetEorTokenId;
+	g_api.CreateEngine = (PFN_OgaCreateEngine) createEngine;
+	g_api.DestroyEngine = (PFN_OgaDestroyEngine) destroyEngine;
+	g_api.EngineStep = (PFN_OgaEngineStep) engineStep;
+	g_api.EngineHasPendingRequests = (PFN_OgaEngineHasPendingRequests) engineHasPendingRequests;
+	g_api.EngineAddRequest = (PFN_OgaEngineAddRequest) engineAddRequest;
+	g_api.EngineRemoveRequest = (PFN_OgaEngineRemoveRequest) engineRemoveRequest;
+	g_api.CreateRequest = (PFN_OgaCreateRequest) createRequest;
+	g_api.DestroyRequest = (PFN_OgaDestroyRequest) destroyRequest;
+	g_api.RequestAddTokens = (PFN_OgaRequestAddTokens) requestAddTokens;
+	g_api.RequestSetOpaqueData = (PFN_OgaRequestSetOpaqueData) requestSetOpaqueData;
+	g_api.RequestGetOpaqueData = (PFN_OgaRequestGetOpaqueData) requestGetOpaqueData;
+	g_api.RequestHasUnseenTokens = (PFN_OgaRequestHasUnseenTokens) requestHasUnseenTokens;
+	g_api.RequestGetUnseenToken = (PFN_OgaRequestGetUnseenToken) requestGetUnseenToken;
+	g_api.RequestIsDone = (PFN_OgaRequestIsDone) requestIsDone;
 	g_initialized = 1;
 	return 0;
 }
@@ -361,110 +414,115 @@ OgaResult* ProcessOgaImagesAndPrompts(const OgaMultiModalProcessor* processor,  
 	return g_api.ProcessorProcessImagesAndPrompts(processor, prompts, images, out);
 }
 
-// Engine API initialization
-int SetGenAiEngineApi(void* createEngine, void* destroyEngine,
-	void* engineStep, void* engineHasPendingRequests,
-	void* engineAddRequest, void* engineRemoveRequest,
-	void* createRequest, void* destroyRequest,
-	void* requestAddTokens, void* requestSetOpaqueData,
-	void* requestGetOpaqueData, void* requestHasUnseenTokens,
-	void* requestGetUnseenToken, void* requestIsDone) {
-	if (g_engine_initialized) return 0;
-	if (!createEngine || !destroyEngine || !engineStep || !engineHasPendingRequests ||
-		!engineAddRequest || !engineRemoveRequest || !createRequest || !destroyRequest ||
-		!requestAddTokens || !requestSetOpaqueData || !requestGetOpaqueData ||
-		!requestHasUnseenTokens || !requestGetUnseenToken || !requestIsDone) {
-		return 1;
-	}
-	g_api.CreateEngine = (PFN_OgaCreateEngine) createEngine;
-	g_api.DestroyEngine = (PFN_OgaDestroyEngine) destroyEngine;
-	g_api.EngineStep = (PFN_OgaEngineStep) engineStep;
-	g_api.EngineHasPendingRequests = (PFN_OgaEngineHasPendingRequests) engineHasPendingRequests;
-	g_api.EngineAddRequest = (PFN_OgaEngineAddRequest) engineAddRequest;
-	g_api.EngineRemoveRequest = (PFN_OgaEngineRemoveRequest) engineRemoveRequest;
-	g_api.CreateRequest = (PFN_OgaCreateRequest) createRequest;
-	g_api.DestroyRequest = (PFN_OgaDestroyRequest) destroyRequest;
-	g_api.RequestAddTokens = (PFN_OgaRequestAddTokens) requestAddTokens;
-	g_api.RequestSetOpaqueData = (PFN_OgaRequestSetOpaqueData) requestSetOpaqueData;
-	g_api.RequestGetOpaqueData = (PFN_OgaRequestGetOpaqueData) requestGetOpaqueData;
-	g_api.RequestHasUnseenTokens = (PFN_OgaRequestHasUnseenTokens) requestHasUnseenTokens;
-	g_api.RequestGetUnseenToken = (PFN_OgaRequestGetUnseenToken) requestGetUnseenToken;
-	g_api.RequestIsDone = (PFN_OgaRequestIsDone) requestIsDone;
-	g_engine_initialized = 1;
-	return 0;
-}
-
-int GenAiEngineApiIsInitialized(void) { return g_engine_initialized; }
-
 // Engine thin wrappers
 OgaResult* CreateOgaEngine(OgaModel* model, OgaEngine** out) {
-	if (!g_engine_initialized || !g_api.CreateEngine) return NULL;
+	if (!g_initialized || !g_api.CreateEngine) return NULL;
 	return g_api.CreateEngine(model, out);
 }
 
 void DestroyOgaEngine(OgaEngine* engine) {
 	if (!engine) return;
-	if (!g_engine_initialized || !g_api.DestroyEngine) return;
+	if (!g_initialized || !g_api.DestroyEngine) return;
 	g_api.DestroyEngine(engine);
 }
 
 OgaResult* EngineStep(OgaEngine* engine, OgaRequest** request) {
-	if (!g_engine_initialized || !g_api.EngineStep) return NULL;
+	if (!g_initialized || !g_api.EngineStep) return NULL;
 	return g_api.EngineStep(engine, request);
 }
 
 OgaResult* EngineHasPendingRequests(OgaEngine* engine, bool* out) {
-	if (!g_engine_initialized || !g_api.EngineHasPendingRequests) return NULL;
+	if (!g_initialized || !g_api.EngineHasPendingRequests) return NULL;
 	return g_api.EngineHasPendingRequests(engine, out);
 }
 
 OgaResult* EngineAddRequest(OgaEngine* engine, OgaRequest* request) {
-	if (!g_engine_initialized || !g_api.EngineAddRequest) return NULL;
+	if (!g_initialized || !g_api.EngineAddRequest) return NULL;
 	return g_api.EngineAddRequest(engine, request);
 }
 
 OgaResult* EngineRemoveRequest(OgaEngine* engine, OgaRequest* request) {
-	if (!g_engine_initialized || !g_api.EngineRemoveRequest) return NULL;
+	if (!g_initialized || !g_api.EngineRemoveRequest) return NULL;
 	return g_api.EngineRemoveRequest(engine, request);
 }
 
 OgaResult* CreateOgaRequest(OgaGeneratorParams* params, OgaRequest** out) {
-	if (!g_engine_initialized || !g_api.CreateRequest) return NULL;
+	if (!g_initialized || !g_api.CreateRequest) return NULL;
 	return g_api.CreateRequest(params, out);
 }
 
 void DestroyOgaRequest(OgaRequest* request) {
 	if (!request) return;
-	if (!g_engine_initialized || !g_api.DestroyRequest) return;
+	if (!g_initialized || !g_api.DestroyRequest) return;
 	g_api.DestroyRequest(request);
 }
 
 OgaResult* RequestAddTokens(OgaRequest* request, const OgaSequences* tokens) {
-	if (!g_engine_initialized || !g_api.RequestAddTokens) return NULL;
+	if (!g_initialized || !g_api.RequestAddTokens) return NULL;
 	return g_api.RequestAddTokens(request, tokens);
 }
 
 OgaResult* RequestSetOpaqueData(OgaRequest* request, void* opaque_data) {
-	if (!g_engine_initialized || !g_api.RequestSetOpaqueData) return NULL;
+	if (!g_initialized || !g_api.RequestSetOpaqueData) return NULL;
 	return g_api.RequestSetOpaqueData(request, opaque_data);
 }
 
 OgaResult* RequestGetOpaqueData(OgaRequest* request, void** opaque_data) {
-	if (!g_engine_initialized || !g_api.RequestGetOpaqueData) return NULL;
+	if (!g_initialized || !g_api.RequestGetOpaqueData) return NULL;
 	return g_api.RequestGetOpaqueData(request, opaque_data);
 }
 
 OgaResult* RequestHasUnseenTokens(const OgaRequest* request, bool* out) {
-	if (!g_engine_initialized || !g_api.RequestHasUnseenTokens) return NULL;
+	if (!g_initialized || !g_api.RequestHasUnseenTokens) return NULL;
 	return g_api.RequestHasUnseenTokens(request, out);
 }
 
 OgaResult* RequestGetUnseenToken(OgaRequest* request, int32_t* out) {
-	if (!g_engine_initialized || !g_api.RequestGetUnseenToken) return NULL;
+	if (!g_initialized || !g_api.RequestGetUnseenToken) return NULL;
 	return g_api.RequestGetUnseenToken(request, out);
 }
 
 OgaResult* RequestIsDone(const OgaRequest* request, bool* out) {
-	if (!g_engine_initialized || !g_api.RequestIsDone) return NULL;
+	if (!g_initialized || !g_api.RequestIsDone) return NULL;
 	return g_api.RequestIsDone(request, out);
+}
+
+void OgaShutdown(void) {
+	if (!g_initialized || !g_api.Shutdown) return;
+	g_api.Shutdown();
+}
+
+void OgaSetTelemetryEnabled(bool enabled) {
+	if (!g_initialized || !g_api.SetTelemetryEnabled) return;
+	g_api.SetTelemetryEnabled(enabled);
+}
+
+OgaResult* OgaCreateConfigFromPackageEp(const char* config_path, const char* ep, OgaConfig** out) {
+	if (!g_initialized || !g_api.CreateConfigFromPackageEp) return NULL;
+	return g_api.CreateConfigFromPackageEp(config_path, ep, out);
+}
+
+OgaResult* OgaTokenizerGetPadTokenId(const OgaTokenizer* tokenizer, int32_t* token_id) {
+	if (!g_initialized || !g_api.TokenizerGetPadTokenId) return NULL;
+	return g_api.TokenizerGetPadTokenId(tokenizer, token_id);
+}
+
+OgaResult* OgaTokenizerGetBotTokenId(const OgaTokenizer* tokenizer, int32_t* token_id) {
+	if (!g_initialized || !g_api.TokenizerGetBotTokenId) return NULL;
+	return g_api.TokenizerGetBotTokenId(tokenizer, token_id);
+}
+
+OgaResult* OgaTokenizerGetEotTokenId(const OgaTokenizer* tokenizer, int32_t* token_id) {
+	if (!g_initialized || !g_api.TokenizerGetEotTokenId) return NULL;
+	return g_api.TokenizerGetEotTokenId(tokenizer, token_id);
+}
+
+OgaResult* OgaTokenizerGetBorTokenId(const OgaTokenizer* tokenizer, int32_t* token_id) {
+	if (!g_initialized || !g_api.TokenizerGetBorTokenId) return NULL;
+	return g_api.TokenizerGetBorTokenId(tokenizer, token_id);
+}
+
+OgaResult* OgaTokenizerGetEorTokenId(const OgaTokenizer* tokenizer, int32_t* token_id) {
+	if (!g_initialized || !g_api.TokenizerGetEorTokenId) return NULL;
+	return g_api.TokenizerGetEorTokenId(tokenizer, token_id);
 }

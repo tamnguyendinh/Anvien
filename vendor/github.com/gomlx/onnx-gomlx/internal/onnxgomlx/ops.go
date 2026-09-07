@@ -7,19 +7,20 @@ import (
 	"reflect"
 	"slices"
 
+	"github.com/gomlx/compute"
+	"github.com/gomlx/compute/dtypes"
+	"github.com/gomlx/compute/dtypes/gotype"
+	"github.com/gomlx/compute/shapes"
 	"github.com/gomlx/exceptions"
-	"github.com/gomlx/gomlx/backends"
-	"github.com/gomlx/gomlx/pkg/core/dtypes"
-	. "github.com/gomlx/gomlx/pkg/core/graph"
-	"github.com/gomlx/gomlx/pkg/core/shapes"
-	"github.com/gomlx/gomlx/pkg/core/tensors"
-	timage "github.com/gomlx/gomlx/pkg/core/tensors/images"
-	"github.com/gomlx/gomlx/pkg/ml/context"
-	"github.com/gomlx/gomlx/pkg/ml/layers"
-	"github.com/gomlx/gomlx/pkg/ml/layers/attention"
-	"github.com/gomlx/gomlx/pkg/ml/layers/attention/pos"
-	"github.com/gomlx/gomlx/pkg/ml/layers/lstm"
-	"github.com/gomlx/onnx-gomlx/internal/protos"
+	. "github.com/gomlx/gomlx/core/graph"
+	"github.com/gomlx/gomlx/core/tensors"
+	timage "github.com/gomlx/gomlx/core/tensors/images"
+	"github.com/gomlx/gomlx/ml/layers/attention"
+	"github.com/gomlx/gomlx/ml/layers/attention/pos"
+	"github.com/gomlx/gomlx/ml/layers/lstm"
+	"github.com/gomlx/gomlx/ml/layers/norm"
+	"github.com/gomlx/gomlx/ml/model"
+	"github.com/gomlx/compute-onnx/support/protos"
 	"github.com/pkg/errors"
 )
 
@@ -1287,7 +1288,7 @@ func computeNonZero(t *tensors.Tensor) *tensors.Tensor {
 }
 
 // nonZeroMask returns a boolean slice indicating which elements are non-zero.
-func nonZeroMask[T dtypes.Supported](values []T) []bool {
+func nonZeroMask[T gotype.Supported](values []T) []bool {
 	res := make([]bool, len(values))
 	var zero T
 	for i, v := range values {
@@ -1504,7 +1505,7 @@ func convertRange(m *Model, convertedOutputs map[string]*Node, node *protos.Node
 	return output
 }
 
-func rangeCount(backend backends.Backend, start, limit, delta *tensors.Tensor) int {
+func rangeCount(backend compute.Backend, start, limit, delta *tensors.Tensor) int {
 	count := MustExecOnce(backend, func(start, limit, delta *Node) *Node {
 		amount := Sub(limit, start)
 		var count *Node
@@ -1851,7 +1852,7 @@ func convertConv(_ *Model, _ map[string]*Node, node *protos.NodeProto, inputs []
 	// why: cause onnx standard is [O, I, spatial...]
 	// but gomlx Conv accepts different orders by default in channels first/last mode
 	// e.g input as first kernel dim in channelsFirst mode. So we just specify the dimensions.
-	axes := backends.ConvolveAxesConfig{
+	axes := compute.ConvolveAxesConfig{
 		InputBatch:           0,
 		InputChannels:        1,
 		InputSpatial:         spatialAxes,
@@ -1973,9 +1974,9 @@ func convertPad(m *Model, convertedOutputs map[string]*Node, node *protos.NodePr
 		} else {
 			constantValueNode = Scalar(x.Graph(), x.DType(), 0)
 		}
-		paddings := make([]backends.PadAxis, rank)
+		paddings := make([]compute.PadAxis, rank)
 		for i := range rank {
-			paddings[i] = backends.PadAxis{Start: pads[i], End: pads[i+rank]}
+			paddings[i] = compute.PadAxis{Start: pads[i], End: pads[i+rank]}
 		}
 		return Pad(x, constantValueNode, paddings...)
 
@@ -2275,7 +2276,7 @@ func convertSimplifiedLayerNormalization(_ *Model, _ map[string]*Node, node *pro
 	}
 
 	// Use GoMLX's RMSNorm without its learnable scale (we apply the ONNX-provided scale ourselves).
-	normalized := layers.RMSNorm(context.New(), x).
+	normalized := norm.RMSNorm(model.NewStore().RootScope(), x).
 		WithScale(false).
 		WithEpsilon(float64(epsilon)).
 		WithNormalizationAxes(axes...).
@@ -2518,7 +2519,10 @@ func convertMultiHeadAttention(_ *Model, _ map[string]*Node, node *protos.NodePr
 	if scale <= 0 {
 		scaleValue = 1.0 / math.Sqrt(float64(headDim))
 	}
-	output, _ := attention.Core(nil, query, key, value, scaleValue, attentionMask, nil, attention.LayoutBHSD, false, false)
+	output, _ := attention.Core(query, key, value, attention.LayoutBHSD, attention.CoreOptions{
+		Scale:         scaleValue,
+		AttentionMask: attentionMask,
+	})
 
 	// Reshape back to 3D if input was 3D
 	if was3D {
@@ -2624,7 +2628,10 @@ func convertGroupQueryAttention(_ *Model, convertedOutputs map[string]*Node, nod
 	}
 	// Pass the boolean mask directly — Core auto-detects boolean masks and uses MaskedSoftmax.
 	// K/V retain their original numKVHeads; Core handles GQA head mapping natively.
-	output, _ := attention.Core(nil, query, presentKey, presentValue, scaleValue, mask, nil, attention.LayoutBHSD, false, false)
+	output, _ := attention.Core(query, presentKey, presentValue, attention.LayoutBHSD, attention.CoreOptions{
+		Scale:         scaleValue,
+		AttentionMask: mask,
+	})
 
 	// Reshape output: (batch, num_heads, qSeqLen, head_size) -> (batch, qSeqLen, num_heads * head_size)
 	output = TransposeAllDims(output, 0, 2, 1, 3)
@@ -3171,7 +3178,7 @@ func onnxQLinearMatMul(a, aScale, aZeroPoint, b, bScale, bZeroPoint, yScale, yZe
 //
 // See ONNX documentation in:
 // https://onnx.ai/onnx/operators/onnx__If.html
-func convertIf(ctx *context.Context, m *Model, convertedOutputs map[string]*Node, node *protos.NodeProto, inputs []*Node) *Node {
+func convertIf(scope *model.Scope, m *Model, convertedOutputs map[string]*Node, node *protos.NodeProto, inputs []*Node) *Node {
 	if len(inputs) != 1 {
 		exceptions.Panicf("If: expected exactly 1 input (condition), got %d", len(inputs))
 	}
@@ -3218,7 +3225,7 @@ func convertIf(ctx *context.Context, m *Model, convertedOutputs map[string]*Node
 		} else {
 			branchGraph = elseGraph
 		}
-		results := m.convertSubGraph(ctx, g, branchGraph, convertedOutputs)
+		results := m.convertSubGraph(scope, g, branchGraph, convertedOutputs)
 		for i, result := range results {
 			if i < len(node.Output) && node.Output[i] != "" {
 				convertedOutputs[node.Output[i]] = result
@@ -3238,10 +3245,10 @@ func convertIf(ctx *context.Context, m *Model, convertedOutputs map[string]*Node
 	// branches are built. Each gets a snapshot of convertedOutputs to prevent the true
 	// branch's convertSubGraph from polluting the false branch's name resolution.
 	trueBranch := NewClosure(g, func(branchG *Graph) []*Node {
-		return m.convertSubGraph(ctx, branchG, thenGraph, maps.Clone(convertedOutputs))
+		return m.convertSubGraph(scope, branchG, thenGraph, maps.Clone(convertedOutputs))
 	})
 	falseBranch := NewClosure(g, func(branchG *Graph) []*Node {
-		return m.convertSubGraph(ctx, branchG, elseGraph, maps.Clone(convertedOutputs))
+		return m.convertSubGraph(scope, branchG, elseGraph, maps.Clone(convertedOutputs))
 	})
 
 	results := If(cond, trueBranch, falseBranch)

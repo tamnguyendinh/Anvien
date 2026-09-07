@@ -6,12 +6,12 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/gomlx/gomlx/backends"
-	"github.com/gomlx/gomlx/backends/simplego"
-	"github.com/gomlx/gomlx/pkg/core/shapes"
-	"github.com/gomlx/gomlx/pkg/support/sets"
+	"github.com/gomlx/compute"
+	"github.com/gomlx/compute/gobackend"
+	"github.com/gomlx/compute/shapes"
+	"github.com/gomlx/gomlx/support/sets"
 	"github.com/gomlx/onnx-gomlx/internal/onnxgomlx/filesreader"
-	"github.com/gomlx/onnx-gomlx/internal/protos"
+	"github.com/gomlx/compute-onnx/support/protos"
 	"github.com/gomlx/onnx-gomlx/onnx"
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
@@ -30,13 +30,13 @@ type Model struct {
 
 	name                        string
 	InputsNames, OutputsNames   []string
-	InputsShapes, OutputsShapes []DynamicShape
+	InputsShapes, OutputsShapes []shapes.Shape
 
 	// InputsAsConstants: see WithInputsAsConstants
 	InputsAsConstants map[string]any
 
 	// Backend used for ONNX-conversion time tensor processing.
-	Backend backends.Backend
+	Backend compute.Backend
 
 	// allowDTypePromotion enables automatic dtype promotion for mixed-precision models.
 	// By default (false), dtype mismatches will panic per ONNX spec.
@@ -76,16 +76,16 @@ func Parse(contents []byte) (*Model, error) {
 	}
 
 	// Create the backend that we'll use for processing of tensors.
-	m.Backend, err = simplego.New("")
+	m.Backend, err = gobackend.New("")
 	if err != nil {
-		return nil, errors.WithMessage(err, "ONNX conversion requires GoMLX for processing of tensors, but failed to create SimpleGo backend for GoMLX model")
+		return nil, errors.WithMessage(err, "ONNX conversion requires GoMLX for processing of tensors, but failed to create the Go backend for GoMLX model")
 	}
 
 	// Parse inputs and outputs.
 	m.name = m.Proto.Graph.Name
 	m.InputsNameSet = sets.Make[string]()
 	m.InputsNames = make([]string, len(m.Proto.Graph.Input))
-	m.InputsShapes = make([]DynamicShape, len(m.Proto.Graph.Input))
+	m.InputsShapes = make([]shapes.Shape, len(m.Proto.Graph.Input))
 	for ii, input := range m.Proto.Graph.Input {
 		m.InputsNames[ii] = input.Name
 		m.InputsNameSet.Insert(input.Name)
@@ -94,20 +94,20 @@ func Parse(contents []byte) (*Model, error) {
 		if !ok {
 			return nil, errors.Errorf("output #%d (%q) is not a tensor, not sure how to handle it", ii, input.Name)
 		}
-		m.InputsShapes[ii], err = makeDynamicShapeFromProto(tensorType.TensorType)
+		m.InputsShapes[ii], err = makeShapeFromProto(tensorType.TensorType)
 		if err != nil {
 			return nil, errors.WithMessagef(err, "while parsing output #%d (%q)", ii, input.Name)
 		}
 	}
 	m.OutputsNames = make([]string, len(m.Proto.Graph.Output))
-	m.OutputsShapes = make([]DynamicShape, len(m.Proto.Graph.Output))
+	m.OutputsShapes = make([]shapes.Shape, len(m.Proto.Graph.Output))
 	for ii, output := range m.Proto.Graph.Output {
 		m.OutputsNames[ii] = output.Name
 		tensorType, ok := output.Type.Value.(*protos.TypeProto_TensorType)
 		if !ok {
 			return nil, errors.Errorf("output #%d (%q) is not a tensor, not sure how to handle it", ii, output.Name)
 		}
-		m.OutputsShapes[ii], err = makeDynamicShapeFromProto(tensorType.TensorType)
+		m.OutputsShapes[ii], err = makeShapeFromProto(tensorType.TensorType)
 		if err != nil {
 			return nil, errors.WithMessagef(err, "while parsing output #%d (%q)", ii, output.Name)
 		}
@@ -210,9 +210,7 @@ func (m *Model) Close() error {
 func (m *Model) Inputs() (names []string, gshapes []shapes.Shape) {
 	names = m.InputsNames
 	gshapes = make([]shapes.Shape, len(m.InputsShapes))
-	for ii, ds := range m.InputsShapes {
-		gshapes[ii] = ds.GoMLX()
-	}
+	copy(gshapes, m.InputsShapes)
 	return
 }
 
@@ -221,9 +219,7 @@ func (m *Model) Inputs() (names []string, gshapes []shapes.Shape) {
 func (m *Model) Outputs() (names []string, gshapes []shapes.Shape) {
 	names = m.OutputsNames
 	gshapes = make([]shapes.Shape, len(m.OutputsShapes))
-	for ii, ds := range m.OutputsShapes {
-		gshapes[ii] = ds.GoMLX()
-	}
+	copy(gshapes, m.OutputsShapes)
 	return
 }
 
@@ -266,7 +262,7 @@ func (m *Model) PrioritizeFloat16() onnx.Model {
 //
 // This is useful if the model variables were updated (e.g.: fine-tuning in GoMLX) and one wants to save the
 // model.
-// See ContextToONNX to copy over the variables in GoMLX's Context (presumably after some training/update) to the
+// See ScopeToONNX to copy over the variables in GoMLX's model.Scope (presumably after some training/update) to the
 // ONNX's model proto.
 //
 // See also Model.SaveToFile.
@@ -286,7 +282,7 @@ func (m *Model) Write(w io.Writer) error {
 //
 // This is useful if the model variables were updated (e.g.: fine-tuning in GoMLX) and one wants to save the
 // model.
-// See ContextToONNX to copy over the variables in GoMLX's Context (presumably after some training/update) to the
+// See ScopeToONNX to copy over the variables in GoMLX's model.Scope (presumably after some training/update) to the
 // ONNX's model proto.
 func (m *Model) SaveToFile(path string) error {
 	f, err := os.Create(path)

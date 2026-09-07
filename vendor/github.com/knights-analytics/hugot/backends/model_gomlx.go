@@ -7,11 +7,11 @@ import (
 	"io"
 	"strings"
 
+	"github.com/gomlx/compute"
 	"github.com/gomlx/go-huggingface/tokenizers/bucket"
-	"github.com/gomlx/gomlx/backends"
-	"github.com/gomlx/gomlx/pkg/core/graph"
-	"github.com/gomlx/gomlx/pkg/core/tensors"
-	gomlxcontext "github.com/gomlx/gomlx/pkg/ml/context"
+	"github.com/gomlx/gomlx/core/graph"
+	"github.com/gomlx/gomlx/core/tensors"
+	mlmodel "github.com/gomlx/gomlx/ml/model"
 	"github.com/gomlx/onnx-gomlx/onnx"
 	"github.com/gomlx/onnx-gomlx/onnx/parser"
 	"github.com/knights-analytics/hugot/options"
@@ -27,15 +27,33 @@ var (
 )
 
 type GoMLXModel struct {
-	Backend         backends.Backend
+	Backend         compute.Backend
 	OnnxModel       onnx.Model
-	Ctx             *gomlxcontext.Context // ctx with the model's weights.
-	Exec            *gomlxcontext.Exec    // exec is used to execute the model with a context.
-	Call            func(ctx *gomlxcontext.Context, inputs []*graph.Node) []*graph.Node
-	Destroy         func()
+	Scope           *mlmodel.Scope
+	Store           *mlmodel.Store
+	Exec            *mlmodel.Exec
+	Call            func(scope *mlmodel.Scope, inputs []*graph.Node) []*graph.Node
 	BatchBuckets    []int // BatchBuckets defines bucket sizes for batch dimension padding.
 	SequenceBuckets []int // SequenceBuckets defines bucket sizes for sequence length padding.
 	MaxCache        int   // MaxCache sets the maximum number of unique input shapes to cache.
+}
+
+func (m *GoMLXModel) Close() {
+	if m == nil {
+		return
+	}
+	if m.Exec != nil {
+		m.Exec.Finalize()
+	}
+	if m.Store != nil {
+		m.Store.Finalize()
+	}
+	if m.Backend != nil {
+		m.Backend.Finalize()
+	}
+	if m.OnnxModel != nil {
+		_ = m.OnnxModel.Close()
+	}
 }
 
 func createGoMLXModelBackend(model *Model, options *options.Options) error {
@@ -60,18 +78,22 @@ func createGoMLXModelBackend(model *Model, options *options.Options) error {
 		outputNames = append(outputNames, v.Name)
 	}
 
-	ctx := gomlxcontext.New()
-	// Mark it to reuse variables: it will be an error to create a new variable – for safety.
-	ctx = ctx.Reuse()
+	store := mlmodel.NewStore()
+	scope := store.RootScope()
 
 	// Read variables from ONNX model.
-	err = modelParsed.VariablesToContext(ctx)
+	err = modelParsed.VariablesToScope(scope)
 	if err != nil {
 		return errors.Join(err, modelParsed.Close())
 	}
 
 	config := "go"
-	if options.GoMLXOptions.TPU {
+	if options.UseGoMLX {
+		if options.ORTOptions == nil || options.ORTOptions.LibraryPath == nil {
+			return errors.Join(errors.New("ONNX Runtime library path is not configured"), modelParsed.Close())
+		}
+		config = "onnx:" + *options.ORTOptions.LibraryPath
+	} else if options.GoMLXOptions.TPU {
 		config = "xla:tpu"
 	} else if options.GoMLXOptions.Cuda {
 		config = "xla:cuda"
@@ -79,21 +101,21 @@ func createGoMLXModelBackend(model *Model, options *options.Options) error {
 		config = "xla:cpu"
 	}
 
-	backend, backendErr := backends.NewWithConfig(config)
+	backend, backendErr := compute.NewWithConfig(config)
 	if backendErr != nil {
 		return errors.Join(backendErr, modelParsed.Close())
 	}
 
 	// Create model executor.
-	callFunc := func(ctx *gomlxcontext.Context, inputs []*graph.Node) []*graph.Node {
+	callFunc := func(scope *mlmodel.Scope, inputs []*graph.Node) []*graph.Node {
 		inputsMap := map[string]*graph.Node{}
 		for i, inputMeta := range model.InputsMeta {
 			inputsMap[inputMeta.Name] = inputs[i]
 		}
-		return modelParsed.CallGraph(ctx, inputs[0].Graph(), inputsMap, outputNames...)
+		return modelParsed.CallGraph(scope, inputs[0].Graph(), inputsMap, outputNames...)
 	}
 
-	exec, contextErr := gomlxcontext.NewExec(backend, ctx, callFunc)
+	exec, contextErr := mlmodel.NewExec(backend, store, callFunc)
 	if contextErr != nil {
 		return errors.Join(contextErr, modelParsed.Close())
 	}
@@ -104,17 +126,13 @@ func createGoMLXModelBackend(model *Model, options *options.Options) error {
 	model.GoMLXModel = &GoMLXModel{
 		Backend:         backend,
 		OnnxModel:       modelParsed,
-		Ctx:             ctx,
+		Scope:           scope,
+		Store:           store,
 		Exec:            exec,
 		Call:            callFunc,
 		MaxCache:        maxCache,
 		BatchBuckets:    batchBuckets,
 		SequenceBuckets: sequenceBuckets,
-		Destroy: func() {
-			exec.Finalize()
-			ctx.Finalize()
-			backend.Finalize()
-		},
 	}
 	model.InputsMeta = inputs
 	model.OutputsMeta = outputs
@@ -385,11 +403,11 @@ func shapeBucket(n int, buckets []int) (int, error) {
 	return 0, fmt.Errorf("input shape %d exceeds maximum bucket size %v", n, buckets)
 }
 
-func (goMLXModel *GoMLXModel) Save(w io.Writer) error {
-	if err := goMLXModel.OnnxModel.ContextToONNX(goMLXModel.Ctx); err != nil {
+func (m *GoMLXModel) Save(w io.Writer) error {
+	if err := m.OnnxModel.ScopeToONNX(m.Scope); err != nil {
 		return err
 	}
-	err := goMLXModel.OnnxModel.Write(w)
+	err := m.OnnxModel.Write(w)
 	if err != nil {
 		return err
 	}

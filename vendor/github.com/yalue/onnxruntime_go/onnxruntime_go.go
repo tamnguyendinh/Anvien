@@ -830,6 +830,15 @@ const (
 	// Int4 types were introduced in ONNX 1.16. See https://onnx.ai/onnx/technical/int4.html
 	TensorElementDataTypeUint4 = C.ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT4 // maps to a pair of packed uint4 values (size == 1 byte)
 	TensorElementDataTypeInt4  = C.ONNX_TENSOR_ELEMENT_DATA_TYPE_INT4  // maps to a pair of packed int4 values (size == 1 byte)
+	// See https://onnx.ai/onnx/technical/float4.html for information about
+	// the float4 types.
+	TensorElementDataTypeFloat4E2M1 = C.ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT4E2M1
+	// 4 int2 elements are packed into a single byte. See
+	// https://onnx.ai/onnx/technical/int2.html for more information.
+	TensorElementDataTypeUint2 = C.ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT2
+	TensorElementDataTypeInt2  = C.ONNX_TENSOR_ELEMENT_DATA_TYPE_INT2
+	// Non-IEEE floating-point format, all values are powers of two.
+	TensorElementDataTypeFloat8E8M0 = C.ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E8M0
 )
 
 func (t TensorElementDataType) String() string {
@@ -880,6 +889,14 @@ func (t TensorElementDataType) String() string {
 		return "ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT4"
 	case TensorElementDataTypeInt4:
 		return "ONNX_TENSOR_ELEMENT_DATA_TYPE_INT4"
+	case TensorElementDataTypeFloat4E2M1:
+		return "ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT4E2M1"
+	case TensorElementDataTypeUint2:
+		return "ONNX_TENSOR_ELEMENT_DATA_TYPE_UINT2"
+	case TensorElementDataTypeInt2:
+		return "ONNX_TENSOR_ELEMENT_DATA_TYPE_INT2"
+	case TensorElementDataTypeFloat8E8M0:
+		return "ONNX_TENSOR_ELEMENT_DATA_TYPE_FLOAT8E8M0"
 	}
 	return fmt.Sprintf("Unknown tensor element data type: %d", int(t))
 }
@@ -1641,6 +1658,13 @@ func (o *CUDAProviderOptions) Destroy() error {
 // configured, then passed to SessionOptions.AppendExecutionProviderCUDA.)
 // The caller must call the Destroy() function on the returned struct when it's
 // no longer needed.
+//
+// WARNING: There is a known issue where the CUDA execution provider will
+// overwrite Go's default signal handlers. Users may need to back up and
+// re-install Go's signal handlers prior to initializing or using the CUDA
+// execution provider.
+// See https://github.com/yalue/onnxruntime_go/issues/140 for some discussion
+// of this issue.
 func NewCUDAProviderOptions() (*CUDAProviderOptions, error) {
 	if !IsInitialized() {
 		return nil, NotInitializedError
@@ -1907,6 +1931,13 @@ func (o *SessionOptions) SetMemPattern(isEnabled bool) error {
 // the session to use CUDA. Returns an error if your device (or onnxruntime
 // library) does not support CUDA. The CUDAProviderOptions struct can be
 // destroyed after this.
+//
+// WARNING: There is a known issue where the CUDA execution provider will
+// overwrite Go's default signal handlers. Users may need to back up and
+// re-install Go's signal handlers prior to initializing or using the CUDA
+// execution provider.
+// See https://github.com/yalue/onnxruntime_go/issues/140 for some discussion
+// of this issue.
 func (o *SessionOptions) AppendExecutionProviderCUDA(
 	cudaOptions *CUDAProviderOptions) error {
 	status := C.AppendExecutionProviderCUDAV2(o.o, cudaOptions.o)
@@ -2124,9 +2155,6 @@ func NewRunOptions() (*RunOptions, error) {
 
 // Destroy releases the underlying OrtRunOptions.
 func (o *RunOptions) Destroy() error {
-	if o == nil || o.o == nil {
-		return fmt.Errorf("The RunOptions are not initialized")
-	}
 	C.ReleaseRunOptions(o.o)
 	o.o = nil
 	return nil
@@ -2134,9 +2162,6 @@ func (o *RunOptions) Destroy() error {
 
 // Terminate sets the terminate flag so any ongoing Run using this RunOptions fails quickly.
 func (o *RunOptions) Terminate() error {
-	if o == nil || o.o == nil {
-		return fmt.Errorf("The RunOptions are not initialized")
-	}
 	status := C.RunOptionsSetTerminate(o.o)
 	if status != nil {
 		return statusToError(status)
@@ -2146,10 +2171,104 @@ func (o *RunOptions) Terminate() error {
 
 // UnsetTerminate clears the terminate flag so this RunOptions can be reused.
 func (o *RunOptions) UnsetTerminate() error {
-	if o == nil || o.o == nil {
-		return fmt.Errorf("The RunOptions are not initialized")
-	}
 	status := C.RunOptionsUnsetTerminate(o.o)
+	if status != nil {
+		return statusToError(status)
+	}
+	return nil
+}
+
+// AddRunConfigEntry sets a run configuration key to the given value. See the
+// onnxruntime_run_options_config_keys.h file in the onnxruntime sources for
+// documentation on valid keys and values. If the key was already set, this
+// will overwrite its old setting with the given value.
+func (o *RunOptions) AddRunConfigEntry(key, value string) error {
+	cKey := C.CString(key)
+	defer C.free(unsafe.Pointer(cKey))
+	cValue := C.CString(value)
+	defer C.free(unsafe.Pointer(cValue))
+	status := C.AddRunConfigEntry(o.o, cKey, cValue)
+	if status != nil {
+		return statusToError(status)
+	}
+	return nil
+}
+
+// The counterpart to AddRunConfigEntry,
+func (o *RunOptions) GetRunConfigEntry(key string) (string, error) {
+	cKey := C.CString(key)
+	defer C.free(unsafe.Pointer(cKey))
+	cValue := C.GetRunConfigEntry(o.o, cKey)
+	if cValue == nil {
+		return "", fmt.Errorf("GetRunConfigEntry returned NULL for key \"%s\"",
+			key)
+	}
+	nonConstPtr := (*C.char)(unsafe.Pointer(cValue))
+	return C.GoString(nonConstPtr), nil
+}
+
+// A wrapper around the OrtLoraAdapter C struct, holding a set of LoRA
+// parameters that can be activated on a RunOptions instance. Must be freed by
+// calling Destroy() on it when it's no longer needed.
+type LoraAdapter struct {
+	l *C.OrtLoraAdapter
+}
+
+// NewLoraAdapter loads the LoRA adapter file (in onnxruntime's .onnx_adapter
+// format) at the given path. The adapter's parameters stay on the CPU, and are
+// only copied to a device if the model requires it at inference time. The
+// caller must call Destroy() on the returned LoraAdapter when it's no longer
+// needed.
+func NewLoraAdapter(adapterFilePath string) (*LoraAdapter, error) {
+	if !IsInitialized() {
+		return nil, NotInitializedError
+	}
+	cPath, e := createOrtCharString(adapterFilePath)
+	if e != nil {
+		return nil, fmt.Errorf("Error encoding adapter file path: %w", e)
+	}
+	defer C.free(unsafe.Pointer(cPath))
+	var l *C.OrtLoraAdapter
+	status := C.CreateLoraAdapter(cPath, &l)
+	if status != nil {
+		return nil, statusToError(status)
+	}
+	return &LoraAdapter{l: l}, nil
+}
+
+// The same as NewLoraAdapter, but takes a slice of bytes containing the
+// .onnx_adapter data rather than a file path.
+func NewLoraAdapterWithData(adapterData []byte) (*LoraAdapter, error) {
+	if !IsInitialized() {
+		return nil, NotInitializedError
+	}
+	if len(adapterData) == 0 {
+		return nil, fmt.Errorf("Missing adapter data")
+	}
+	var l *C.OrtLoraAdapter
+	status := C.CreateLoraAdapterFromArray(unsafe.Pointer(&(adapterData[0])),
+		C.size_t(len(adapterData)), &l)
+	if status != nil {
+		return nil, statusToError(status)
+	}
+	return &LoraAdapter{l: l}, nil
+}
+
+// Destroy releases the underlying OrtLoraAdapter. Don't destroy a LoraAdapter
+// while it's still active on a RunOptions instance that may still be used.
+func (l *LoraAdapter) Destroy() error {
+	C.ReleaseLoraAdapter(l.l)
+	l.l = nil
+	return nil
+}
+
+// AddActiveLoraAdapter adds the given LoRA adapter to the list of adapters
+// that are active during any Run using this RunOptions instance. More than one
+// adapter can be active at the same time, but parameters belonging to
+// different active adapters must not overlap. This setting does not affect
+// RunWithBinding.
+func (o *RunOptions) AddActiveLoraAdapter(adapter *LoraAdapter) error {
+	status := C.RunOptionsAddActiveLoraAdapter(o.o, adapter.l)
 	if status != nil {
 		return statusToError(status)
 	}
@@ -2622,7 +2741,7 @@ func (b *IoBinding) GetBoundOutputNames() ([]string, error) {
 	toReturn := make([]string, int(resultCount))
 	prevEndOffset := uint64(0)
 	for i, stringLength := range sizesSlice {
-		toReturn[i] = string(charsSlice[prevEndOffset:stringLength])
+		toReturn[i] = string(charsSlice[prevEndOffset : prevEndOffset+uint64(stringLength)])
 		prevEndOffset += uint64(stringLength)
 	}
 

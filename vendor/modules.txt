@@ -4,26 +4,60 @@ github.com/UserNobody14/tree-sitter-dart/bindings/go
 # github.com/daulet/tokenizers v1.27.0
 ## explicit; go 1.21
 github.com/daulet/tokenizers
-# github.com/dustin/go-humanize v1.0.1
-## explicit; go 1.16
-github.com/dustin/go-humanize
 # github.com/flamingoosesoftwareinc/tree-sitter-swift v0.0.0-20260212012612-56ffc4e2dcc9
 ## explicit; go 1.23
 github.com/flamingoosesoftwareinc/tree-sitter-swift/bindings/go
-# github.com/go-errors/errors v1.5.1
-## explicit; go 1.14
-github.com/go-errors/errors
-# github.com/go-logr/logr v1.4.3
+# github.com/go-logr/logr v1.4.4
 ## explicit; go 1.18
 github.com/go-logr/logr
-# github.com/gofrs/flock v0.13.0
-## explicit; go 1.24.0
+# github.com/gofrs/flock v0.13.1
+## explicit; go 1.25.0
 github.com/gofrs/flock
+# github.com/gomlx/compute v0.1.6
+## explicit; go 1.26
+github.com/gomlx/compute
+github.com/gomlx/compute/distributed
+github.com/gomlx/compute/dtypes
+github.com/gomlx/compute/dtypes/bfloat16
+github.com/gomlx/compute/dtypes/float16
+github.com/gomlx/compute/dtypes/gotype
+github.com/gomlx/compute/gobackend
+github.com/gomlx/compute/internal/exceptions
+github.com/gomlx/compute/internal/fastmath
+github.com/gomlx/compute/internal/gobackend
+github.com/gomlx/compute/internal/gobackend/defaultpkgs
+github.com/gomlx/compute/internal/gobackend/dot
+github.com/gomlx/compute/internal/gobackend/dot/matmul
+github.com/gomlx/compute/internal/gobackend/fusedops
+github.com/gomlx/compute/internal/gobackend/ops
+github.com/gomlx/compute/internal/gobackend/passes
+github.com/gomlx/compute/internal/gobackend/workerspool
+github.com/gomlx/compute/notimplemented
+github.com/gomlx/compute/shapeinference
+github.com/gomlx/compute/shapes
+github.com/gomlx/compute/support
+github.com/gomlx/compute/support/envutil
+github.com/gomlx/compute/support/humanize
+github.com/gomlx/compute/support/sets
+github.com/gomlx/compute/support/xslices
+# github.com/gomlx/compute-onnx v0.1.5
+## explicit; go 1.26.5
+github.com/gomlx/compute-onnx
+github.com/gomlx/compute-onnx/internal/device/cuda
+github.com/gomlx/compute-onnx/internal/device/rocm
+github.com/gomlx/compute-onnx/internal/engine/native
+github.com/gomlx/compute-onnx/internal/engine/web
+github.com/gomlx/compute-onnx/internal/executionprovider
+github.com/gomlx/compute-onnx/internal/graph
+github.com/gomlx/compute-onnx/internal/ort
+github.com/gomlx/compute-onnx/internal/pool
+github.com/gomlx/compute-onnx/support/onnxruntime
+github.com/gomlx/compute-onnx/support/protos
 # github.com/gomlx/exceptions v0.0.3
 ## explicit; go 1.22
 github.com/gomlx/exceptions
-# github.com/gomlx/go-huggingface v0.3.5
-## explicit; go 1.25.0
+# github.com/gomlx/go-huggingface v0.4.3
+## explicit; go 1.26.5
 github.com/gomlx/go-huggingface
 github.com/gomlx/go-huggingface/hub
 github.com/gomlx/go-huggingface/internal/downloader
@@ -31,79 +65,65 @@ github.com/gomlx/go-huggingface/internal/files
 github.com/gomlx/go-huggingface/tokenizers/api
 github.com/gomlx/go-huggingface/tokenizers/bucket
 github.com/gomlx/go-huggingface/tokenizers/hftokenizer
-# github.com/gomlx/go-xla v0.2.2
-## explicit; go 1.25.0
+# github.com/gomlx/go-xla v0.4.5
+## explicit; go 1.26
+github.com/gomlx/go-xla/compute/xla
 github.com/gomlx/go-xla/internal/cbuffer
 github.com/gomlx/go-xla/internal/optypes
 github.com/gomlx/go-xla/internal/pool
 github.com/gomlx/go-xla/internal/protos/autotune_results
 github.com/gomlx/go-xla/internal/protos/autotuning
+github.com/gomlx/go-xla/internal/protos/backends
 github.com/gomlx/go-xla/internal/protos/compile_options
 github.com/gomlx/go-xla/internal/protos/cuda_compute_capability
 github.com/gomlx/go-xla/internal/protos/device_description
 github.com/gomlx/go-xla/internal/protos/dnn
 github.com/gomlx/go-xla/internal/protos/hlo
 github.com/gomlx/go-xla/internal/protos/metrics
+github.com/gomlx/go-xla/internal/protos/oneapi_compute_capability
 github.com/gomlx/go-xla/internal/protos/xla
 github.com/gomlx/go-xla/internal/protos/xla_data
+github.com/gomlx/go-xla/internal/rocm
 github.com/gomlx/go-xla/internal/shapeinference
 github.com/gomlx/go-xla/internal/utils
-github.com/gomlx/go-xla/pkg/installer
-github.com/gomlx/go-xla/pkg/pjrt
-github.com/gomlx/go-xla/pkg/pjrt/cpu/dynamic
-github.com/gomlx/go-xla/pkg/pjrt/cpu/static
-github.com/gomlx/go-xla/pkg/stablehlo
-github.com/gomlx/go-xla/pkg/types
-github.com/gomlx/go-xla/pkg/types/dtypes
-github.com/gomlx/go-xla/pkg/types/dtypes/bfloat16
-github.com/gomlx/go-xla/pkg/types/shapes
-github.com/gomlx/go-xla/pkg/types/shardy
-# github.com/gomlx/gomlx v0.27.3
-## explicit; go 1.25.0
-github.com/gomlx/gomlx/backends
-github.com/gomlx/gomlx/backends/notimplemented
-github.com/gomlx/gomlx/backends/shapeinference
-github.com/gomlx/gomlx/backends/simplego
-github.com/gomlx/gomlx/backends/simplego/highway
-github.com/gomlx/gomlx/backends/simplego/packgemm
-github.com/gomlx/gomlx/backends/xla
+github.com/gomlx/go-xla/pjrt
+github.com/gomlx/go-xla/pjrt/cpu/dynamic
+github.com/gomlx/go-xla/pjrt/cpu/static
+github.com/gomlx/go-xla/stablehlo
+github.com/gomlx/go-xla/types
+github.com/gomlx/go-xla/types/shapes
+github.com/gomlx/go-xla/types/shardy
+# github.com/gomlx/gomlx v0.28.8
+## explicit; go 1.26.5
+github.com/gomlx/gomlx/core/graph
+github.com/gomlx/gomlx/core/tensors
+github.com/gomlx/gomlx/core/tensors/dtensor
+github.com/gomlx/gomlx/core/tensors/images
 github.com/gomlx/gomlx/internal/must
 github.com/gomlx/gomlx/internal/scoped
-github.com/gomlx/gomlx/internal/workerspool
-github.com/gomlx/gomlx/pkg/core/distributed
-github.com/gomlx/gomlx/pkg/core/dtypes
-github.com/gomlx/gomlx/pkg/core/dtypes/bfloat16
-github.com/gomlx/gomlx/pkg/core/graph
-github.com/gomlx/gomlx/pkg/core/shapes
-github.com/gomlx/gomlx/pkg/core/tensors
-github.com/gomlx/gomlx/pkg/core/tensors/images
-github.com/gomlx/gomlx/pkg/ml/context
-github.com/gomlx/gomlx/pkg/ml/context/initializers
-github.com/gomlx/gomlx/pkg/ml/ggml
-github.com/gomlx/gomlx/pkg/ml/layers
-github.com/gomlx/gomlx/pkg/ml/layers/activations
-github.com/gomlx/gomlx/pkg/ml/layers/attention
-github.com/gomlx/gomlx/pkg/ml/layers/attention/pos
-github.com/gomlx/gomlx/pkg/ml/layers/batchnorm
-github.com/gomlx/gomlx/pkg/ml/layers/lstm
-github.com/gomlx/gomlx/pkg/ml/layers/regularizers
-github.com/gomlx/gomlx/pkg/ml/nn
-github.com/gomlx/gomlx/pkg/ml/train
-github.com/gomlx/gomlx/pkg/ml/train/losses
-github.com/gomlx/gomlx/pkg/ml/train/metrics
-github.com/gomlx/gomlx/pkg/ml/train/optimizers
-github.com/gomlx/gomlx/pkg/support/exceptions
-github.com/gomlx/gomlx/pkg/support/humanize
-github.com/gomlx/gomlx/pkg/support/sets
-github.com/gomlx/gomlx/pkg/support/xslices
-github.com/gomlx/gomlx/pkg/support/xsync
-# github.com/gomlx/onnx-gomlx v0.4.2
-## explicit; go 1.25.0
+github.com/gomlx/gomlx/ml/ggml
+github.com/gomlx/gomlx/ml/layers
+github.com/gomlx/gomlx/ml/layers/activation
+github.com/gomlx/gomlx/ml/layers/attention
+github.com/gomlx/gomlx/ml/layers/attention/pos
+github.com/gomlx/gomlx/ml/layers/lstm
+github.com/gomlx/gomlx/ml/layers/norm
+github.com/gomlx/gomlx/ml/layers/regularizer
+github.com/gomlx/gomlx/ml/model
+github.com/gomlx/gomlx/ml/model/initializer
+github.com/gomlx/gomlx/ml/nn
+github.com/gomlx/gomlx/ml/train
+github.com/gomlx/gomlx/ml/train/loss
+github.com/gomlx/gomlx/ml/train/metric
+github.com/gomlx/gomlx/ml/train/optimizer
+github.com/gomlx/gomlx/support/exceptions
+github.com/gomlx/gomlx/support/sets
+# github.com/gomlx/onnx-gomlx v0.5.5
+## explicit; go 1.26.5
 github.com/gomlx/onnx-gomlx/internal/onnxgomlx
 github.com/gomlx/onnx-gomlx/internal/onnxgomlx/filesreader
 github.com/gomlx/onnx-gomlx/internal/onnxgomlx/fusion
 github.com/gomlx/onnx-gomlx/internal/onnxgraph
-github.com/gomlx/onnx-gomlx/internal/protos
 github.com/gomlx/onnx-gomlx/onnx
 github.com/gomlx/onnx-gomlx/onnx/parser
 # github.com/google/uuid v1.6.0
@@ -112,10 +132,11 @@ github.com/google/uuid
 # github.com/inconshreveable/mousetrap v1.1.0
 ## explicit; go 1.18
 github.com/inconshreveable/mousetrap
-# github.com/knights-analytics/hugot v0.7.2
-## explicit; go 1.26.0
+# github.com/knights-analytics/hugot v0.7.8
+## explicit; go 1.27.0
 github.com/knights-analytics/hugot
 github.com/knights-analytics/hugot/backends
+github.com/knights-analytics/hugot/backends/modelconfig
 github.com/knights-analytics/hugot/datasets
 github.com/knights-analytics/hugot/options
 github.com/knights-analytics/hugot/pipelines
@@ -123,7 +144,7 @@ github.com/knights-analytics/hugot/util/fileutil
 github.com/knights-analytics/hugot/util/imageutil
 github.com/knights-analytics/hugot/util/safeconv
 github.com/knights-analytics/hugot/util/vectorutil
-# github.com/knights-analytics/ortgenai v0.3.0
+# github.com/knights-analytics/ortgenai v0.3.2
 ## explicit; go 1.25
 github.com/knights-analytics/ortgenai
 # github.com/mattn/go-pointer v0.0.1
@@ -177,67 +198,30 @@ github.com/tree-sitter/tree-sitter-rust/bindings/go
 # github.com/tree-sitter/tree-sitter-typescript v0.23.2
 ## explicit; go 1.22.0
 github.com/tree-sitter/tree-sitter-typescript/bindings/go
-# github.com/viant/afs v1.30.0
-## explicit; go 1.17
-github.com/viant/afs
-github.com/viant/afs/archive
-github.com/viant/afs/asset
-github.com/viant/afs/base
-github.com/viant/afs/file
-github.com/viant/afs/http
-github.com/viant/afs/matcher
-github.com/viant/afs/mem
-github.com/viant/afs/object
-github.com/viant/afs/option
-github.com/viant/afs/option/content
-github.com/viant/afs/scp
-github.com/viant/afs/ssh
-github.com/viant/afs/storage
-github.com/viant/afs/tar
-github.com/viant/afs/url
-github.com/viant/afs/walker
-github.com/viant/afs/zip
-# github.com/x448/float16 v0.8.4
-## explicit; go 1.11
-github.com/x448/float16
-# github.com/yalue/onnxruntime_go v1.30.0
+# github.com/yalue/onnxruntime_go v1.35.0
 ## explicit; go 1.19
 github.com/yalue/onnxruntime_go
-# golang.org/x/crypto v0.50.0
-## explicit; go 1.25.0
-golang.org/x/crypto/blowfish
-golang.org/x/crypto/chacha20
-golang.org/x/crypto/curve25519
-golang.org/x/crypto/internal/alias
-golang.org/x/crypto/internal/poly1305
-golang.org/x/crypto/ssh
-golang.org/x/crypto/ssh/internal/bcrypt_pbkdf
-# golang.org/x/exp v0.0.0-20260410095643-746e56fc9e2f
-## explicit; go 1.25.0
+# golang.org/x/exp v0.0.0-20260824195058-e88cd73687aa
+## explicit; go 1.26.0
 golang.org/x/exp/constraints
-# golang.org/x/image v0.39.0
+# golang.org/x/image v0.45.0
 ## explicit; go 1.25.0
 golang.org/x/image/riff
 golang.org/x/image/vp8
 golang.org/x/image/vp8l
 golang.org/x/image/webp
-# golang.org/x/sync v0.20.0
+# golang.org/x/sync v0.22.0
 ## explicit; go 1.25.0
 golang.org/x/sync/errgroup
-# golang.org/x/sys v0.43.0
+# golang.org/x/sys v0.47.0
 ## explicit; go 1.25.0
-golang.org/x/sys/cpu
-golang.org/x/sys/plan9
 golang.org/x/sys/unix
 golang.org/x/sys/windows
-# golang.org/x/term v0.42.0
-## explicit; go 1.25.0
-golang.org/x/term
-# golang.org/x/text v0.36.0
+# golang.org/x/text v0.41.0
 ## explicit; go 1.25.0
 golang.org/x/text/transform
 golang.org/x/text/unicode/norm
-# google.golang.org/protobuf v1.36.11
+# google.golang.org/protobuf v1.36.12
 ## explicit; go 1.23
 google.golang.org/protobuf/encoding/prototext
 google.golang.org/protobuf/encoding/protowire
