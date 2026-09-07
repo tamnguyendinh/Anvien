@@ -31,11 +31,12 @@ type DownloadOptions struct {
 // NewDownloadOptions creates new DownloadOptions struct with default values.
 // Override the values to specify different download options.
 func NewDownloadOptions() DownloadOptions {
-	d := DownloadOptions{}
-	d.Branch = "main"
-	d.MaxRetries = 5
-	d.RetryInterval = 5
-	d.ConcurrentConnections = 5
+	d := DownloadOptions{
+		Branch:                "main",
+		MaxRetries:            5,
+		RetryInterval:         5,
+		ConcurrentConnections: 5,
+	}
 	return d
 }
 
@@ -68,7 +69,7 @@ func DownloadModel(ctx context.Context, modelName string, destination string, op
 	}
 
 	// make sure it's an onnx model with tokenizer
-	downloadFiles, err := validateDownloadedHFModel(repo, options)
+	downloadFiles, err := ValidateDownloadedHFModel(repo, options)
 	if err != nil {
 		return "", err
 	}
@@ -103,7 +104,7 @@ func DownloadModel(ctx context.Context, modelName string, destination string, op
 	return "", fmt.Errorf("failed to download %s after %d attempts", modelName, options.MaxRetries)
 }
 
-func validateDownloadedHFModel(repo *hub.Repo, options DownloadOptions) ([]string, error) {
+func ValidateDownloadedHFModel(repo *hub.Repo, options DownloadOptions) ([]string, error) {
 	for i := 0; i < options.MaxRetries; i++ {
 		err := repo.DownloadInfo(false)
 		if err != nil {

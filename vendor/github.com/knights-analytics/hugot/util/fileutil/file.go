@@ -5,22 +5,54 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
+	"os"
 	"path/filepath"
 	"strings"
-
-	"github.com/viant/afs"
-	"github.com/viant/afs/option"
-	"github.com/viant/afs/option/content"
-	"github.com/viant/afs/storage"
 )
 
-var fileSystem = afs.New()
+// OnVisit is called for each file or directory encountered by WalkDir.
+// parent is relative to the URL passed to WalkDir and reader is provided for files.
+type OnVisit func(ctx context.Context, URL string, parent string, info os.FileInfo, reader io.Reader) (toContinue bool, err error)
 
-const partSize = 64 * 1024 * 1024
+// FileSystem is the storage contract used by Hugot. The default implementation
+// uses the local operating system, while applications can provide an adapter for
+// object storage or another filesystem.
+type FileSystem interface {
+	OpenFile(ctx context.Context, filename string) (io.ReadCloser, error)
+	CopyFile(ctx context.Context, from string, to string) error
+	Walk(ctx context.Context, URL string, handler OnVisit) error
+	DeleteFile(ctx context.Context, filename string) error
+	FileExists(ctx context.Context, filename string) (bool, error)
+	FileStats(ctx context.Context, filename string) (os.FileInfo, error)
+	NewFileWriter(ctx context.Context, filename string, contentType string) (io.WriteCloser, error)
+}
+type fileSystemContextKey struct{}
+
+// WithFileSystem binds a filesystem to a context. This is the preferred
+// session-scoped injection mechanism.
+func WithFileSystem(ctx context.Context, system FileSystem) context.Context {
+	if system == nil {
+		system = osFileSystem{}
+	}
+	return context.WithValue(ctx, fileSystemContextKey{}, system)
+}
+
+func fileSystemFor(ctx context.Context) (FileSystem, error) {
+	if system, ok := ctx.Value(fileSystemContextKey{}).(FileSystem); ok && system != nil {
+		return system, nil
+	}
+	return nil, fmt.Errorf("no filesystem bound to context")
+}
 
 func ReadFileBytes(ctx context.Context, filename string) ([]byte, error) {
-	file, err := fileSystem.OpenURL(ctx, filename)
+	fs, fsErr := fileSystemFor(ctx)
+	if fsErr != nil {
+		return nil, fsErr
+	}
+
+	file, err := fs.OpenFile(ctx, filename)
 	if err != nil {
 		return nil, err
 	}
@@ -40,15 +72,33 @@ func CloseFile(file io.Closer) error {
 	return file.Close()
 }
 
-func GetPathType(path string) string {
-	if strings.HasPrefix(path, "s3://") {
-		return "S3"
+type PathType uint8
+
+const (
+	PathTypeLocal PathType = iota
+	PathTypeS3
+	PathTypeGCP
+	PathTypeAzureBlob
+)
+
+func getPathType(path string) PathType {
+	switch {
+	case strings.HasPrefix(path, "s3://"):
+		return PathTypeS3
+	case strings.HasPrefix(path, "gs://"), strings.HasPrefix(path, "gcs://"):
+		return PathTypeGCP
+	case strings.HasPrefix(path, "az://"), strings.HasPrefix(path, "azblob://"), strings.HasPrefix(path, "azure://"), strings.Contains(path, ".blob.core.windows.net"):
+		return PathTypeAzureBlob
 	}
-	return "os"
+	return PathTypeLocal
 }
 
 func OpenFile(ctx context.Context, filename string) (io.ReadCloser, error) {
-	return fileSystem.OpenURL(ctx, filename)
+	fs, fsErr := fileSystemFor(ctx)
+	if fsErr != nil {
+		return nil, fsErr
+	}
+	return fs.OpenFile(ctx, filename)
 }
 
 // ReadLine returns a single line (without the ending \n)
@@ -71,15 +121,28 @@ func ReadLine(r *bufio.Reader) ([]byte, error) {
 
 // PathJoinSafe wrapper around filepath.Join to ensure that paths are correctly constructed
 // if the path is a normal OS path, just use filepath.Join
-// if the path is S3, trim any trailing slashes and construct it manually from the components
+// if the path is an object storage URI, trim any trailing slashes and construct it manually from the components
 // so that double slashes (e.g. s3://) are preserved.
 func PathJoinSafe(elem ...string) string {
+	if len(elem) == 0 {
+		return ""
+	}
 	var path string
 
-	switch GetPathType(elem[0]) {
-	case "S3":
+	switch getPathType(elem[0]) {
+	case PathTypeS3, PathTypeGCP, PathTypeAzureBlob:
 		basePath := strings.TrimSuffix(elem[0], "/")
-		path = basePath + string(filepath.Separator) + filepath.Join(elem[1:]...)
+		parts := make([]string, 0, len(elem))
+		for _, value := range elem[1:] {
+			value = strings.Trim(value, "/\\")
+			if value != "" {
+				parts = append(parts, value)
+			}
+		}
+		path = basePath
+		if len(parts) > 0 {
+			path += "/" + strings.Join(parts, "/")
+		}
 	default:
 		path = filepath.Join(elem...)
 	}
@@ -87,38 +150,49 @@ func PathJoinSafe(elem ...string) string {
 }
 
 func CopyFile(ctx context.Context, from string, to string) error {
-	return fileSystem.Copy(ctx, from, to, option.NewSource(option.NewStream(partSize, 0)), option.NewDest(option.NewSkipChecksum(true)))
+	fs, fsErr := fileSystemFor(ctx)
+	if fsErr != nil {
+		return fsErr
+	}
+	return fs.CopyFile(ctx, from, to)
 }
 
-func WalkDir() func(ctx context.Context, URL string, handler storage.OnVisit, options ...storage.Option) error {
-	return fileSystem.Walk
+func WalkDir(ctx context.Context, URL string, handler OnVisit) error {
+	fs, fsErr := fileSystemFor(ctx)
+	if fsErr != nil {
+		return fsErr
+	}
+	return fs.Walk(ctx, URL, handler)
 }
 
 func DeleteFile(ctx context.Context, filename string) error {
-	return fileSystem.Delete(ctx, filename)
+	fs, fsErr := fileSystemFor(ctx)
+	if fsErr != nil {
+		return fsErr
+	}
+	return fs.DeleteFile(ctx, filename)
 }
 
 func FileExists(ctx context.Context, filename string) (bool, error) {
-	return fileSystem.Exists(ctx, filename)
+	fs, fsErr := fileSystemFor(ctx)
+	if fsErr != nil {
+		return false, fsErr
+	}
+	return fs.FileExists(ctx, filename)
 }
 
-func FileStats(ctx context.Context, filename string) (storage.Object, error) {
-	return fileSystem.Object(ctx, filename)
+func FileStats(ctx context.Context, filename string) (os.FileInfo, error) {
+	fs, fsErr := fileSystemFor(ctx)
+	if fsErr != nil {
+		return nil, fsErr
+	}
+	return fs.FileStats(ctx, filename)
 }
 
 func NewFileWriter(ctx context.Context, filename string, contentType string) (io.WriteCloser, error) {
-	exists, err := FileExists(ctx, filename)
-	if err != nil {
-		return nil, err
+	fs, fsErr := fileSystemFor(ctx)
+	if fsErr != nil {
+		return nil, fsErr
 	}
-	if exists {
-		err = fileSystem.Delete(ctx, filename)
-		if err != nil {
-			return nil, err
-		}
-	}
-	if contentType != "" {
-		return fileSystem.NewWriter(ctx, filename, 0o644, content.NewMeta(content.Type, contentType), option.NewSkipChecksum(true))
-	}
-	return fileSystem.NewWriter(ctx, filename, 0o644, option.NewSkipChecksum(true))
+	return fs.NewFileWriter(ctx, filename, contentType)
 }

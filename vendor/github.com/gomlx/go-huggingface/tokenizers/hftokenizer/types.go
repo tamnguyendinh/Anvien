@@ -2,8 +2,8 @@ package hftokenizer
 
 import (
 	"encoding/json"
-	"regexp"
 	"github.com/gomlx/go-huggingface/tokenizers/api"
+	"regexp"
 )
 
 // TokenizerJSON represents the structure of HuggingFace's tokenizer.json file.
@@ -40,6 +40,7 @@ type Normalizer struct {
 	Normalizer         *Normalizer  `json:"normalizer"`
 	Pattern            *Pattern     `json:"pattern"`
 	Normalizers        []Normalizer `json:"normalizers"`
+	Content            string       `json:"content"`
 }
 
 // Pattern for regex-based operations.

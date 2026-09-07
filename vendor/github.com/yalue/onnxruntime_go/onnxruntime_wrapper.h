@@ -258,6 +258,25 @@ void ReleaseRunOptions(OrtRunOptions *o);
 OrtStatus *RunOptionsSetTerminate(OrtRunOptions *o);
 // Wraps ort_api->RunOptionsUnsetTerminate
 OrtStatus *RunOptionsUnsetTerminate(OrtRunOptions *o);
+// Wraps ort_api->AddRunConfigEntry
+OrtStatus *AddRunConfigEntry(OrtRunOptions *o, char *key, char *value);
+// Wraps ort_api->GetRunConfigEntry
+const char *GetRunConfigEntry(OrtRunOptions *o, char *key);
+
+// LoraAdapter helpers
+// Wraps ort_api->CreateLoraAdapter, passing a NULL allocator so the adapter's
+// parameters stay on the CPU until a run requires them on a device.
+// NOTE: takes an ORTCHAR_T*.
+OrtStatus *CreateLoraAdapter(char *path, OrtLoraAdapter **out);
+// Wraps ort_api->CreateLoraAdapterFromArray, passing a NULL allocator like
+// CreateLoraAdapter.
+OrtStatus *CreateLoraAdapterFromArray(void *bytes, size_t num_bytes,
+  OrtLoraAdapter **out);
+// Wraps ort_api->ReleaseLoraAdapter
+void ReleaseLoraAdapter(OrtLoraAdapter *a);
+// Wraps ort_api->RunOptionsAddActiveLoraAdapter
+OrtStatus *RunOptionsAddActiveLoraAdapter(OrtRunOptions *o,
+  OrtLoraAdapter *a);
 
 // Wraps ort_api->RunWithBinding.
 OrtStatus *RunSessionWithBinding(OrtSession *session, OrtIoBinding *b);

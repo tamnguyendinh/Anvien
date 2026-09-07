@@ -4,6 +4,70 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.7.8] - 2026-09-02
+
+### Added
+
+- Added `NewORTTrainingSession` for training with the ORT backend.
+- Added `options.WithGoMLX` to use GoMLX for model execution with an ORT session.
+- Added pluggable, session-scoped filesystem adapters through `options.WithFileSystem`, see README.MD for details.
+- Added concurrency protection for model and pipeline registries and made model closing idempotent.
+
+### Changed
+
+- Upgraded to Go 1.27.0.
+- Upgraded GoMLX dependencies, ONNX Runtime to 1.29.0, and ORT GenAI to 0.15.2.
+- Refactored backend and pipeline handling around typed backend and model abstractions.
+
+### Breaking changes
+
+- Filesystem integrations must implement `fileutil.FileSystem` and be supplied with `options.WithFileSystem`; the previous global `viant/afs` integration is no longer used.
+- `fileutil.WalkDir` now takes a context and handler directly, and `fileutil.FileStats` returns `os.FileInfo`; update callers and adapters accordingly.
+- Exported pipeline constructors no longer accept `*options.Options`; backend configuration is now supplied when creating the session.
+
+## [0.7.7] - 2026-08-03
+
+###  Changed
+
+- Upgraded to CUDA 13
+- Upgraded to ORT v1.28.0
+- Upgraded to ORT GenAI v0.15.0
+- Upgraded to GoMLX v0.28.2
+- Fixes go tokenizer FIRST/MAX/AVERAGE aggregation (thanks @luanlorenzo)
+
+## [0.7.6] - 2026-07-24
+
+###  Changed
+
+- Upgraded to GoMLX [v0.28.0](https://github.com/gomlx/gomlx/releases/tag/v0.28.0)
+  - Includes experimental SIMD for significant performance improvements for the Go backend
+- Refactor/simplification of pipeline management and lifecycle
+- Token Classification pipeline correctly handles unknown tokens (thanks @ohhmkar)
+- Fixes tokenizer timings reporting per pipeline
+
+## [0.7.5] - 2026-06-05
+
+###  Changed
+
+- Upgraded to ORT v1.26.0
+- Upgraded to ORT GenAI v0.14.0
+
+## [0.7.4] - 2026-05-24
+
+###  Changed
+
+- Do not specify go patch version in go.mod
+- Fixes for release docker image build and push
+
+## [0.7.3] - 2026-05-20
+
+###  Changed
+
+- Fix panic on double-close (thanks @sananguliyev) 
+- Upgraded to ORT v1.25.1
+- Test structure improvements
+- Documentation and examples improvements (thanks @kepae)
+
 ## [0.7.2] - 2026-04-22
 
 ###  Changed

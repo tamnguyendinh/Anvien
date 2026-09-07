@@ -1,8 +1,8 @@
 #--- dockerfile to test ortgenai ---
 
-ARG GO_VERSION=1.26.2
-ARG ONNXRUNTIME_VERSION=1.24.4
-ARG ONNXRUNTIME_GENAI_VERSION=0.13.1
+ARG GO_VERSION=1.26.5
+ARG ONNXRUNTIME_VERSION=1.28.0
+ARG ONNXRUNTIME_GENAI_VERSION=0.15.0
 ARG BUILD_PLATFORM=linux/amd64
 
 FROM --platform=$BUILD_PLATFORM public.ecr.aws/amazonlinux/amazonlinux:2023 AS genai-runtime
@@ -18,22 +18,22 @@ RUN --mount=src=./go.mod,dst=/go.mod \
     dnf --allowerasing -y install gcc jq bash tar xz gzip glibc-static libstdc++ wget zip git dirmngr sudo which && \
     ln -s /usr/lib64/libstdc++.so.6 /usr/lib64/libstdc++.so && \
     dnf install -y 'dnf-command(config-manager)' && \
-    # from rhel
+    # from rhel \
     dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/cuda-rhel9.repo && \
-    dnf install -y cuda-cudart-12-9 cuda-nvrtc-12-9 libcublas-12-9 libcurand-12-9 libcufft-12-9 libcudnn9-cuda-12 && \
+    dnf install -y cuda-cudart-13-3 libcublas-13-3 libcurand-13-3 libcufft-13-3 libcudnn9-cuda-13 && \
     dnf clean all && \
-    # go
+    # go \
     curl -LO https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
     tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
     rm go${GO_VERSION}.linux-amd64.tar.gz && \
-    # onnxruntime cpu
+    # onnxruntime cpu \
     sed -i 's/\r//g' /download-onnxruntime.sh && chmod +x /download-onnxruntime.sh && \
-    /download-onnxruntime.sh ${ONNXRUNTIME_VERSION} true && \
-    # onnxruntime genai
+    /download-onnxruntime.sh --onnxruntime-version=${ONNXRUNTIME_VERSION} --cuda && \
+    # onnxruntime genai \
     sed -i 's/\r//g' /download-onnxruntime-genai.sh && chmod +x /download-onnxruntime-genai.sh && \
-    /download-onnxruntime-genai.sh ${ONNXRUNTIME_GENAI_VERSION} true && \
-    # NON-PRIVILEGED USER
-    # create non-privileged testuser with id: 1000
+    /download-onnxruntime-genai.sh --onnxruntime-genai-version=${ONNXRUNTIME_GENAI_VERSION} --cuda && \
+    # NON-PRIVILEGED USER \
+    # create non-privileged testuser with id: 1000 \
     useradd -u 1000 -m testuser && usermod -a -G wheel testuser && \
     echo "testuser ALL=(ALL) NOPASSWD: ALL" >> /etc/sudoers.d/testuser
 
