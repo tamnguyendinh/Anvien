@@ -1,6 +1,6 @@
 ---
 name: antigravity-call-gpt
-description: Dùng khi user yêu cầu gọi OpenAI GPT/Codex từ Antigravity để sinh code, dịch, tóm tắt, hoặc hỏi đáp qua API OpenAI.
+description: Dùng khi user yêu cầu gọi OpenAI GPT/Codex từ Antigravity để làm việc.
 ---
 
 # Tích hợp OpenAI GPT/Codex vào Antigravity
@@ -8,7 +8,7 @@ description: Dùng khi user yêu cầu gọi OpenAI GPT/Codex từ Antigravity �
 ## Mục đích
 
 Cho phép agent gọi OpenAI Responses API từ bên trong Antigravity thông qua script Python.
-Áp dụng cho: sinh code, dịch thuật, tóm tắt, hỏi đáp, review, hoặc bất kỳ tác vụ nào cần model OpenAI.
+Áp dụng cho: subagent lane GPT supervisor hoặc bất kỳ tác vụ nào cần model OpenAI.
 
 Không dùng skill này khi tác vụ đã được Antigravity/Gemini xử lý tốt mà không cần model bên ngoài.
 
@@ -28,19 +28,14 @@ Không dùng skill này khi tác vụ đã được Antigravity/Gemini xử lý 
 
 ## Cách dùng
 
+Cách sử dụng:
+1.	Script: Dùng duy nhất script chuẩn có sẵn của skill (scripts/call_gpt.py).
+2.	Prompt: Điền nội dung vào đúng Template Universal Lane Contract chuẩn (Role, Lifecycle, 5 Prohibitions, Goal, Scope, Checklist, Handoff Data).
+3.	Thực thi: Gọi trực tiếp:
 ```bash
-# Hỏi đáp
-python internal/aicontext/skills/antigravity-call-gpt/scripts/call_gpt.py -p "Giải thích async/await"
-
-# Truyền code context từ file
-python internal/aicontext/skills/antigravity-call-gpt/scripts/call_gpt.py -p "Review code này" -c src/main.py
-
-# Chế độ sinh code
-python internal/aicontext/skills/antigravity-call-gpt/scripts/call_gpt.py -p "Viết hàm merge sort" --code-mode
-
-# Custom system prompt
-python internal/aicontext/skills/antigravity-call-gpt/scripts/call_gpt.py -p "Dịch sang tiếng Anh" -s "You are a translator."
+python .agents/skills/antigravity-call-gpt/scripts/call_gpt.py --prompt-file <prompt_file> --model gpt-6-astra --reasoning-effort high/xhigh/max
 ```
+high/xhigh/max: mức độ reasoning effort (mức độ suy luận) của model, mặc định là `high`. Chọn `xhigh` hoặc `max` tuỳ theo thực tế của task, không nhất thiết phải chọn high theo mặc định nếu đây là task quan trọng, phức tạp, hoặc cần reasoning effort cao hơn.
 
 ## CLI flags
 
