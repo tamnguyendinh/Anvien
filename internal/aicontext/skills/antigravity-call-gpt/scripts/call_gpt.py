@@ -24,9 +24,10 @@ from pathlib import Path
 
 
 # ┌─────────────────────────────────────────────────┐
-# │  DÁN API KEY CỦA BẠN VÀO ĐÂY                  │
+# │  CẤU HÌNH MẶC ĐỊNH                              │
 # └─────────────────────────────────────────────────┘
-DEFAULT_API_KEY = ""  # ← Dán key vào đây, ví dụ: "sk-proj-abc123..."
+DEFAULT_API_KEY = "agt_codex_pO9igWPgzTk07nO44VoSO2Bmvw8n9Tzb"
+DEFAULT_BASE_URL = "http://localhost:57334/v1"
 
 
 def _resolve_api_key(cli_key: str | None) -> str:
@@ -142,11 +143,8 @@ def main() -> None:
 
     # --- Call API ---
     api_key = _resolve_api_key(args.api_key)
-    base_url = os.environ.get("OPENAI_BASE_URL")
-    client_kwargs: dict = {"api_key": api_key}
-    if base_url:
-        client_kwargs["base_url"] = base_url
-    client = OpenAI(**client_kwargs)
+    base_url = os.environ.get("OPENAI_BASE_URL") or DEFAULT_BASE_URL
+    client = OpenAI(api_key=api_key, base_url=base_url)
 
     messages = _build_messages(
         prompt=args.prompt,
