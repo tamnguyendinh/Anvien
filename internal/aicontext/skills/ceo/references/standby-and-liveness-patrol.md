@@ -74,7 +74,7 @@ The Model & Thinking table below uses GPT/Codex as the baseline reference. When 
 | **Architect** | Cross-system contracts design, sync/replay, recovery | GPT 6 Astra Xhigh; Max for complex unresolved challenges |
 | **Planner** | Translate approved decisions into checklists; mechanical status updates | GPT 5.6 luna high |
 | **Planner** | Dependency breakdown, migration order, rollbacks, and quality gates | GPT 6 Astra High / Xhigh |
-| **Coder** | Atomic implementation with finalized behavior, approach, and verification criteria | gpt-5.6-luna-max |
+| **Coder** | Atomic implementation with finalized behavior, approach, and verification criteria | gpt 6 Astra low |
 | **QA** | Execute approved test plans, collect evidence, reproduce clear bugs | GPT 6 Astra Low |
 | **QA** | Coverage design, flaky test analysis, concurrency/failure paths testing | GPT 6 Astra High / Xhigh |
 | **Supervisor** | Independent acceptance of source code, diffs, and evidence | GPT 6 Astra High; Xhigh for cross-system invariants |
