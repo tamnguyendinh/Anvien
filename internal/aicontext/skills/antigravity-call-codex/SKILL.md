@@ -17,8 +17,8 @@ Codex có đầy đủ công cụ đọc/ghi file và chạy shell, tự động
 
 Để MCP Server có hiệu lực trên toàn bộ các workspace của Antigravity trên máy tính, khai báo vào file cấu hình Global của Antigravity:
 
-* **Đường dẫn:** `C:\Users\<USER>\.gemini\config\mcp_config.json` (hoặc `~/.gemini/config/mcp_config.json`)
-* **Nội dung cấu hình (Chế độ YOLO - Full quyền thực thi):**
+* **Đường dẫn trên Windows**: C:\Users\<USER>\.gemini\config\mcp_config.json (viết tắt là ~/.gemini/config/mcp_config.json)
+* **Nội dung cấu hình (Chế độ YOLO - Full quyền thực thi cho Codex):**
 
 ```json
 {
