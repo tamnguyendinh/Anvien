@@ -16,7 +16,7 @@ A standard plan is a five-file set with the same date and slug:
 ```text
 docs/plans/YYYY-MM-DD-<slug>/
   YYYY-MM-DD-<slug>-plan.md
-  YYYY-MM-DD-<slug>-rules.md
+  
   YYYY-MM-DD-<slug>-evidence.md
   YYYY-MM-DD-<slug>-benchmark.md
   YYYY-MM-DD-<slug>-actual-status.md
@@ -29,7 +29,7 @@ Rules:
 - Use lowercase ASCII kebab-case for the slug.
 - Keep the same slug in all five standard files; only the suffix changes.
 - When writing a plan, you must follow the template exactly 100% (planner\templates\actual-status.template.md, planner\templates\benchmark.template.md, planner\templates\evidence.template.md, planner\templates\plan.template.md, planner\templates\rules.template.md).
-- Use the matching H1: `Plan`, `Plan Rules`, `Evidence Ledger`, `Benchmark Ledger`, or `Actual Status`.
+- Use the matching H1: `Plan`, `Evidence Ledger`, `Benchmark Ledger`, or `Actual Status`.
 - Auxiliary files such as `*-remaining-files.md` can exist, but they are not part of the standard five-file set.
 
 ## Template Files
@@ -88,17 +88,6 @@ Scoping Rule: Anvien only helps localize candidate boundaries; relationships and
 
 Do not use the plan file as a command log, benchmark ledger, changelog, or place to store long metric tables.
 
-## Rules File
-
-The rules file (`YYYY-MM-DD-<slug>-rules.md`) holds the plan rules and execution invariants so that the plan file remains a concise execution control plane.
-
-It should contain:
-- metadata and companion files;
-- execution rules and scoping invariants;
-- slice decomposition rules;
-- the mandatory 6-step slice execution lifecycle (`Code → Inspect → Update tests → Build → QA → Acceptance/Commit`) and leaf atomic task specifications.
-
-Before executing any implementation slice, the agent must read `rules.md` to comply with all execution rules.
 
 ## Actual Status File
 
