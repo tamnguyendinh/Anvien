@@ -1,24 +1,24 @@
 ---
 name: antigravity-call-codex
-description: Dùng khi cần giao việc cho Codex tự động thực thi code, sửa file và chạy test trên repo qua native MCP.
+description: Use when delegating tasks to Codex to automatically execute code, edit files, and run tests directly on the repository via native MCP.
 ---
 
-# Tích hợp Codex vào Antigravity qua Native MCP
+# Integrate Codex into Antigravity via Native MCP
 
-## Mục đích
+## Purpose
 
-Cho phép Antigravity giao trọn gói nhiệm vụ kỹ thuật cho Codex thực thi trực tiếp trên repository thông qua giao thức MCP (Model Context Protocol).
+Enable Antigravity to delegate end-to-end technical tasks to Codex to execute directly on the repository via the Model Context Protocol (MCP).
 
-Codex có đầy đủ công cụ đọc/ghi file và chạy shell, tự động khép kín vòng lặp sửa sai (edit → build → test → pass) mà không cần Antigravity làm trung gian copy-paste code.
+Codex possesses full tools to read/write files and execute shell commands, autonomously closing the self-repair loop (edit → build → test → pass) without requiring Antigravity to act as an intermediary for copying and pasting code.
 
 ---
 
-## 1. Cấu hình MCP Local Global (Thiết lập một lần)
+## 1. Local Global MCP Configuration (One-time Setup)
 
-Để MCP Server có hiệu lực trên toàn bộ các workspace của Antigravity trên máy tính, khai báo vào file cấu hình Global của Antigravity:
+To make the MCP Server active across all Antigravity workspaces on this machine, declare it in Antigravity's Global configuration file:
 
-* **Đường dẫn trên Windows**: C:\Users\<USER>\.gemini\config\mcp_config.json (viết tắt là ~/.gemini/config/mcp_config.json)
-* **Nội dung cấu hình (Chế độ YOLO - Full quyền thực thi cho Codex):**
+* **Windows Path:** `C:\Users\<USER>\.gemini\config\mcp_config.json` (shorthand: `~/.gemini/config/mcp_config.json`)
+* **Configuration Content (YOLO Mode - Full execution permissions for Codex):**
 
 ```json
 {
@@ -35,15 +35,15 @@ Codex có đầy đủ công cụ đọc/ghi file và chạy shell, tự động
 }
 ```
 
-* **Xác nhận trạng thái:** Trên giao diện Antigravity, vào **Additional Options (`...`) > MCP Servers** sẽ thấy `codex` ở trạng thái kết nối với 2 tools: `codex` và `codex-reply`.
+* **Verify Status:** In the Antigravity UI, navigate to **Additional Options (`...`) > MCP Servers** to confirm `codex` shows a connected state with 2 tools: `codex` and `codex-reply`.
 
 ---
 
-## 2. Cách Agent gọi Codex qua MCP
+## 2. How the Agent Invokes Codex via MCP
 
-Antigravity gọi trực tiếp công cụ MCP native (thông qua `call_mcp_tool` hoặc function call gốc):
+Antigravity invokes the native MCP tool directly (via `call_mcp_tool` or native function call):
 
-### Khởi tạo một phiên làm việc mới (`Tool: codex`)
+### Initialize a new session (`Tool: codex`)
 
 * **ServerName:** `codex`
 * **ToolName:** `codex`
@@ -51,7 +51,7 @@ Antigravity gọi trực tiếp công cụ MCP native (thông qua `call_mcp_tool
 
 ```json
 {
-  "prompt": "Mô tả chi tiết nhiệm vụ cần thực hiện",
-  "cwd": "<đường_dẫn_thư_mục_gốc_của_repository_cần_làm_việc>"
+  "prompt": "Detailed description of the task to execute",
+  "cwd": "<root_directory_path_of_the_target_repository>"
 }
 ```
