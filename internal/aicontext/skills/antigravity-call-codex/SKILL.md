@@ -43,7 +43,7 @@ Codex có đầy đủ công cụ đọc/ghi file và chạy shell, tự động
 
 Antigravity gọi trực tiếp công cụ MCP native (thông qua `call_mcp_tool` hoặc function call gốc):
 
-### A. Khởi tạo một phiên làm việc mới (`Tool: codex`)
+### Khởi tạo một phiên làm việc mới (`Tool: codex`)
 
 * **ServerName:** `codex`
 * **ToolName:** `codex`
@@ -52,6 +52,6 @@ Antigravity gọi trực tiếp công cụ MCP native (thông qua `call_mcp_tool
 ```json
 {
   "prompt": "Mô tả chi tiết nhiệm vụ cần thực hiện",
-  "cwd": "<đường_dẫn_thư_mục_gốc_của_repository_đang_làm_việc>"
+  "cwd": "<đường_dẫn_thư_mục_gốc_của_repository_cần_làm_việc>"
 }
 ```
