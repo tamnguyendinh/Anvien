@@ -9,7 +9,7 @@ description: Dùng khi cần giao việc cho Codex tự động thực thi code,
 
 Cho phép Antigravity giao trọn gói nhiệm vụ kỹ thuật cho Codex thực thi trực tiếp trên repository thông qua giao thức MCP (Model Context Protocol).
 
-Codex đóng vai trò là Worker / Senior Engineer: có đầy đủ công cụ đọc/ghi file và chạy shell, tự động khép kín vòng lặp sửa sai (edit → build → test → pass) mà không cần Antigravity làm trung gian copy-paste code.
+Codex có đầy đủ công cụ đọc/ghi file và chạy shell, tự động khép kín vòng lặp sửa sai (edit → build → test → pass) mà không cần Antigravity làm trung gian copy-paste code.
 
 ---
 
