@@ -3,77 +3,106 @@ name: codex-call-gemini
 description: Use when delegating reasoning, algorithmic analysis, architecture design, refactoring, or complex code generation to Google Gemini 3.8 Flash (Google Antigravity High Thinking) via native MCP.
 ---
 
-# Codex Call Gemini via Native MCP (`codex-call-gemini`)
+# Integrate Gemini 3.8 Flash into Codex via Native MCP
 
 ## Purpose
 
-Cho phép **Codex Desktop** và các AI Agent ủy quyền các tác vụ lập trình phức tạp, phân tích giải thuật hóc búa, hoặc thẩm định mã nguồn cho **Google Gemini 3.8 Flash (High Thinking - Google Antigravity)** thông qua công cụ MCP `ask_gemini`.
-
-Gemini 3.8 Flash sở hữu năng lực suy luận sâu (High Thinking Mode) và ngữ cảnh lớn, là đối tác lý tưởng để Codex tham vấn khi gặp các vấn đề vượt quá khả năng xử lý nhanh hoặc cần góc nhìn kiến trúc chuyên sâu.
+Cho phép Codex Desktop và các AI agent ủy quyền trực tiếp các bài toán phân tích sâu, thuật toán phức tạp, hoặc tái cấu trúc mã nguồn cho **Google Gemini 3.8 Flash High Thinking** thông qua giao thức Model Context Protocol (MCP).
 
 ---
 
-## 1. Khi nào nên gọi Gemini?
-
-Codex nên chủ động kích hoạt công cụ `ask_gemini` trong các trường hợp sau:
-
-* **Thuật toán & Toán học phức tạp:** Quy hoạch động (DP), đồ thị, hình học không gian, tối ưu hóa tổ hợp.
-* **Kiến trúc & Phân tích hệ thống:** Đánh giá luồng dữ liệu, phân rã microservice, phân tích deadlock / race condition trong lập trình đồng thời (concurrency).
-* **Refactor mã nguồn lớn:** Tái cấu trúc các module phức tạp hoặc chuyển đổi ngôn ngữ/framework.
-* **Thẩm định & Bắt lỗi tiềm ẩn (Cross-validation):** Cần một "bộ não thứ hai" độc lập để soi lỗi logic, rò rỉ bộ nhớ (memory leak), hoặc lỗ hổng bảo mật.
-* **Khi người dùng yêu cầu rõ ràng:** Người dùng nói *"hỏi Gemini"*, *"nhờ Gemini giải quyết"*, *"dùng Gemini"*.
-
----
-
-## 2. Đặc tả giao thức gọi công cụ (Tool Call Specification)
+## 1. Thông số Kỹ thuật & Model Backend
 
 * **MCP Server Name:** `gemini`
 * **Tool Name:** `ask_gemini`
-* **Cơ chế truyền dữ liệu:** `stdio` qua binary `gemini-mcp.exe`
+* **Transport:** Native `stdio` qua binary `gemini-mcp.exe`
+* **Upstream Model:** `gemini-3.8-flash-high`
+* **Reasoning Mode:** `High Thinking` (Suy nghĩ sâu trước khi trả lời, tích hợp mặc định từ Antigravity backend)
+* **Authentication:** Tự động nạp OAuth token từ Windows Credential Manager (`gemini:antigravity`). Không yêu cầu API key hay thao tác đăng nhập thủ công trong Codex.
 
-### Cấu trúc tham số (Arguments):
+---
+
+## 2. Cấu hình MCP trong Codex Desktop (One-time Setup)
+
+Được khai báo trong file cấu hình `C:\Users\<USER>\.codex\config.toml`:
+
+```toml
+[mcp_servers.gemini]
+command = 'e:\add-provider-to-codex\bridge\gemini-mcp.exe'
+args = []
+startup_timeout_sec = 60
+```
+
+---
+
+## 3. Quy cách gọi Tool (Direct MCP Tool Call)
+
+Codex thực hiện gọi tool theo schema sau:
+
+* **ServerName:** `gemini`
+* **ToolName:** `ask_gemini`
+* **Arguments:**
 
 ```json
 {
-  "prompt": "<Mô tả chi tiết câu hỏi, yêu cầu hoặc nhiệm vụ cần Gemini xử lý>",
-  "context": "<(Tùy chọn) Đoạn code liên quan, nội dung file hoặc ngữ cảnh dự án>"
+  "prompt": "<Yêu cầu kỹ thuật chi tiết, ràng buộc bài toán và định dạng đầu ra mong muốn>",
+  "context": "<Nội dung file code liên quan, stack trace, hoặc cấu trúc schema của dự án>"
+}
+```
+
+### Chi tiết các tham số:
+1. `prompt` (string, **bắt buộc**):
+   * Câu lệnh kỹ thuật rõ ràng, đi thẳng vào mục tiêu.
+   * Yêu cầu cụ thể: giải thuật, phân tích concurrency/deadlock, refactor hoặc viết unit test.
+   * Chỉ định rõ ngôn ngữ (Go, TypeScript, Python, Rust, v.v.) và quy chuẩn code cần tuân thủ.
+2. `context` (string, **tùy chọn nhưng khuyến nghị**):
+   * Nội dung mã nguồn của các file liên quan trích xuất từ repository.
+   * Log lỗi compile hoặc stack trace khi debug.
+   * *Lưu ý:* `gemini-mcp.exe` không tự truy cập filesystem của Codex; toàn bộ ngữ cảnh cần thiết phải được Codex đọc từ repo và truyền trực tiếp vào tham số này.
+
+---
+
+## 4. Khi nào Codex PHẢI gọi Gemini?
+
+Codex bắt buộc hoặc chủ động gọi `ask_gemini` trong các tình huống:
+
+1. **Thuật toán & Tối ưu hóa:**
+   * Dynamic Programming, đồ thị (Dijkstra, Tarjan), hình học tính toán, xử lý chuỗi nâng cao.
+   * Tối ưu độ phức tạp thời gian từ $O(N^2)$ xuống $O(N \log N)$ hoặc $O(N)$.
+2. **Concurrency & Race Condition:**
+   * Phân tích mutex locks, channels, thread safety, deadlock trong Go hoặc Rust.
+3. **Thẩm định chéo (Cross-Validation / Second Opinion):**
+   * Đánh giá rủi ro trước khi thực hiện refactor kiến trúc lớn.
+   * Tìm lỗ hổng bảo mật, tràn bộ nhớ hoặc edge-case tiềm ẩn mà model hiện tại chưa chắc chắn.
+4. **Người dùng yêu cầu trực tiếp:**
+   * Khi prompt của người dùng có chứa các từ khóa: `gemini`, `hỏi gemini`, `nhờ gemini`, `dùng gemini 3.8`.
+
+---
+
+## 5. Mẫu gọi thực tế (Execution Examples)
+
+### Ví dụ 1: Phân tích Concurrency / Race Condition trong Go
+
+```json
+{
+  "prompt": "Phân tích rủi ro race condition khi nhiều goroutine đọc/ghi đồng thời vào Cache. Đề xuất giải pháp sửa đổi hoàn chỉnh dùng sync.RWMutex.",
+  "context": "File: cache.go\n\ntype Cache struct {\n\tdata map[string]any\n}\n\nfunc (c *Cache) Get(k string) any {\n\treturn c.data[k]\n}\n\nfunc (c *Cache) Set(k string, v any) {\n\tc.data[k] = v\n}"
+}
+```
+
+### Ví dụ 2: Tối ưu hóa Thuật toán & Cấu trúc Dữ liệu
+
+```json
+{
+  "prompt": "Viết hàm tìm chu kỳ ngắn nhất trong đồ thị có hướng n đỉnh và m cạnh bằng Go với độ phức tạp O(V * E). Kèm unit test.",
+  "context": "type Edge struct { To, Weight int }\ntype Graph struct { Nodes map[int][]Edge }"
 }
 ```
 
 ---
 
-## 3. Quy trình thực hiện mẫu của Codex (Best Practices Workflow)
+## 6. Xử lý kết quả trả về (Handling Output)
 
-Khi nhận được yêu cầu cần tham vấn Gemini, Codex cần tuân theo 3 bước:
-
-```
-[1. Thu thập ngữ cảnh] ──> [2. Gọi ask_gemini] ──> [3. Tiếp nhận & Áp dụng]
-  Codex đọc các file          Gửi prompt rõ ràng        Codex tổng hợp câu
-  liên quan trong repo        kèm đoạn code vào         trả lời, chỉnh sửa file
-                              tham số context           và chạy test kiểm thử
-```
-
-### Bước 1: Chuẩn bị dữ liệu
-Codex dùng các công cụ đọc file có sẵn để trích xuất đoạn code hoặc interface cần xử lý.
-
-### Bước 2: Gọi Tool `ask_gemini`
-Soạn prompt mạch lạc và truyền ngữ cảnh vào `context`:
-```json
-{
-  "prompt": "Hãy phân tích đoạn mã xử lý socket dưới đây và chỉ ra nguy cơ race condition khi có nhiều kết nối đồng thời. Đề xuất bản vá tối ưu bằng Go.",
-  "context": "// Nội dung file server.go\npackage main\n..."
-}
-```
-
-### Bước 3: Đọc kết quả và hành động
-Nhận câu trả lời từ Gemini, áp dụng giải pháp vào codebase của dự án và chạy build/test để đảm bảo mã nguồn hoạt động chính xác.
-
----
-
-## 4. Mẫu lệnh tương tác nhanh cho Người dùng
-
-Người dùng có thể kích hoạt skill này trong Codex Desktop bằng các câu lệnh tự nhiên:
-
-1. *"Dùng Gemini 3.8 Flash thẩm định xem giải thuật này có tối ưu không: [code]"*
-2. *"Nhờ Gemini viết giúp tôi hàm xử lý phân trang bằng Go kèm unit test."*
-3. *"Hỏi Gemini kiến trúc phù hợp nhất để mở rộng module thanh toán này."*
+1. **Tiếp nhận phản hồi:** Kết quả từ `ask_gemini` là văn bản phản hồi hoàn chỉnh từ Gemini 3.8 Flash High Thinking (chứa phân tích lập luận và khối mã nguồn giải pháp).
+2. **Thực thi:** Codex đọc kết quả, dùng các công cụ chỉnh sửa file nội bộ (`apply_patch`, `edit_file`) để áp dụng mã nguồn vào dự án.
+3. **Kiểm thử:** Luôn chạy lệnh build/test của dự án để nghiệm thu tính chính xác trước khi kết thúc tác vụ.
