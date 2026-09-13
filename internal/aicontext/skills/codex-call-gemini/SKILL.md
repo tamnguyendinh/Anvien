@@ -17,8 +17,10 @@ Cho phép Codex Desktop và các AI agent ủy quyền trực tiếp các bài t
 * **Tool Name:** `ask_gemini`
 * **Transport:** Native `stdio` qua binary `gemini-mcp.exe`
 * **Upstream Model:** `gemini-3.8-flash-high`
-* **Reasoning Mode:** `High Thinking` (Suy nghĩ sâu trước khi trả lời, tích hợp mặc định từ Antigravity backend)
-* **Authentication:** Tự động nạp OAuth token từ Windows Credential Manager (`gemini:antigravity`). Không yêu cầu API key hay thao tác đăng nhập thủ công trong Codex.
+* **Reasoning Mode:** `High Thinking` (Tích hợp mặc định từ Google Antigravity backend)
+* **API Endpoint:** `https://daily-cloudcode-pa.googleapis.com/v1internal:streamGenerateContent?alt=sse`
+* **Project ID:** `aicode-consumers`
+* **Authentication:** Tự động nạp OAuth token từ Windows Credential Manager (`gemini:antigravity`). Không yêu cầu API key hay đăng nhập thủ công trong Codex.
 
 ---
 
@@ -45,18 +47,22 @@ Codex thực hiện gọi tool theo schema sau:
 
 ```json
 {
-  "prompt": "<Yêu cầu kỹ thuật chi tiết, ràng buộc bài toán và định dạng đầu ra mong muốn>",
+  "prompt": "<Khuôn mẫu chỉ thị kích hoạt Antigravity + Yêu cầu kỹ thuật chi tiết>",
   "context": "<Nội dung file code liên quan, stack trace, hoặc cấu trúc schema của dự án>"
 }
 ```
 
 ### Chi tiết các tham số:
+
 1. `prompt` (string, **bắt buộc**):
-   * Câu lệnh kỹ thuật rõ ràng, đi thẳng vào mục tiêu.
-   * Yêu cầu cụ thể: giải thuật, phân tích concurrency/deadlock, refactor hoặc viết unit test.
-   * Chỉ định rõ ngôn ngữ (Go, TypeScript, Python, Rust, v.v.) và quy chuẩn code cần tuân thủ.
+   * **Khuôn mẫu bắt buộc:** Codex **PHẢI** soạn prompt theo đúng cấu trúc 2 dòng sau để kích hoạt Gemini hoạt động với toàn bộ năng lực của Antigravity:
+     ```
+     [Môi trường: Google Antigravity | Model: gemini-3.8-flash-high]
+     Yêu cầu bạn hoạt động trong Antigravity để thực hiện nhiệm vụ kỹ thuật sau:
+     <Mô tả chi tiết bài toán, yêu cầu trả về mã nguồn hoàn chỉnh 100%, không dùng mã giả>
+     ```
 2. `context` (string, **tùy chọn nhưng khuyến nghị**):
-   * Nội dung mã nguồn của các file liên quan trích xuất từ repository.
+   * Đường dẫn file và nội dung mã nguồn của các file liên quan trích xuất từ repository.
    * Log lỗi compile hoặc stack trace khi debug.
    * *Lưu ý:* `gemini-mcp.exe` không tự truy cập filesystem của Codex; toàn bộ ngữ cảnh cần thiết phải được Codex đọc từ repo và truyền trực tiếp vào tham số này.
 
@@ -85,7 +91,7 @@ Codex bắt buộc hoặc chủ động gọi `ask_gemini` trong các tình hu�
 
 ```json
 {
-  "prompt": "Phân tích rủi ro race condition khi nhiều goroutine đọc/ghi đồng thời vào Cache. Đề xuất giải pháp sửa đổi hoàn chỉnh dùng sync.RWMutex.",
+  "prompt": "[Môi trường: Google Antigravity | Model: gemini-3.8-flash-high]\nYêu cầu bạn hoạt động trong Antigravity để phân tích và xử lý dứt điểm rủi ro race condition trong Cache. Viết lại mã nguồn hoàn chỉnh sử dụng sync.RWMutex.",
   "context": "File: cache.go\n\ntype Cache struct {\n\tdata map[string]any\n}\n\nfunc (c *Cache) Get(k string) any {\n\treturn c.data[k]\n}\n\nfunc (c *Cache) Set(k string, v any) {\n\tc.data[k] = v\n}"
 }
 ```
@@ -94,7 +100,7 @@ Codex bắt buộc hoặc chủ động gọi `ask_gemini` trong các tình hu�
 
 ```json
 {
-  "prompt": "Viết hàm tìm chu kỳ ngắn nhất trong đồ thị có hướng n đỉnh và m cạnh bằng Go với độ phức tạp O(V * E). Kèm unit test.",
+  "prompt": "[Môi trường: Google Antigravity | Model: gemini-3.8-flash-high]\nYêu cầu bạn hoạt động trong Antigravity để viết hàm tìm chu kỳ ngắn nhất trong đồ thị có hướng bằng Go với độ phức tạp tối ưu O(V * E). Kèm unit test đầy đủ.",
   "context": "type Edge struct { To, Weight int }\ntype Graph struct { Nodes map[int][]Edge }"
 }
 ```
