@@ -28,7 +28,7 @@ CEO must:
 * Understand the goal, pipeline, state, invariants, and acceptance of the slice before selecting skills.
 * Select skills based on the guidelines in AGENTS.md and the nature of the work, not by keywords.
 * Not need to read every SKILL.md to route; the skill table in AGENTS.md is used for this.
-* Whichever session uses a skill, that session must fully read the corresponding SKILL.md.
+* Whichever agent lane uses a skill, that lane must fully read the corresponding SKILL.md.
 * CEO only reads SKILL.md when CEO itself directly uses that skill.
 * Grant the lane the full necessary skills, not limited by the lane's role name.
 
@@ -89,7 +89,7 @@ CEO must:
 * findings that need to be moved to another slice;
 * issues outside the campaign.
 
-5. Design the session with complete:
+5. Design the agent lane with complete:
 * goal;
 * ownership;
 * skill package;

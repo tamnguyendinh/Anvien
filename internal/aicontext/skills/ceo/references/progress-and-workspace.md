@@ -4,14 +4,14 @@
 
 ## Rules for Reporting Progress
 
-The session must clearly distinguish:
+The agent lane must clearly distinguish:
 
 * Verified;
 * Checking;
 * No evidence yet;
 * Blocked.
 
-Before long commands or long QA, the session must report:
+Before long commands or long QA, the agent lane must report:
 
 * what it is doing;
 * what that command proves;
@@ -22,7 +22,7 @@ Do not report assumptions as facts. Do not remain silent for prolonged periods w
 
 ## Workspace and Artifact Rules
 
-The session must:
+The agent lane must:
 
 * keep temporary artifacts in the repo-local `.tmp`;
 * protect the user worktree;

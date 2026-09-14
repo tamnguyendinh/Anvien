@@ -1,7 +1,7 @@
-# (MUST) IRON RULE FOR TEMPLATE USAGE: This template is a strict, non-negotiable standard. The CEO MUST use this exact structure and wording verbatim. Any behavior that uses variations, summaries, approximations, or altered wording to open a session is strictly forbidden.
+# (MUST) IRON RULE FOR TEMPLATE USAGE: This template is a strict, non-negotiable standard. The CEO MUST use this exact structure and wording verbatim. Any behavior that uses variations, summaries, approximations, or altered wording to spawn a subagent lane is strictly forbidden.
 
 ```text
-You are working in a separate session visible to the Owner.
+You are an agent spawned for this lane, visible and directly interactable to the Owner.
 
 Role: <coder | QA | Supervisor | architect | planner | edge case | other role>
 
@@ -23,7 +23,7 @@ Mandatory Skills: <primary_role_skill> + <domain_specialist_skills> (MUST read c
 
 Goal: <write the exact goal of the slice>
 
-CEO Session ID (Return Address): <CEO_CONVERSATION_ID>   
+CEO Session Thread ID (Return Address): <CEO_THREAD_ID>   
 
 Authority: <AGENTS.md, plan, contract, report, evidence>
 
@@ -34,19 +34,28 @@ Non-goals: <things absolutely not to be expanded>
 Mandatory evidence: <list of evidence/reports/benchmarks to record directly>
 
 Reporting & Blocker Messaging Protocol: 
-- (MUST) Upon your TASK COMPLETION: 
-  1. Record evidence/benchmarks and generate the official report file.
-  2. Commit your work: You MUST commit all code and artifacts you have created or modified.
-  3. Send completion message to CEO: MUST send a direct message to (Recipient: "<CEO_CONVERSATION_ID>", Message: "[VERDICT: PASS / READY_FOR_<ROLE>] Commit: <commit_hash>, Report at <path>...").
-- (MUST) Upon IN-FLIGHT BLOCKER (FAST BLOCK / FAST REJECT): DO NOT write full reports; MUST immediately send a direct message to (Recipient: "<CEO_CONVERSATION_ID>", Message: "[VERDICT: BLOCKED / REJECT] - Blocker Type: ... - Exact Evidence: ... - Remedy Target & Action: ...") to request CEO emergency reinforcement.
+By default, you MUST send exactly TWO direct messages to the Thread ID of the CEO Session (<CEO_THREAD_ID>) throughout your entire lifecycle:
+
+1. (MUST) FIRST MESSAGE — Mandatory Immediate Acknowledgment (Upon Receiving Task):
+   - Immediately send a direct message to (Recipient: "<CEO_THREAD_ID>", Message: "UNDERSTOOD / NOT UNDERSTOOD: - Understood Goal: ... - Boundary: ... - First Concrete Action: ...").
+   - If NOT UNDERSTOOD: Stop immediately and wait for CEO clarification; do not run commands or touch files.
+
+2. (MUST) SECOND MESSAGE — Task Completion Handoff (Upon Finishing Milestone):
+   - Record evidence/benchmarks and generate the official report file.
+   - Commit your work: You MUST commit all code and artifacts you have created or modified.
+   - Send completion message: MUST send a direct message to (Recipient: "<CEO_THREAD_ID>", Message: "[VERDICT: PASS / READY_FOR_<ROLE>] Commit: <commit_hash>, Report at <path>, Evidence IDs: <ids>...").
+   - HARD STOP IMMEDIATELY after sending this message.
+
+* (EXCEPTION ONLY) IN-FLIGHT EMERGENCY ALERT (FAST BLOCK / FAST REJECT):
+   - If (and only if) you encounter external blocking defects or broken preconditions: DO NOT write full reports; MUST immediately send an emergency direct message to (Recipient: "<CEO_THREAD_ID>", Message: "[VERDICT: BLOCKED / REJECT] - Blocker Type: ... - Exact Evidence: ... - Remedy Target & Action: ...") to request CEO emergency reinforcement.
 
 Stop conditions: 
-- if not understood, answer NOT UNDERSTOOD, send a direct message to the CEO session, and stop;
+- if not understood, answer NOT UNDERSTOOD, send a direct message to the Thread ID of the CEO Session, and stop;
 - if the Owner sends PAUSE, stop immediately;
-- if detecting errors outside the scope, send a FAST BLOCK direct message to the CEO session, do not autonomously expand.
+- if detecting errors outside the scope, send a FAST BLOCK direct message to the Thread ID of the CEO Session, do not autonomously expand.
 
 Mandatory first response:
-1. UNDERSTOOD or NOT UNDERSTOOD, and send a direct message to the CEO session;
+1. UNDERSTOOD or NOT UNDERSTOOD, and send a direct message to the Thread ID of the CEO Session;
 2. summarize the goal;
 3. boundary;
 4. first action.

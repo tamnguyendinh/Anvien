@@ -26,8 +26,8 @@
 * CEO automatically cancels the heartbeat timer and triggers the next workflow transition (see `references/subagent-reporting-and-handoff.md`).
 * After assigning work to the next subagent lane, CEO sets a new 5-minute one-shot wake-up timer and transitions back into the **STANDBY** state.
 
-### SCENARIO B: 5-Minute Timer Fires (Periodic Liveness Check)
-* If no message has been received after 5 minutes, the timer wakes CEO to perform a **1-Step Bounded Health Check**:
+### SCENARIO B: 5-Minute Timer Heatbeat Fires (Periodic Liveness Check)
+* If no message has been received after 5 minutes, the timer heatbeat wakes CEO to perform a **1-Step Bounded Health Check**:
   1. **Recent Delta Snapshot Only (Anti-Context-Bloat):** CEO inspects ONLY a single snapshot of the subagent's recent activity to distinguish between: *active healthy progress*, *technical blocker*, or *actual document audit loop / scope deviation*. CEO is STRICTLY FORBIDDEN from reading the entire long execution history of the subagent.
   2. **Healthy Progress (Quiet Standby):** As long as the subagent is actively making tangible progress (writing code, compiling, executing tests, deep refactoring) without loop symptoms, CEO MUST NOT send distracting messages and MUST NOT interrupt the lane. CEO simply resets the 5-minute timer and returns to STANDBY immediately.
   3. If detected falling into a Document Audit Loop or senseless command loop: Immediately issue a warning to the subagent, then reset the 5-minute timer and return to STANDBY.
@@ -53,12 +53,12 @@ Execution Constraints:
 - Coder reads all four ledgers, but strictly the portions belonging to the assigned slice and essential direct references. Do not read full documentation.
 - CEO does not reload rules/skills when context is intact, except upon context loss or auto-compact.
 - Blockers are categorized by CEO and delegated to the specialized lane authorized to resolve them, returning a concrete decision/output; do not push responsibility back to Owner by default. Genuine permission boundaries must still be respected.
-- No Anvien in CEO or any sublanes. Lanes must be opened as separate user-visible sessions, executing locally directly in the repo, without worktree/fork. CEO Astra low; Coder Luna max (or equivalent model on other AI Providers); other lanes matched to their assigned work nature.
+- No Anvien in CEO or any sublanes. Lanes must be spawned as distinct agents (spawn agent / create agent), visible and directly interactable to the Owner, executing locally directly in the repo, without worktree/fork. CEO Astra low; Coder Luna max (or equivalent model on other AI Providers); other lanes matched to their assigned work nature.
 - Prior to creating/updating campaign timers, copy this exact reminder block into the timer prompt. Do not rely solely on conversational memory. Automatically apply it upon each wake-up without sending redundant, useless notifications to the Owner.
 
 ### Lane Opening Rules (Summary):
-- One new session per slice, separate and user-visible, named strictly by role/slice; execute directly in the local repo, no fork/worktree.
-- Use the exact template verbatim; the contract must contain goal, ownership, authority, verified inputs, allowed files to touch, outputs, validation, stop condition, and designated recipient.
+- One spawned agent per slice (spawn agent / create agent), named strictly by role/slice, visible and directly interactable to the Owner; execute directly in the local repo, no fork/worktree.
+- Use the exact template verbatim; the contract must contain goal, ownership, authority, verified inputs, allowed files to touch, outputs, validation, stop condition, and designated recipient (Thread ID of the CEO Session).
 - Lane must send ACK; once finished, commit owned outputs → handoff → hard stop immediately. Do not wait for the entire slice to finish.
 
 Lane Model & Thinking Allocation Matrix:

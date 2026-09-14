@@ -21,7 +21,7 @@
 * **(MUST - Upon Task Completion):** When a subagent (Coder, QA, Architect) **fully completes its assigned milestone task** (reaching the slice completion gate), it MUST:
   1. Record its own raw execution logs, test results, benchmarks, and Evidence IDs (`E1-P1A-...`) directly into the target `evidence.md` and `benchmark.md` files using its own write tools BEFORE sending a message.
   2. **MANDATORY: Generate an official report file** (`Reports/...`).
-  3. Actively send a direct handoff message back to the CEO session (e.g., via `send_message` tool) containing:
+  3. Actively send a direct handoff message back to the Thread ID of the CEO Session (via `send_message` tool with Recipient: "<CEO_THREAD_ID>") containing:
      - The explicit completion verdict: `PASS`, `READY_FOR_<SUBAGENT>`, or `READY_FOR_REVIEW`.
      - The exact Report file path and Evidence IDs recorded on disk.
      - A concise summary of the technical outcome achieved.
@@ -41,7 +41,7 @@ A specialist lane (such as QA, Supervisor, or other functional lane) activates F
 
 ### Strict Subagent Mandate Upon Blocker:
 * **(STRICT PROHIBITION):** Subagents are STRICTLY FORBIDDEN from attempting to fix code outside their assigned role authority. Subagents MUST NOT hang, wait silently, or enter retry loops. **ABSOLUTELY FORBIDDEN FROM WRITING FULL REPORT FILES** (since work is not finished, generating lengthy reports wastes critical time and stalls execution).
-* **(MANDATORY - Zero-Lag):** Subagents MUST immediately issue an emergency direct message back to the CEO session with this exact 3-field structure:
+* **(MANDATORY - Zero-Lag):** Subagents MUST immediately issue an emergency direct message back to the Thread ID of the CEO Session with this exact 3-field structure:
 
 ```text
 [VERDICT: BLOCKED or REJECT] — In-Flight Blocker / Emergency Reinforcement Request
@@ -62,13 +62,13 @@ When CEO receives a `FAST BLOCK / FAST REJECT` message from a specialist lane:
 3. **Reroute to Remediation Owner:** CEO immediately opens or messages the responsible lane (typically Coder or DevOps):
    - *Command Pattern:* "`<reporting_lane>` reported BLOCKED due to `<blocker_reason_and_evidence>`. `<remediation_owner>` must resolve the root cause, update evidence/artifacts, and re-issue `READY_FOR_<reporting_lane>` upon completion."
    - *Example:* "QA reported BLOCKED due to stale manifest hash (F0D9... vs F308...). Coder must rebuild bindings, synchronize manifest hashes, update evidence.md, and re-issue `READY_FOR_QA` upon completion."
-4. **Resume Operational Workflow:** As soon as the recovery lane reports success (PASS), the CEO must immediately reactivate the original specialized lane (the session that issued the FAST BLOCK / FAST REJECT) so the Subagent session can seamlessly resume its interrupted work.
+4. **Resume Operational Workflow:** As soon as the recovery lane reports success (PASS), the CEO must immediately reactivate the original specialized lane (the agent lane that issued the FAST BLOCK / FAST REJECT) so the subagent can seamlessly resume its interrupted work.
 
 ---
 
 ## 5. Gate and Verdict Rules
 
-* Open separate sessions for lanes requiring user control or intervention.
+* Spawn distinct agents (`spawn agent / create agent`) for lanes requiring user control or intervention; do not open detached top-level sessions.
 * Do not open the next phase when the previous gate has not achieved a full PASS.
-* If a transport failure occurs (the subagent dies or hangs without sending a message after a bounded timeout), CEO must handle it via evidence: revoke authority and open a replacement session. Do not wait indefinitely.
+* If a transport failure occurs (the subagent dies or hangs without sending a message after a bounded timeout), CEO must handle it via evidence: revoke authority and spawn a replacement agent lane. Do not wait indefinitely.
 * Phase Pn-C of a plan is closure/handoff docs-only; it is forbidden to open additional Supervisor loops at this slice.

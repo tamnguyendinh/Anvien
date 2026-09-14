@@ -32,7 +32,7 @@ CEO (and only CEO) use this skill.
 
 ## Purpose
 
-Subagents working on long, high-risk tasks, or those requiring Owner intervention MUST be opened as a separate session/task, displayed as an independent session so the user can:
+Subagents working on long, high-risk tasks, or those requiring Owner intervention MUST be spawned as distinct agents (`spawn agent / create agent`), displayed directly in the UI so the user can:
 
 * monitor progress;
 * send requests or direct rebuttals/feedback;
@@ -40,11 +40,11 @@ Subagents working on long, high-risk tasks, or those requiring Owner interventio
 * adjust the scope;
 * see the final verdict and report.
 
-Do not use hidden tasks (lanes) for coder, QA, supervisor, architect, planner, security, or lanes with long-running task subagents because the user needs direct control capabilities.
+Do not use hidden internal execution for coder, QA, supervisor, architect, planner, security, or lanes with long-running tasks because the user needs direct control and visibility capabilities. Do not open detached top-level sessions for worker lanes to prevent session explosion; use native agent spawning instead.
 
-## Session (Lane) States
+## Subagent Lane (Agent) States
 
-The session uses clear states:
+The spawned agent lane uses clear states:
 
 ```text
 NEW
@@ -69,7 +69,7 @@ Do not transition to CLOSED if there is no suitable durable report and verdict.
 | **2. Owner statements or opinions contradict raw rules or technical evidence** | Align high-level direction with Owner, but technical conclusions must be based 100% on codebase/runtime reality; strictly forbidden from treating subjective opinions as technical facts. | **Section:** `Executive Authority & Chain of Command` *(Line 20)* | `references/authority-and-command.md` |
 | **3. Subagent oversteps authority by commanding CEO or forcing workflow selection** | CEO is the sole commander; subagent holds only execution and reporting rights; CEO immediately reprimands out-of-line behavior and revokes authority if needed. | **Section:** `Executive Authority & Chain of Command` *(Line 16)* | `references/authority-and-command.md` |
 | **4. Previous Gate/Slice completed but next Gate is not yet opened** | "Plan not yet opened" does not mean "sit and wait for Owner prompt"; CEO must proactively read the plan's state machine and immediately open the next gate/slice. | **Section:** `The orchestration agent (CEO agent) must:` *(Line 28)* | `references/authority-and-command.md` |
-| **5. Choosing between Separate (User-Visible) Session vs. Internal Session** | High-risk, long-running, Owner-intervenable, or specialist tasks MUST be opened as separate user-visible sessions; strictly forbidden from using internal sessions for these workloads. | **Section:** `Session Classification` *(Separate vs. Internal)* | `references/session-lifecycle.md` |
+| **5. Spawning an Agent Lane vs. Internal Tool Execution** | High-risk, long-running, Owner-intervenable, or specialist tasks MUST be spawned as distinct agents (`spawn agent / create agent`) visible and interactable to the Owner; strictly forbidden from using detached top-level sessions or unobservable background tools for these workloads. | **Section:** `Lane Classification` *(Spawned Agents vs. Internal)* | `references/session-lifecycle.md` |
 | **6. Designing a new lane and determining skills to grant to Subagent** | Design lane with all 4 elements (Ownership, Capability, Authority, Boundary); grant sufficient skills matching the nature of the work in `AGENTS.md`, not constrained by role name. | **Section:** `How to Select Skills` & `The Nature of Lanes and Skills` | `references/lane-and-skill-coordination.md` |
 | **7. Deciding whether to combine multiple tasks into one lane or separate into independent lanes** | Keep in the same lane if sharing the same objective/boundary; separate lanes only when there is authority conflict (e.g., editing vs. approving), ownership handover, or zero-trust review required. | **Section:** `When to Share or Separate Lanes` | `references/lane-and-skill-coordination.md` |
 | **8. Coder completes work; deciding whether a QA lane is required** | QA is not a default gate for all code changes; only open QA when the nature of the work genuinely requires direct runtime or browser validation. | **Section:** `Acceptance and Transitioning Slices` *(Line 118)* | `references/lane-and-skill-coordination.md` |
@@ -99,9 +99,9 @@ Do not transition to CLOSED if there is no suitable durable report and verdict.
 
 | Contract & Handoff Situation | Mandatory Contract Clause / Control Enforcement | Target Section in Reference Docs | Reference File |
 | :--- | :--- | :--- | :--- |
-| **1. Composing opening prompt to initialize a new Subagent session** | MUST copy verbatim 100% of the standard prompt template shell (universal 6-step lifecycle and 5 absolute prohibitions; no summarizing, no improvising). The inner Contract Payload MUST integrate all required operational context from the situations below tailored to the specific assignment. | **Section:** `Mandatory Template Usage Iron Rule` *(Full template prompt)* | `references/Template-Prompt-for-Opening-a-Session.md` |
+| **1. Composing prompt to spawn / create a new Subagent lane** | MUST copy verbatim 100% of the standard prompt template shell (universal 6-step lifecycle and 5 absolute prohibitions; no summarizing, no improvising). Return address MUST specify the Thread ID of the CEO Session (`<CEO_THREAD_ID>`). The inner Contract Payload MUST integrate all required operational context from the situations below tailored to the specific assignment. | **Section:** `Mandatory Template Usage Iron Rule` *(Full template prompt)* | `references/Template-Prompt-for-Opening-a-Session.md` |
 | **2. Pre-flight verification of contract prerequisites before opening a new lane** | Contract must explicitly define: Goal, Scope, Non-goals, Allowed files to modify, Mandatory evidence to collect, Stop conditions, and Designated handoff recipient. | **Section:** `Conditions Prior to Opening a Session (Lane)` | `references/session-lifecycle.md` |
-| **3. Subagent initialized and sending initial acknowledgment message to CEO** | MUST verify `UNDERSTOOD` acknowledgment (including goal summary, boundary, and initial action); if subagent reports `NOT UNDERSTOOD`, command execution is forbidden until CEO clarifies. | **Section:** `Mandatory Acknowledgment When a Session Starts` | `references/session-lifecycle.md` |
+| **3. Subagent initialized and sending initial acknowledgment message to CEO** | MUST verify `UNDERSTOOD` acknowledgment sent to the Thread ID of the CEO Session (including goal summary, boundary, and initial action); if subagent reports `NOT UNDERSTOOD`, command execution is forbidden until CEO clarifies. | **Section:** `Mandatory Acknowledgment When a Lane Starts` | `references/session-lifecycle.md` |
 | **4. Subagent encounters non-fatal FAIL/UNAVAILABLE test result while other work can proceed** | Contract stipulates: Classify as "Finding", document it, and continue execution; trigger FAST BLOCK only when failure completely paralyzes execution or invalidates evidence. | **Section 3:** `FAST BLOCK / FAST REJECT Protocol` *(Nature section)* | `references/subagent-reporting-and-handoff.md` |
 | **5. Subagent encounters environment breakage, artifact drift, or complete blockage** | Contract stipulates: Immediately trigger FAST BLOCK / FAST REJECT; forbid lengthy reports; send 3-field emergency DM to CEO (`Blocker Type`, `Exact Evidence`, `Remedy Target & Action`). | **Section 3:** `FAST BLOCK / FAST REJECT Protocol` *(Trigger Conditions & Message Format)* | `references/subagent-reporting-and-handoff.md` |
 | **6. Subagent completes code/test implementation prior to reporting PASS** | Contract stipulates: Functional subagent MUST directly use its tools to record logs/benchmarks into `evidence.md`/`benchmark.md` BEFORE reporting PASS; forbid expecting Planner to record evidence on its behalf. | **Section 2:** `Task Completion & Milestone Handoff`<br>*(combined with `12 Documentation Principles`, Principle 12)* | `references/subagent-reporting-and-handoff.md`<br>*(and `recovery-and-documentation.md`)* |

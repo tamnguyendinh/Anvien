@@ -9,10 +9,10 @@
 * pause; 
 * change scope;
 * request explanations;
-* request the session (lane) to answer UNDERSTOOD/NOT UNDERSTOOD;
+* request the lane (agent) to answer UNDERSTOOD/NOT UNDERSTOOD;
 * reject a verdict or request a re-review of a specific invariant.
 
-### 2. Sessions visible to the user must treat the user's message as the latest authority.
+### 2. Lanes and sessions visible to the user must treat the user's message as the latest authority.
 
 1. Handling General Messages vs. Pauses:
 
@@ -28,7 +28,7 @@
 * Only continue after the user explicitly allows.
 
 3. Absolute Rules for a PAUSE State:
-A pause request is an absolute stop command. While paused, the session (MUST NOT):
+A pause request is an absolute stop command. While paused, the lane/session (MUST NOT):
 
 * run additional commands;
 * modify code or documentation;
