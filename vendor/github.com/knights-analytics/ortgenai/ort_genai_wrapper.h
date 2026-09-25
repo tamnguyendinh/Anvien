@@ -57,6 +57,14 @@ typedef const int32_t* (*PFN_OgaGeneratorGetSequenceData)(const OgaGenerator*, s
 typedef OgaResult* (*PFN_OgaTokenizerStreamDecode)(OgaTokenizerStream*, int32_t, const char**);
 typedef bool (*PFN_OgaGeneratorIsDone)(const OgaGenerator*);
 typedef OgaResult* (*PFN_OgaTokenizerGetEosTokenIds)(const OgaTokenizer*, const int32_t** , size_t*);
+typedef void (*PFN_OgaShutdown)();
+typedef void (*PFN_OgaSetTelemetryEnabled)(bool);
+typedef OgaResult* (*PFN_OgaCreateConfigFromPackageEp)(const char*, const char*, OgaConfig**);
+typedef OgaResult* (*PFN_OgaTokenizerGetPadTokenId)(const OgaTokenizer*, int32_t*);
+typedef OgaResult* (*PFN_OgaTokenizerGetBotTokenId)(const OgaTokenizer*, int32_t*);
+typedef OgaResult* (*PFN_OgaTokenizerGetEotTokenId)(const OgaTokenizer*, int32_t*);
+typedef OgaResult* (*PFN_OgaTokenizerGetBorTokenId)(const OgaTokenizer*, int32_t*);
+typedef OgaResult* (*PFN_OgaTokenizerGetEorTokenId)(const OgaTokenizer*, int32_t*);
 
 // Config-related API
 typedef OgaResult* (*PFN_OgaCreateConfig)(const char*, OgaConfig**);
@@ -160,6 +168,15 @@ typedef struct GenAiApiTable {
 	PFN_OgaRequestHasUnseenTokens RequestHasUnseenTokens;
 	PFN_OgaRequestGetUnseenToken RequestGetUnseenToken;
 	PFN_OgaRequestIsDone RequestIsDone;
+	// Extended / Release API
+	PFN_OgaShutdown Shutdown;
+	PFN_OgaSetTelemetryEnabled SetTelemetryEnabled;
+	PFN_OgaCreateConfigFromPackageEp CreateConfigFromPackageEp;
+	PFN_OgaTokenizerGetPadTokenId TokenizerGetPadTokenId;
+	PFN_OgaTokenizerGetBotTokenId TokenizerGetBotTokenId;
+	PFN_OgaTokenizerGetEotTokenId TokenizerGetEotTokenId;
+	PFN_OgaTokenizerGetBorTokenId TokenizerGetBorTokenId;
+	PFN_OgaTokenizerGetEorTokenId TokenizerGetEorTokenId;
 } GenAiApiTable;
 
 // Sets the global function pointer table. All pointers must be non-null.
@@ -210,8 +227,32 @@ int SetGenAiApi(void* createModel,
 	void* destroyStringArray,
 	void* stringArrayAddString,
 	void* processorProcessImagesAndPrompts,
-	// Guidance/constrained-generation (optional — may be NULL on older runtimes)
-	void* generatorParamsSetGuidance);
+	// Guidance/constrained-generation
+	void* generatorParamsSetGuidance,
+	// Extended API
+	void* shutdown,
+	void* setTelemetryEnabled,
+	void* createConfigFromPackageEp,
+	void* tokenizerGetPadTokenId,
+	void* tokenizerGetBotTokenId,
+	void* tokenizerGetEotTokenId,
+	void* tokenizerGetBorTokenId,
+	void* tokenizerGetEorTokenId,
+	// Engine API
+	void* createEngine,
+	void* destroyEngine,
+	void* engineStep,
+	void* engineHasPendingRequests,
+	void* engineAddRequest,
+	void* engineRemoveRequest,
+	void* createRequest,
+	void* destroyRequest,
+	void* requestAddTokens,
+	void* requestSetOpaqueData,
+	void* requestGetOpaqueData,
+	void* requestHasUnseenTokens,
+	void* requestGetUnseenToken,
+	void* requestIsDone);
 
 // Returns non-zero if the API table is initialized.
 int GenAiApiIsInitialized(void);
@@ -270,18 +311,6 @@ void DestroyOgaStringArray(OgaStringArray* string_array);
 OgaResult* AddStringToOgaStringArray(OgaStringArray* string_array, const char* str);
 OgaResult* ProcessOgaImagesAndPrompts(const OgaMultiModalProcessor* processor,  const OgaStringArray* prompts, const OgaImages* images, OgaNamedTensors** out);
 
-// Engine API initialization (separate from SetGenAiApi for backward compat).
-// Returns 0 on success, non-zero on failure.
-int SetGenAiEngineApi(void* createEngine, void* destroyEngine,
-	void* engineStep, void* engineHasPendingRequests,
-	void* engineAddRequest, void* engineRemoveRequest,
-	void* createRequest, void* destroyRequest,
-	void* requestAddTokens, void* requestSetOpaqueData,
-	void* requestGetOpaqueData, void* requestHasUnseenTokens,
-	void* requestGetUnseenToken, void* requestIsDone);
-
-int GenAiEngineApiIsInitialized(void);
-
 // Engine thin wrappers
 OgaResult* CreateOgaEngine(OgaModel* model, OgaEngine** out);
 void DestroyOgaEngine(OgaEngine* engine);
@@ -297,6 +326,16 @@ OgaResult* RequestGetOpaqueData(OgaRequest* request, void** opaque_data);
 OgaResult* RequestHasUnseenTokens(const OgaRequest* request, bool* out);
 OgaResult* RequestGetUnseenToken(OgaRequest* request, int32_t* out);
 OgaResult* RequestIsDone(const OgaRequest* request, bool* out);
+
+
+void OgaShutdown(void);
+void OgaSetTelemetryEnabled(bool enabled);
+OgaResult* OgaCreateConfigFromPackageEp(const char* config_path, const char* ep, OgaConfig** out);
+OgaResult* OgaTokenizerGetPadTokenId(const OgaTokenizer* tokenizer, int32_t* token_id);
+OgaResult* OgaTokenizerGetBotTokenId(const OgaTokenizer* tokenizer, int32_t* token_id);
+OgaResult* OgaTokenizerGetEotTokenId(const OgaTokenizer* tokenizer, int32_t* token_id);
+OgaResult* OgaTokenizerGetBorTokenId(const OgaTokenizer* tokenizer, int32_t* token_id);
+OgaResult* OgaTokenizerGetEorTokenId(const OgaTokenizer* tokenizer, int32_t* token_id);
 
 #ifdef __cplusplus
 } // extern "C"

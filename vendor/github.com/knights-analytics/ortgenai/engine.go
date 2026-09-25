@@ -19,7 +19,6 @@ import (
 	"unsafe"
 )
 
-var ErrEngineAPINotAvailable = errors.New("OgaEngine API not available in loaded ORT GenAI library (requires >= 0.9.1)")
 
 // Engine provides continuous batching via the OgaEngine C API.
 // Multiple goroutines may call Submit concurrently; the engine batches
@@ -61,9 +60,6 @@ func CreateEngine(modelPath string) (*Engine, error) {
 	if !IsInitialized() {
 		return nil, ErrNotInitialized
 	}
-	if !IsEngineAPIAvailable() {
-		return nil, ErrEngineAPINotAvailable
-	}
 	if modelPath == "" {
 		return nil, errors.New("modelPath is empty")
 	}
@@ -88,9 +84,6 @@ func CreateEngine(modelPath string) (*Engine, error) {
 func CreateEngineWithOptions(configDirectoryPath string, providers []string, providerOptions map[string]map[string]string) (*Engine, error) {
 	if !IsInitialized() {
 		return nil, ErrNotInitialized
-	}
-	if !IsEngineAPIAvailable() {
-		return nil, ErrEngineAPINotAvailable
 	}
 
 	var cfg *C.OgaConfig
@@ -193,7 +186,9 @@ func (e *Engine) GetStatistics() *Statistics {
 // excess callers' contexts are cancelled.
 func (e *Engine) Submit(ctx context.Context, messages []Message, tools []string, opts *GenerationOptions) (<-chan SequenceDelta, <-chan error, error) {
 	// Tokenize
+	e.mu.Lock()
 	seqs, streams, err := e.tokenizer.tokenizeMessages([][]Message{messages}, tools)
+	e.mu.Unlock()
 	if err != nil {
 		return nil, nil, fmt.Errorf("tokenize failed: %w", err)
 	}

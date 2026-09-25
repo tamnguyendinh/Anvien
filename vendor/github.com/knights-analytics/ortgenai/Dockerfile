@@ -1,8 +1,8 @@
 #--- dockerfile to test ortgenai ---
 
-ARG GO_VERSION=1.26.2
-ARG ONNXRUNTIME_VERSION=1.24.4
-ARG ONNXRUNTIME_GENAI_VERSION=0.13.1
+ARG GO_VERSION=1.26.5
+ARG ONNXRUNTIME_VERSION=1.28.0
+ARG ONNXRUNTIME_GENAI_VERSION=0.15.0
 ARG BUILD_PLATFORM=linux/amd64
 
 FROM --platform=$BUILD_PLATFORM public.ecr.aws/amazonlinux/amazonlinux:2023 AS genai-runtime
@@ -24,10 +24,10 @@ RUN --mount=src=./go.mod,dst=/go.mod \
     rm go${GO_VERSION}.linux-amd64.tar.gz && \
     # onnxruntime cpu
     sed -i 's/\r//g' /download-onnxruntime.sh && chmod +x /download-onnxruntime.sh && \
-    /download-onnxruntime.sh ${ONNXRUNTIME_VERSION} && \
+    /download-onnxruntime.sh --onnxruntime-version=${ONNXRUNTIME_VERSION} && \
     # onnxruntime genai
     sed -i 's/\r//g' /download-onnxruntime-genai.sh && chmod +x /download-onnxruntime-genai.sh && \
-    /download-onnxruntime-genai.sh ${ONNXRUNTIME_GENAI_VERSION} && \
+    /download-onnxruntime-genai.sh --onnxruntime-genai-version=${ONNXRUNTIME_GENAI_VERSION}  && \
     # NON-PRIVILEGED USER
     # create non-privileged testuser with id: 1000
     useradd -u 1000 -m testuser && usermod -a -G wheel testuser && \

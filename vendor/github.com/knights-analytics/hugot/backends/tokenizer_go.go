@@ -10,7 +10,7 @@ import (
 )
 
 type GoTokenizer struct {
-	Tokenizer     api.Tokenizer
+	Tokenizer     *hftokenizer.Tokenizer
 	TypeIDs       bool
 	AttentionMask bool
 }
@@ -32,15 +32,14 @@ func loadGoTokenizer(tokenizerBytes []byte, model *Model) error {
 	}
 
 	model.Tokenizer = &Tokenizer{
-		Runtime: "GO",
+		Runtime: TokenizerRuntimeGo,
 		GoTokenizer: &GoTokenizer{
 			Tokenizer:     tk,
 			TypeIDs:       typeIDs,
 			AttentionMask: attentionMask,
 		},
-		TokenizerTimings: &timings{},
 		MaxAllowedTokens: model.MaxPositionEmbeddings,
-		Destroy: func() error {
+		close: func() error {
 			return nil
 		},
 	}
@@ -150,8 +149,13 @@ func decodeGo(tokens []uint32, tokenizer *Tokenizer) string {
 
 func getGoTokens(ids []int, tokenizer *Tokenizer) []string {
 	tokens := make([]string, len(ids))
+	tk := tokenizer.GoTokenizer.Tokenizer
 	for i, id := range ids {
-		tokens[i] = tokenizer.GoTokenizer.Tokenizer.Decode([]int{id})
+		if tok, found := tk.IDToToken(id); found {
+			tokens[i] = tok
+		} else {
+			tokens[i] = tk.Decode([]int{id})
+		}
 	}
 	return tokens
 }
