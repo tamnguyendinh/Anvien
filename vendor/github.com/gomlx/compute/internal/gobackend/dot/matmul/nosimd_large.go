@@ -1,0 +1,647 @@
+package matmul
+
+import (
+	"sync"
+
+	"github.com/gomlx/compute/dtypes/gotype"
+	"github.com/gomlx/compute/internal/gobackend"
+	"github.com/gomlx/compute/internal/gobackend/dot"
+)
+
+// largeNoSIMDGeneric implements a "packing" version of the non-SIMD matrix, and parallelizes if
+// possible.
+func largeNoSIMDGeneric[I, O gotype.NumericNotComplex]( //alt:generic
+	//alt:half func largeNoSIMDHalfPrecision[I gotype.HalfPrecision[I], O gotype.ScalarNotComplex](
+	backend *gobackend.Backend,
+	layout dot.Layout,
+	lhs, rhs []I,
+	batchSize, lhsCrossSize, rhsCrossSize, contractingSize int,
+	output []O,
+	nodeData *dot.NodeData) {
+
+	params := NoSIMDParams
+	maxWorkers := backend.Workers.AdjustedMaxParallelism()
+
+	// Strides for each matrix in the batch.
+	lhsBatchStride := lhsCrossSize * contractingSize
+	rhsBatchStride := rhsCrossSize * contractingSize
+	outputBatchStride := lhsCrossSize * rhsCrossSize
+
+	numKPanels := (contractingSize + params.PanelContractingSize - 1) / params.PanelContractingSize
+	numColPanels := (rhsCrossSize + params.RHSPanelCrossSize - 1) / params.RHSPanelCrossSize
+	rhsPanelsPerBatch := numKPanels * numColPanels
+	numRowPanels := (lhsCrossSize + params.LHSPanelCrossSize - 1) / params.LHSPanelCrossSize
+	lhsPanelsPerBatch := numKPanels * numRowPanels
+
+	var (
+		cachedRHSPanels [][]I
+		cachedLHSPanels [][]I
+	)
+	if nodeData != nil {
+		if nodeData.PackedRHSCache != nil {
+			nodeData.PackedRHSCache.Once.Do(func() {
+				ref, panels := noSIMDPrepackRHS(backend, layout, rhs, batchSize, rhsCrossSize, contractingSize, params)
+				nodeData.PackedRHSCache.Buffer = ref
+				nodeData.PackedRHSCache.Panels = panels
+			})
+			if p, ok := nodeData.PackedRHSCache.Panels.([][]I); ok {
+				cachedRHSPanels = p
+			}
+		}
+
+		if nodeData.PackedLHSCache != nil {
+			nodeData.PackedLHSCache.Once.Do(func() {
+				ref, panels := noSIMDPrepackLHS(backend, lhs, batchSize, lhsCrossSize, contractingSize, params)
+				nodeData.PackedLHSCache.Buffer = ref
+				nodeData.PackedLHSCache.Panels = panels
+			})
+			if p, ok := nodeData.PackedLHSCache.Panels.([][]I); ok {
+				cachedLHSPanels = p
+			}
+		}
+	}
+
+	if maxWorkers <= 1 {
+		// No parallelism, do each matrix multiplication in the batch sequentially.
+		var (
+			packedLHSRef *gobackend.Buffer
+			packedLHS    []I
+		)
+		if len(cachedLHSPanels) == 0 {
+			var ok bool
+			packedLHSRef, packedLHS, ok = GetBuffer[I](backend, params.LHSPanelCrossSize*params.PanelContractingSize)
+			if !ok {
+				return
+			}
+			defer ReleaseBuffer(packedLHSRef)
+		}
+		var (
+			packedRHSRef *gobackend.Buffer
+			packedRHS    []I
+		)
+		if len(cachedRHSPanels) == 0 {
+			var ok bool
+			packedRHSRef, packedRHS, ok = GetBuffer[I](backend, params.PanelContractingSize*params.RHSPanelCrossSize)
+			if !ok {
+				return
+			}
+			defer ReleaseBuffer(packedRHSRef)
+		}
+		packedOutputRef, packedOutput, ok := GetBuffer[O](backend, params.LHSPanelCrossSize*params.RHSPanelCrossSize)
+		if !ok {
+			return
+		}
+		defer ReleaseBuffer(packedOutputRef)
+		const maxAccumPanels = 64
+		accumOutputRef, accumOutput, ok := GetBuffer[O](backend, maxAccumPanels*params.LHSPanelCrossSize*params.RHSPanelCrossSize)
+		if !ok {
+			return
+		}
+		defer ReleaseBuffer(accumOutputRef)
+		lhsFlatIdx := 0
+		rhsFlatIdx := 0
+		outputFlatIdx := 0
+		for b := range batchSize {
+			batchLHS := lhs[lhsFlatIdx : lhsFlatIdx+lhsBatchStride]
+			batchRHS := rhs[rhsFlatIdx : rhsFlatIdx+rhsBatchStride]
+			batchOutput := output[outputFlatIdx : outputFlatIdx+outputBatchStride]
+			var (
+				batchCachedLHSPanels [][]I
+				batchCachedRHSPanels [][]I
+			)
+			if len(cachedLHSPanels) > 0 {
+				batchCachedLHSPanels = cachedLHSPanels[b*lhsPanelsPerBatch : (b+1)*lhsPanelsPerBatch]
+			}
+			if len(cachedRHSPanels) > 0 {
+				batchCachedRHSPanels = cachedRHSPanels[b*rhsPanelsPerBatch : (b+1)*rhsPanelsPerBatch]
+			}
+			largeNoSIMDMatrixSlice( //alt:generic
+				//alt:half largeNoSIMDMatrixSliceHalfPrecision(
+				layout,
+				batchLHS, batchRHS, batchOutput,
+				lhsCrossSize, rhsCrossSize, contractingSize,
+				0, lhsCrossSize, 0, rhsCrossSize,
+				params,
+				packedLHS, packedRHS, packedOutput,
+				accumOutput,
+				batchCachedLHSPanels, batchCachedRHSPanels,
+			)
+			lhsFlatIdx += lhsBatchStride
+			rhsFlatIdx += rhsBatchStride
+			outputFlatIdx += outputBatchStride
+		}
+		return
+	}
+
+	// 1. Split work in workItems.
+	workChan := make(chan workItem, max(2000, 2*maxWorkers))
+	var wg sync.WaitGroup
+	wg.Go(func() {
+		feedWorkItems(
+			batchSize, lhsCrossSize, rhsCrossSize,
+			&params, maxWorkers, workChan)
+	})
+
+	// 2. Saturate (fan-out workers) on workItems.
+	backend.Workers.Saturate(func() {
+		var (
+			packedLHSRef *gobackend.Buffer
+			packedLHS    []I
+		)
+		if len(cachedLHSPanels) == 0 {
+			var ok bool
+			packedLHSRef, packedLHS, ok = GetBuffer[I](backend, params.LHSPanelCrossSize*params.PanelContractingSize)
+			if !ok {
+				return
+			}
+			defer ReleaseBuffer(packedLHSRef)
+		}
+		var (
+			packedRHSRef *gobackend.Buffer
+			packedRHS    []I
+		)
+		if len(cachedRHSPanels) == 0 {
+			var ok bool
+			packedRHSRef, packedRHS, ok = GetBuffer[I](backend, params.PanelContractingSize*params.RHSPanelCrossSize)
+			if !ok {
+				return
+			}
+			defer ReleaseBuffer(packedRHSRef)
+		}
+		packedOutputRef, packedOutput, ok := GetBuffer[O](backend, params.LHSPanelCrossSize*params.RHSPanelCrossSize)
+		if !ok {
+			return
+		}
+		defer ReleaseBuffer(packedOutputRef)
+		const maxAccumPanels = 64
+		accumOutputRef, accumOutput, ok := GetBuffer[O](backend, maxAccumPanels*params.LHSPanelCrossSize*params.RHSPanelCrossSize)
+		if !ok {
+			return
+		}
+		defer ReleaseBuffer(accumOutputRef)
+		for item := range workChan {
+			for batchIdx := item.BatchStart; batchIdx < item.BatchEnd; batchIdx++ {
+				batchLHS := lhs[batchIdx*lhsBatchStride : (batchIdx+1)*lhsBatchStride]
+				batchRHS := rhs[batchIdx*rhsBatchStride : (batchIdx+1)*rhsBatchStride]
+				batchOutput := output[batchIdx*outputBatchStride : (batchIdx+1)*outputBatchStride]
+				var (
+					batchCachedLHSPanels [][]I
+					batchCachedRHSPanels [][]I
+				)
+				if len(cachedLHSPanels) > 0 {
+					batchCachedLHSPanels = cachedLHSPanels[batchIdx*lhsPanelsPerBatch : (batchIdx+1)*lhsPanelsPerBatch]
+				}
+				if len(cachedRHSPanels) > 0 {
+					batchCachedRHSPanels = cachedRHSPanels[batchIdx*rhsPanelsPerBatch : (batchIdx+1)*rhsPanelsPerBatch]
+				}
+				largeNoSIMDMatrixSlice( //alt:generic
+					//alt:half largeNoSIMDMatrixSliceHalfPrecision(
+					layout,
+					batchLHS, batchRHS, batchOutput,
+					lhsCrossSize, rhsCrossSize, contractingSize,
+					item.LHSRowStart, item.LHSRowEnd, item.RHSColStart, item.RHSColEnd,
+					params,
+					packedLHS, packedRHS, packedOutput,
+					accumOutput,
+					batchCachedLHSPanels, batchCachedRHSPanels,
+				)
+			}
+		}
+	})
+	wg.Wait()
+}
+
+// largeNoSIMDMatrixSlice performs a slice of the matrix multiplication on one example: lhs, rhs an output
+// must already have sliced one example of the batch dimension.
+//
+// Here there are no batch dimensions anymore, it only applies to a slice of one matrix (2D).
+//
+// packedLHS and packedRHS must be pre-allocated buffers of appropriate size.
+func largeNoSIMDMatrixSlice[I, O gotype.NumericNotComplex]( //alt:generic
+	//alt:half func largeNoSIMDMatrixSliceHalfPrecision[I gotype.HalfPrecision[I], O gotype.ScalarNotComplex](
+	layout dot.Layout,
+	lhsMatrix, rhsMatrix []I, outputMatrix []O,
+	lhsCrossSize, rhsCrossSize, contractingSize int,
+	rowStart, rowEnd, colStart, colEnd int,
+	params CacheParams,
+	packedLHS, packedRHS []I, packedOutput []O,
+	accumBuffer []O,
+	cachedLHSPanels, cachedRHSPanels [][]I,
+) {
+	_ = lhsCrossSize // Not used, rowStart and rowEnd < lhsCrossSize are enough.
+
+	// Loop 5 (jc): Tiling RHS cross axis (N), the output columns.
+	for rhsPanelColIdx := colStart; rhsPanelColIdx < colEnd; {
+		colPanelIdx := rhsPanelColIdx / params.RHSPanelCrossSize
+		panelEnd := (colPanelIdx + 1) * params.RHSPanelCrossSize
+		rhsPanelWidth := min(colEnd, panelEnd) - rhsPanelColIdx
+
+		numMPanels := 0
+		if rowEnd > rowStart {
+			numMPanels = ((rowEnd - 1) / params.LHSPanelCrossSize) - (rowStart / params.LHSPanelCrossSize) + 1
+		}
+		accumPanelStride := params.RHSPanelCrossSize
+		panelSize := params.LHSPanelCrossSize * accumPanelStride
+		useAccum := len(accumBuffer) >= numMPanels*panelSize
+
+		// Loop 4 (p): Tiling the contracting axis (K)
+		for contractingPanelIdx := 0; contractingPanelIdx < contractingSize; contractingPanelIdx += params.PanelContractingSize {
+			contractingPanelWidth := min(params.PanelContractingSize, contractingSize-contractingPanelIdx)
+			if len(cachedRHSPanels) > 0 {
+				numColPanels := (rhsCrossSize + params.RHSPanelCrossSize - 1) / params.RHSPanelCrossSize
+				kPanelIdx := contractingPanelIdx / params.PanelContractingSize
+				panel := cachedRHSPanels[kPanelIdx*numColPanels+colPanelIdx]
+				stripOffset := (rhsPanelColIdx % params.RHSPanelCrossSize) / params.RHSL1KernelCols
+				stripSize := contractingPanelWidth * params.RHSL1KernelCols
+				packedRHS = panel[stripOffset*stripSize:]
+			} else if layout == dot.LayoutNonTransposed {
+				unsafePackRHS(rhsMatrix, packedRHS, contractingPanelIdx, rhsPanelColIdx, rhsCrossSize, contractingPanelWidth, rhsPanelWidth, params.RHSL1KernelCols)
+			} else {
+				// For LayoutTransposed, the rhs has the same layout as the lhs, so we use packLHS instead.
+				unsafePackLHS(rhsMatrix, packedRHS, rhsPanelColIdx, contractingPanelIdx, contractingSize,
+					rhsPanelWidth, contractingPanelWidth, params.RHSL1KernelCols)
+			}
+
+			// Loop 3 (ic): Tiling LHS cross axis (M), i.e. the output rows.
+			for mIdx, lhsPanelRowIdx := 0, rowStart; lhsPanelRowIdx < rowEnd; mIdx++ {
+				rowPanelIdx := lhsPanelRowIdx / params.LHSPanelCrossSize
+				lhsPanelEnd := (rowPanelIdx + 1) * params.LHSPanelCrossSize
+				lhsPanelHeight := min(rowEnd, lhsPanelEnd) - lhsPanelRowIdx
+
+				if len(cachedLHSPanels) > 0 {
+					numRowPanels := (lhsCrossSize + params.LHSPanelCrossSize - 1) / params.LHSPanelCrossSize
+					kPanelIdx := contractingPanelIdx / params.PanelContractingSize
+					panel := cachedLHSPanels[kPanelIdx*numRowPanels+rowPanelIdx]
+					stripOffset := (lhsPanelRowIdx % params.LHSPanelCrossSize) / params.LHSL1KernelRows
+					stripSize := contractingPanelWidth * params.LHSL1KernelRows
+					packedLHS = panel[stripOffset*stripSize:]
+				} else {
+					unsafePackLHS(lhsMatrix, packedLHS, lhsPanelRowIdx, contractingPanelIdx, contractingSize,
+						lhsPanelHeight, contractingPanelWidth, params.LHSL1KernelRows)
+				}
+
+				isFirstContractingPanel := contractingPanelIdx == 0
+				accumulate := !isFirstContractingPanel
+				canDirectOutput := (contractingSize <= params.PanelContractingSize) &&
+					(lhsPanelHeight%params.LHSL1KernelRows == 0) &&
+					(rhsPanelWidth%params.RHSL1KernelCols == 0)
+
+				if canDirectOutput {
+					outOffset := lhsPanelRowIdx*rhsCrossSize + rhsPanelColIdx
+					outSlice := outputMatrix[outOffset : outOffset+(lhsPanelHeight-1)*rhsCrossSize+rhsPanelWidth]
+					largeNoSIMDPanel( //alt:generic
+						//alt:half largeNoSIMDPanelHalfPrecision(
+						packedLHS, packedRHS, outSlice,
+						params.LHSPanelCrossSize, rhsCrossSize,
+						contractingPanelWidth,
+						lhsPanelHeight, rhsPanelWidth,
+						accumulate,
+					)
+				} else if useAccum {
+					accumOffset := mIdx * panelSize
+					accumSlice := accumBuffer[accumOffset : accumOffset+panelSize]
+					largeNoSIMDPanel( //alt:generic
+						//alt:half largeNoSIMDPanelHalfPrecision(
+						packedLHS, packedRHS, accumSlice,
+						params.LHSPanelCrossSize, accumPanelStride,
+						contractingPanelWidth,
+						lhsPanelHeight, rhsPanelWidth,
+						accumulate,
+					)
+				} else {
+					largeNoSIMDPanel( //alt:generic
+						//alt:half largeNoSIMDPanelHalfPrecision(
+						packedLHS, packedRHS, packedOutput,
+						params.LHSPanelCrossSize, params.RHSPanelCrossSize,
+						contractingPanelWidth,
+						lhsPanelHeight, rhsPanelWidth,
+						false,
+					)
+
+					// Accumulate (or write) packedOutput to outputMatrix.
+					noSIMDApplyPackedOutput(
+						packedOutput, outputMatrix,
+						isFirstContractingPanel,
+						params.RHSPanelCrossSize,
+						lhsPanelRowIdx, rhsPanelColIdx,
+						rhsCrossSize,
+						lhsPanelHeight, rhsPanelWidth)
+				}
+				lhsPanelRowIdx += lhsPanelHeight
+			}
+		}
+
+		if useAccum {
+			// Copy accumulated results from L2 cache to outputMatrix in a single pass.
+			for mIdx, lhsPanelRowIdx := 0, rowStart; lhsPanelRowIdx < rowEnd; mIdx++ {
+				rowPanelIdx := lhsPanelRowIdx / params.LHSPanelCrossSize
+				lhsPanelEnd := (rowPanelIdx + 1) * params.LHSPanelCrossSize
+				lhsPanelHeight := min(rowEnd, lhsPanelEnd) - lhsPanelRowIdx
+
+				if (contractingSize <= params.PanelContractingSize) &&
+					(lhsPanelHeight%params.LHSL1KernelRows == 0) &&
+					(rhsPanelWidth%params.RHSL1KernelCols == 0) {
+					lhsPanelRowIdx += lhsPanelHeight
+					continue
+				}
+				accumOffset := mIdx * panelSize
+				accumSlice := accumBuffer[accumOffset : accumOffset+lhsPanelHeight*accumPanelStride]
+				noSIMDApplyPackedOutput(
+					accumSlice, outputMatrix,
+					true,
+					accumPanelStride,
+					lhsPanelRowIdx, rhsPanelColIdx,
+					rhsCrossSize,
+					lhsPanelHeight, rhsPanelWidth)
+				lhsPanelRowIdx += lhsPanelHeight
+			}
+		}
+		rhsPanelColIdx += rhsPanelWidth
+	}
+}
+
+// largeNoSIMDPanel implements a kernel of the matrix multiplication for
+// a lhs and rhs packed panels into an intermediate output panel (or directly into outputMatrix).
+//
+// It uses register blocking with a 2x4 microkernel (8 scalar accumulators + 6 input variables = 14 variables),
+// which fits 100% in hardware XMM/vector registers on both x86-64 (15 available) and ARM64 (32 available),
+// with ZERO register spills to the stack.
+func largeNoSIMDPanel[I, O gotype.NumericNotComplex]( //alt:generic
+	//alt:half func largeNoSIMDPanelHalfPrecision[I gotype.HalfPrecision[I], O gotype.ScalarNotComplex](
+	packedLHS, packedRHS []I,
+	packedOutput []O,
+	lhsPanelRows, rhsPanelCols int,
+	contractingLen int,
+	lhsActiveRows, rhsActiveCols int,
+	accumulate bool,
+) {
+	const kernelRows = 2
+	const kernelCols = 4
+
+	maxRow := (lhsActiveRows + kernelRows - 1) / kernelRows * kernelRows
+	maxCol := (rhsActiveCols + kernelCols - 1) / kernelCols * kernelCols
+
+	// Boundary check elimination (BCE) hints.
+	_ = packedLHS[contractingLen*maxRow-1]
+	_ = packedRHS[contractingLen*maxCol-1]
+	_ = packedOutput[(maxRow-1)*rhsPanelCols+maxCol-1]
+
+	lhsBlockStride := kernelRows * contractingLen
+	rhsBlockStride := kernelCols * contractingLen
+	lhsOffset := 0
+
+	for rowIdx := 0; rowIdx < lhsActiveRows; rowIdx += kernelRows {
+		rhsOffset := 0
+		for colIdx := 0; colIdx < rhsActiveCols; colIdx += kernelCols {
+			var c00, c01, c02, c03 O
+			var c10, c11, c12, c13 O
+
+			idxLhs := lhsOffset
+			idxRhs := rhsOffset
+
+			// K-Loop unrolled by 8 with constant offsets
+			k := 0
+			for ; k+7 < contractingLen; k += 8 {
+				_ = packedLHS[idxLhs+15]
+				_ = packedRHS[idxRhs+31]
+
+				// Step 0
+				l0 := packedLHS[idxLhs]     //alt:generic
+				l1 := packedLHS[idxLhs+1]   //alt:generic
+				r0 := packedRHS[idxRhs]     //alt:generic
+				r1 := packedRHS[idxRhs+1]   //alt:generic
+				r2 := packedRHS[idxRhs+2]   //alt:generic
+				r3 := packedRHS[idxRhs+3]   //alt:generic
+				//alt:half l0 := packedLHS[idxLhs].Float32()
+				//alt:half l1 := packedLHS[idxLhs+1].Float32()
+				//alt:half r0 := packedRHS[idxRhs].Float32()
+				//alt:half r1 := packedRHS[idxRhs+1].Float32()
+				//alt:half r2 := packedRHS[idxRhs+2].Float32()
+				//alt:half r3 := packedRHS[idxRhs+3].Float32()
+				c00 += O(l0 * r0)
+				c01 += O(l0 * r1)
+				c02 += O(l0 * r2)
+				c03 += O(l0 * r3)
+				c10 += O(l1 * r0)
+				c11 += O(l1 * r1)
+				c12 += O(l1 * r2)
+				c13 += O(l1 * r3)
+
+				// Step 1
+				l0 = packedLHS[idxLhs+2]   //alt:generic
+				l1 = packedLHS[idxLhs+3]   //alt:generic
+				r0 = packedRHS[idxRhs+4]   //alt:generic
+				r1 = packedRHS[idxRhs+5]   //alt:generic
+				r2 = packedRHS[idxRhs+6]   //alt:generic
+				r3 = packedRHS[idxRhs+7]   //alt:generic
+				//alt:half l0 = packedLHS[idxLhs+2].Float32()
+				//alt:half l1 = packedLHS[idxLhs+3].Float32()
+				//alt:half r0 = packedRHS[idxRhs+4].Float32()
+				//alt:half r1 = packedRHS[idxRhs+5].Float32()
+				//alt:half r2 = packedRHS[idxRhs+6].Float32()
+				//alt:half r3 = packedRHS[idxRhs+7].Float32()
+				c00 += O(l0 * r0)
+				c01 += O(l0 * r1)
+				c02 += O(l0 * r2)
+				c03 += O(l0 * r3)
+				c10 += O(l1 * r0)
+				c11 += O(l1 * r1)
+				c12 += O(l1 * r2)
+				c13 += O(l1 * r3)
+
+				// Step 2
+				l0 = packedLHS[idxLhs+4]   //alt:generic
+				l1 = packedLHS[idxLhs+5]   //alt:generic
+				r0 = packedRHS[idxRhs+8]   //alt:generic
+				r1 = packedRHS[idxRhs+9]   //alt:generic
+				r2 = packedRHS[idxRhs+10]  //alt:generic
+				r3 = packedRHS[idxRhs+11]  //alt:generic
+				//alt:half l0 = packedLHS[idxLhs+4].Float32()
+				//alt:half l1 = packedLHS[idxLhs+5].Float32()
+				//alt:half r0 = packedRHS[idxRhs+8].Float32()
+				//alt:half r1 = packedRHS[idxRhs+9].Float32()
+				//alt:half r2 = packedRHS[idxRhs+10].Float32()
+				//alt:half r3 = packedRHS[idxRhs+11].Float32()
+				c00 += O(l0 * r0)
+				c01 += O(l0 * r1)
+				c02 += O(l0 * r2)
+				c03 += O(l0 * r3)
+				c10 += O(l1 * r0)
+				c11 += O(l1 * r1)
+				c12 += O(l1 * r2)
+				c13 += O(l1 * r3)
+
+				// Step 3
+				l0 = packedLHS[idxLhs+6]   //alt:generic
+				l1 = packedLHS[idxLhs+7]   //alt:generic
+				r0 = packedRHS[idxRhs+12]  //alt:generic
+				r1 = packedRHS[idxRhs+13]  //alt:generic
+				r2 = packedRHS[idxRhs+14]  //alt:generic
+				r3 = packedRHS[idxRhs+15]  //alt:generic
+				//alt:half l0 = packedLHS[idxLhs+6].Float32()
+				//alt:half l1 = packedLHS[idxLhs+7].Float32()
+				//alt:half r0 = packedRHS[idxRhs+12].Float32()
+				//alt:half r1 = packedRHS[idxRhs+13].Float32()
+				//alt:half r2 = packedRHS[idxRhs+14].Float32()
+				//alt:half r3 = packedRHS[idxRhs+15].Float32()
+				c00 += O(l0 * r0)
+				c01 += O(l0 * r1)
+				c02 += O(l0 * r2)
+				c03 += O(l0 * r3)
+				c10 += O(l1 * r0)
+				c11 += O(l1 * r1)
+				c12 += O(l1 * r2)
+				c13 += O(l1 * r3)
+
+				// Step 4
+				l0 = packedLHS[idxLhs+8]   //alt:generic
+				l1 = packedLHS[idxLhs+9]   //alt:generic
+				r0 = packedRHS[idxRhs+16]  //alt:generic
+				r1 = packedRHS[idxRhs+17]  //alt:generic
+				r2 = packedRHS[idxRhs+18]  //alt:generic
+				r3 = packedRHS[idxRhs+19]  //alt:generic
+				//alt:half l0 = packedLHS[idxLhs+8].Float32()
+				//alt:half l1 = packedLHS[idxLhs+9].Float32()
+				//alt:half r0 = packedRHS[idxRhs+16].Float32()
+				//alt:half r1 = packedRHS[idxRhs+17].Float32()
+				//alt:half r2 = packedRHS[idxRhs+18].Float32()
+				//alt:half r3 = packedRHS[idxRhs+19].Float32()
+				c00 += O(l0 * r0)
+				c01 += O(l0 * r1)
+				c02 += O(l0 * r2)
+				c03 += O(l0 * r3)
+				c10 += O(l1 * r0)
+				c11 += O(l1 * r1)
+				c12 += O(l1 * r2)
+				c13 += O(l1 * r3)
+
+				// Step 5
+				l0 = packedLHS[idxLhs+10]  //alt:generic
+				l1 = packedLHS[idxLhs+11]  //alt:generic
+				r0 = packedRHS[idxRhs+20]  //alt:generic
+				r1 = packedRHS[idxRhs+21]  //alt:generic
+				r2 = packedRHS[idxRhs+22]  //alt:generic
+				r3 = packedRHS[idxRhs+23]  //alt:generic
+				//alt:half l0 = packedLHS[idxLhs+10].Float32()
+				//alt:half l1 = packedLHS[idxLhs+11].Float32()
+				//alt:half r0 = packedRHS[idxRhs+20].Float32()
+				//alt:half r1 = packedRHS[idxRhs+21].Float32()
+				//alt:half r2 = packedRHS[idxRhs+22].Float32()
+				//alt:half r3 = packedRHS[idxRhs+23].Float32()
+				c00 += O(l0 * r0)
+				c01 += O(l0 * r1)
+				c02 += O(l0 * r2)
+				c03 += O(l0 * r3)
+				c10 += O(l1 * r0)
+				c11 += O(l1 * r1)
+				c12 += O(l1 * r2)
+				c13 += O(l1 * r3)
+
+				// Step 6
+				l0 = packedLHS[idxLhs+12]  //alt:generic
+				l1 = packedLHS[idxLhs+13]  //alt:generic
+				r0 = packedRHS[idxRhs+24]  //alt:generic
+				r1 = packedRHS[idxRhs+25]  //alt:generic
+				r2 = packedRHS[idxRhs+26]  //alt:generic
+				r3 = packedRHS[idxRhs+27]  //alt:generic
+				//alt:half l0 = packedLHS[idxLhs+12].Float32()
+				//alt:half l1 = packedLHS[idxLhs+13].Float32()
+				//alt:half r0 = packedRHS[idxRhs+24].Float32()
+				//alt:half r1 = packedRHS[idxRhs+25].Float32()
+				//alt:half r2 = packedRHS[idxRhs+26].Float32()
+				//alt:half r3 = packedRHS[idxRhs+27].Float32()
+				c00 += O(l0 * r0)
+				c01 += O(l0 * r1)
+				c02 += O(l0 * r2)
+				c03 += O(l0 * r3)
+				c10 += O(l1 * r0)
+				c11 += O(l1 * r1)
+				c12 += O(l1 * r2)
+				c13 += O(l1 * r3)
+
+				// Step 7
+				l0 = packedLHS[idxLhs+14]  //alt:generic
+				l1 = packedLHS[idxLhs+15]  //alt:generic
+				r0 = packedRHS[idxRhs+28]  //alt:generic
+				r1 = packedRHS[idxRhs+29]  //alt:generic
+				r2 = packedRHS[idxRhs+30]  //alt:generic
+				r3 = packedRHS[idxRhs+31]  //alt:generic
+				//alt:half l0 = packedLHS[idxLhs+14].Float32()
+				//alt:half l1 = packedLHS[idxLhs+15].Float32()
+				//alt:half r0 = packedRHS[idxRhs+28].Float32()
+				//alt:half r1 = packedRHS[idxRhs+29].Float32()
+				//alt:half r2 = packedRHS[idxRhs+30].Float32()
+				//alt:half r3 = packedRHS[idxRhs+31].Float32()
+				c00 += O(l0 * r0)
+				c01 += O(l0 * r1)
+				c02 += O(l0 * r2)
+				c03 += O(l0 * r3)
+				c10 += O(l1 * r0)
+				c11 += O(l1 * r1)
+				c12 += O(l1 * r2)
+				c13 += O(l1 * r3)
+
+				idxLhs += 16
+				idxRhs += 32
+			}
+
+			// Tail loop
+			for ; k < contractingLen; k++ {
+				l0 := packedLHS[idxLhs]   //alt:generic
+				l1 := packedLHS[idxLhs+1] //alt:generic
+				//alt:half l0 := packedLHS[idxLhs].Float32()
+				//alt:half l1 := packedLHS[idxLhs+1].Float32()
+
+				r0 := packedRHS[idxRhs]   //alt:generic
+				r1 := packedRHS[idxRhs+1] //alt:generic
+				r2 := packedRHS[idxRhs+2] //alt:generic
+				r3 := packedRHS[idxRhs+3] //alt:generic
+				//alt:half r0 := packedRHS[idxRhs].Float32()
+				//alt:half r1 := packedRHS[idxRhs+1].Float32()
+				//alt:half r2 := packedRHS[idxRhs+2].Float32()
+				//alt:half r3 := packedRHS[idxRhs+3].Float32()
+
+				c00 += O(l0 * r0)
+				c01 += O(l0 * r1)
+				c02 += O(l0 * r2)
+				c03 += O(l0 * r3)
+				c10 += O(l1 * r0)
+				c11 += O(l1 * r1)
+				c12 += O(l1 * r2)
+				c13 += O(l1 * r3)
+
+				idxLhs += kernelRows
+				idxRhs += kernelCols
+			}
+
+			// Store 2x4 block directly to packedOutput
+			rowOffset0 := rowIdx*rhsPanelCols + colIdx
+			rowOffset1 := rowOffset0 + rhsPanelCols
+
+			if !accumulate {
+				packedOutput[rowOffset0] = c00
+				packedOutput[rowOffset0+1] = c01
+				packedOutput[rowOffset0+2] = c02
+				packedOutput[rowOffset0+3] = c03
+
+				packedOutput[rowOffset1] = c10
+				packedOutput[rowOffset1+1] = c11
+				packedOutput[rowOffset1+2] = c12
+				packedOutput[rowOffset1+3] = c13
+			} else {
+				packedOutput[rowOffset0] += c00
+				packedOutput[rowOffset0+1] += c01
+				packedOutput[rowOffset0+2] += c02
+				packedOutput[rowOffset0+3] += c03
+
+				packedOutput[rowOffset1] += c10
+				packedOutput[rowOffset1+1] += c11
+				packedOutput[rowOffset1+2] += c12
+				packedOutput[rowOffset1+3] += c13
+			}
+
+			rhsOffset += rhsBlockStride
+		}
+		lhsOffset += lhsBlockStride
+	}
+}

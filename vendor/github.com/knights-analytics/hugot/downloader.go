@@ -31,11 +31,12 @@ type DownloadOptions struct {
 // NewDownloadOptions creates new DownloadOptions struct with default values.
 // Override the values to specify different download options.
 func NewDownloadOptions() DownloadOptions {
-	d := DownloadOptions{}
-	d.Branch = "main"
-	d.MaxRetries = 5
-	d.RetryInterval = 5
-	d.ConcurrentConnections = 5
+	d := DownloadOptions{
+		Branch:                "main",
+		MaxRetries:            5,
+		RetryInterval:         5,
+		ConcurrentConnections: 5,
+	}
 	return d
 }
 
@@ -43,11 +44,25 @@ func NewDownloadOptions() DownloadOptions {
 // validation occurs to ensure there is an .onnx and tokenizers.json file. Hugot only works with onnx models.
 func DownloadModel(ctx context.Context, modelName string, destination string, options DownloadOptions) (string, error) {
 	// replicates code in hf downloader
+	// DownloadModel is usable without a session, so bind the default filesystem
+	// before using the context-based file helpers below.
+	ctx = fileutil.WithFileSystem(ctx, nil)
 	modelP := modelName
 	if strings.Contains(modelP, ":") {
 		modelP = strings.Split(modelName, ":")[0]
 	}
 	modelPath := path.Join(destination, strings.ReplaceAll(modelP, "/", "_"))
+
+	// The files are only copied under destination after the whole model has
+	// been fetched, so reject a destination that cannot hold them before
+	// contacting the hub.
+	info, statErr := fileutil.FileStats(ctx, destination)
+	if statErr != nil {
+		return "", fmt.Errorf("could not inspect destination %s: %w", destination, statErr)
+	}
+	if !info.IsDir() {
+		return "", fmt.Errorf("destination %s is not a directory", destination)
+	}
 
 	repo := hub.New(modelName)
 	if options.AuthToken != "" {
@@ -68,7 +83,7 @@ func DownloadModel(ctx context.Context, modelName string, destination string, op
 	}
 
 	// make sure it's an onnx model with tokenizer
-	downloadFiles, err := validateDownloadedHFModel(repo, options)
+	downloadFiles, err := ValidateDownloadedHFModel(repo, options)
 	if err != nil {
 		return "", err
 	}
@@ -103,7 +118,7 @@ func DownloadModel(ctx context.Context, modelName string, destination string, op
 	return "", fmt.Errorf("failed to download %s after %d attempts", modelName, options.MaxRetries)
 }
 
-func validateDownloadedHFModel(repo *hub.Repo, options DownloadOptions) ([]string, error) {
+func ValidateDownloadedHFModel(repo *hub.Repo, options DownloadOptions) ([]string, error) {
 	for i := 0; i < options.MaxRetries; i++ {
 		err := repo.DownloadInfo(false)
 		if err != nil {

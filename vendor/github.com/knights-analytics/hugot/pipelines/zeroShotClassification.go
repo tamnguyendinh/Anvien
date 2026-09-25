@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/knights-analytics/hugot/backends"
-	"github.com/knights-analytics/hugot/options"
 	"github.com/knights-analytics/hugot/util/safeconv"
 )
 
@@ -70,28 +69,18 @@ func (t *ZeroShotOutput) GetOutput() []any {
 }
 
 // create all pairs between input sequences and labels.
-func createSequencePairs(sequences interface{}, labels []string, hypothesisTemplate string) ([][][]string, []string, error) {
+func createSequencePairs(sequences []string, labels []string, hypothesisTemplate string) ([][][]string, []string, error) {
 	// Check if labels or sequences are empty
-	if len(labels) == 0 || sequences == nil {
+	if len(labels) == 0 || len(sequences) == 0 {
 		return nil, nil, errors.New("you must include at least one label and at least one sequence")
 	}
 	// Check if hypothesisTemplate can be formatted with labels
 	if fmt.Sprintf(hypothesisTemplate, labels[0]) == hypothesisTemplate {
 		return nil, nil, fmt.Errorf(`the provided hypothesis_template "%s" was not able to be formatted with the target labels. Make sure the passed template includes formatting syntax such as {{}} where the label should go`, hypothesisTemplate)
 	}
-	// Convert sequences to []string if it's a single string
-	var seqs []string
-	switch v := sequences.(type) {
-	case string:
-		seqs = []string{v}
-	case []string:
-		seqs = v
-	default:
-		return nil, nil, errors.New("sequences must be either a string or a []string")
-	}
 	// Create sequence_pairs
 	var sequencePairs [][][]string
-	for _, sequence := range seqs {
+	for _, sequence := range sequences {
 		var temp [][]string
 		for _, label := range labels {
 			hypothesis := strings.Replace(hypothesisTemplate, "{}", label, 1)
@@ -99,15 +88,13 @@ func createSequencePairs(sequences interface{}, labels []string, hypothesisTempl
 		}
 		sequencePairs = append(sequencePairs, temp)
 	}
-	return sequencePairs, seqs, nil
+	return sequencePairs, sequences, nil
 }
 
 // NewZeroShotClassificationPipeline create new Zero Shot Classification Pipeline.
-func NewZeroShotClassificationPipeline(sessionContext context.Context, config backends.PipelineConfig[*ZeroShotClassificationPipeline], s *options.Options, model *backends.Model) (*ZeroShotClassificationPipeline, error) {
-	defaultPipeline, err := backends.NewBasePipeline(sessionContext, config, s, model)
-	if err != nil {
-		return nil, err
-	}
+func NewZeroShotClassificationPipeline(sessionContext context.Context, config backends.PipelineConfig[*ZeroShotClassificationPipeline], model *backends.Model) (*ZeroShotClassificationPipeline, error) {
+	defaultPipeline := backends.NewBasePipeline(sessionContext, config, model)
+	var err error
 	pipeline := &ZeroShotClassificationPipeline{BasePipeline: defaultPipeline}
 	for _, o := range config.Options {
 		err = o(pipeline)
@@ -133,9 +120,9 @@ func NewZeroShotClassificationPipeline(sessionContext context.Context, config ba
 func (p *ZeroShotClassificationPipeline) preprocessPairs(batch *backends.PipelineBatch, inputs [][2]string) error {
 	start := time.Now()
 	backends.TokenizeInputPairs(batch, p.Model.Tokenizer, inputs, p.Model.SeparatorToken)
-	atomic.AddUint64(&p.Model.Tokenizer.TokenizerTimings.NumCalls, 1)
-	atomic.AddUint64(&p.Model.Tokenizer.TokenizerTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
-	err := backends.CreateInputTensors(batch, p.Model, p.Runtime)
+	atomic.AddUint64(&p.TokenizerTimings.NumCalls, 1)
+	atomic.AddUint64(&p.TokenizerTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
+	err := backends.CreateInputTensors(batch, p.Model)
 	return err
 }
 
@@ -145,8 +132,8 @@ func (p *ZeroShotClassificationPipeline) forward(ctx context.Context, batch *bac
 	if err != nil {
 		return err
 	}
-	atomic.AddUint64(&p.PipelineTimings.NumCalls, 1)
-	atomic.AddUint64(&p.PipelineTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
+	atomic.AddUint64(&p.ONNXTimings.NumCalls, 1)
+	atomic.AddUint64(&p.ONNXTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
 	return nil
 }
 
@@ -282,6 +269,11 @@ func (p *ZeroShotClassificationPipeline) RunPipeline(ctx context.Context, inputs
 	return p.postprocess(outputTensors, p.Labels, inputs), errors.Join(runErrors...)
 }
 
+// RunSingle runs zero-shot classification for one sequence.
+func (p *ZeroShotClassificationPipeline) RunSingle(ctx context.Context, input string) (*ZeroShotOutput, error) {
+	return p.RunPipeline(ctx, []string{input})
+}
+
 // PIPELINE INTERFACE IMPLEMENTATION
 
 func (p *ZeroShotClassificationPipeline) IsGenerative() bool {
@@ -306,8 +298,10 @@ func (p *ZeroShotClassificationPipeline) GetMetadata() backends.PipelineMetadata
 // GetStatistics returns the runtime statistics for the pipeline.
 func (p *ZeroShotClassificationPipeline) GetStatistics() backends.PipelineStatistics {
 	statistics := backends.PipelineStatistics{}
-	statistics.ComputeTokenizerStatistics(p.Model.Tokenizer.TokenizerTimings)
-	statistics.ComputeOnnxStatistics(p.PipelineTimings)
+	if p.TokenizerTimings != nil {
+		statistics.ComputeTokenizerStatistics(p.TokenizerTimings)
+	}
+	statistics.ComputeOnnxStatistics(p.ONNXTimings)
 	return statistics
 }
 

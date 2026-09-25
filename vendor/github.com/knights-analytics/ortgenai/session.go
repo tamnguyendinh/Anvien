@@ -40,6 +40,11 @@ func InitializeEnvironment() error {
 	return nil
 }
 
+// SetTelemetryEnabled enables or disables telemetry collection in ORT GenAI.
+func SetTelemetryEnabled(enabled bool) {
+	C.OgaSetTelemetryEnabled(C.bool(enabled))
+}
+
 // DestroyEnvironment Call this function to clean up the internal onnxruntime environment when it
 // is no longer required.
 func DestroyEnvironment() error {
@@ -133,6 +138,11 @@ func (g *generator) addSequences(sequences *sequences) error {
 type tokenizer struct {
 	tokenizerPtr *C.OgaTokenizer
 	EOSTokenIDs  []int
+	PadTokenID   int
+	BotTokenID   int
+	EotTokenID   int
+	BorTokenID   int
+	EorTokenID   int
 }
 
 func newTokenizerFromModel(model model) (tokenizer, error) {
@@ -160,7 +170,23 @@ func newTokenizerFromModel(model model) (tokenizer, error) {
 	for i := 0; i < n; i++ {
 		out[i] = int(arr[i])
 	}
-	return tokenizer{tokenizerPtr: cTokenizer, EOSTokenIDs: out}, nil
+
+	var padID, botID, eotID, borID, eorID C.int32_t
+	C.OgaTokenizerGetPadTokenId(cTokenizer, &padID)
+	C.OgaTokenizerGetBotTokenId(cTokenizer, &botID)
+	C.OgaTokenizerGetEotTokenId(cTokenizer, &eotID)
+	C.OgaTokenizerGetBorTokenId(cTokenizer, &borID)
+	C.OgaTokenizerGetEorTokenId(cTokenizer, &eorID)
+
+	return tokenizer{
+		tokenizerPtr: cTokenizer,
+		EOSTokenIDs:  out,
+		PadTokenID:   int(padID),
+		BotTokenID:   int(botID),
+		EotTokenID:   int(eotID),
+		BorTokenID:   int(borID),
+		EorTokenID:   int(eorID),
+	}, nil
 }
 
 func (t *tokenizer) encode(prompt string, sequences *sequences) error {
