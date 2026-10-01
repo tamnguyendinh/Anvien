@@ -1,6 +1,6 @@
 ---
 name: supervisor
-description: Use whenever reviewing completion claims, fixes, diffs, reports, screenshots, or artifacts for acceptance; verify repo/project reality with Anvien evidence. Always use this skill before accepting any agent output, closing any task, or merging any result.
+description: Use whenever reviewing completion claims, fixes, diffs, reports, screenshots, or artifacts for acceptance; Always use this skill before accepting any agent output, closing any task, or merging any result.
 ---
 
 # Supervisor Review
@@ -42,7 +42,6 @@ REJECT when any are true:
 - State the real claim and authority before judging.
 - Verify the full claim against repo/project reality before PASS.
 - Inspect source before trusting build/test/report output when code reality matters.
-- Use Anvien when codebase topology, impact, contracts, dependencies, or affected flows matter.
 - Review the affected invariant, not only the visible symptom or changed lines.
 - Include direct evidence, preferably file/line evidence when source is involved.
 - Give exactly one verdict: PASS or REJECT.
@@ -55,8 +54,6 @@ REJECT when any are true:
 - Never trust a claim, report, result, or completion statement by itself.
 - Never review only the surface artifact.
 - Never assume the current claim matches a previously seen pattern; verify against the actual artifact and repo/project state.
-- Never use Anvien or any tool as a fixed command checklist.
-- Never treat Anvien or any tool output as the verdict by itself.
 - Never approve from tests alone when source/runtime reality still needs inspection.
 - Never ignore unresolved same-scope reports, blocker notes, or review findings.
 - Never claim PASS from missing, stale, indirect, partial, or narrower evidence.
@@ -68,7 +65,7 @@ REJECT when any are true:
 ## Core Workflow
 
 1. **Reconstruct & Authorize** → Claim, authority, feedback (→ read `references/claim-and-authority.md`)
-2. **Inspect & Verify** → Source inspection, evidence, Anvien (→ read `references/evidence-and-source-inspection.md`)
+2. **Inspect & Verify** → Source inspection, evidence (→ read `references/evidence-and-source-inspection.md`)
 3. **Close Invariants** → Sibling sweep, history & resubmission (→ read `references/invariant-and-resubmission.md`)
 4. **Report & Decide** → PASS/REJECT report & handoff (→ read `references/reporting.md`)
 

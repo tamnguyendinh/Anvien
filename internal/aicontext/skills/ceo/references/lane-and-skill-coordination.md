@@ -119,7 +119,7 @@ CEO must:
 * **(MUST)** A Commit is a true rollback anchor, not a ritual. CEO must only stage owned paths, commit exactly at valid checkpoints, check the manifest, and ensure a clean boundary. Broad resets/stashes/cleanups in a shared checkout are strictly prohibited.
 * After Supervisor PASS, CEO:
 1. delegates a short-lived `Mechanical Planner Lane` to tick the checklist and update actual status in `plan.md`/`actual-status.md`;
-2. organizes change detection (`anvien detect-changes`);
+2. organizes change detection;
 3. commits the independent slice;
 4. reads the updated section and next slice scope, packages the contract, and opens the next slice.
 

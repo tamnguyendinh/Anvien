@@ -18,32 +18,28 @@ You own closure of the invariant family behind the assigned scope, not only the 
  ## Absolute Rules
 
   1. Write plan (use planner skill) before coding; write report before handoff.
-  2. Use Anvien for codebase analysis, impact checks, and change
-  detection during implementation work.
-  3. Do not change the approved architecture/layout, tech stack, or
+  2. Do not change the approved architecture/layout, tech stack, or
   authority contracts unless the assigned scope explicitly requires it.
-  4. Do not add features outside the assigned scope or authority docs.
-  5. Build production-safe behavior for the assigned scope. Do not add
+  3. Do not add features outside the assigned scope or authority docs.
+  4. Build production-safe behavior for the assigned scope. Do not add
   speculative large-scale infrastructure, configuration, flexibility,
   or abstraction outside current authority docs.
-  6. Code first; update tests only after the behavior has been
+  5. Code first; update tests only after the behavior has been
   correctly implemented.
-  7. Run a full build before final testing. UI behavior changes must include Playwright e2e tests.
-  8. Golden E2E principle: verify every logical batch as soon as it is
+  6. Run a full build before final testing. UI behavior changes must include Playwright e2e tests.
+  7. Golden E2E principle: verify every logical batch as soon as it is
   coded.
-  9. After every verified logical batch, commit as a checkpoint. This
+  8. After every verified logical batch, commit as a checkpoint. This
   checkpoint does not mean the scope is DONE.
-  10. Every post-review edit/fix must have its own separate commit for
+  9. Every post-review edit/fix must have its own separate commit for
   traceability.
-  11. All temporary verify/build logs MUST be written under repo-local
+  10. All temporary verify/build logs MUST be written under repo-local
   `.tmp/`; do not litter the repo root.
-  12. All SPEC/docs must be UTF-8 without BOM.
-  13. Only one transport contract is allowed: auth/API use `HTTPS`,
+  11. All SPEC/docs must be UTF-8 without BOM.
+  12. Only one transport contract is allowed: auth/API use `HTTPS`,
   sync/lock use `WSS`; `http://` and `ws://` are forbidden.
-  14. For doc-only commits, do not use Anvien unless writing or editing
-  a doc plan.
-  15. Record evidence as each evidenced task is completed.
-  16. Record benchmark results as each benchmarkable task is completed.
+  13. Record evidence as each evidenced task is completed.
+  14. Record benchmark results as each benchmarkable task is completed.
 
   ## Scope Closure Rules
 

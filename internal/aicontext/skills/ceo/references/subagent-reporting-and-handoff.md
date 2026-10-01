@@ -59,9 +59,11 @@ When CEO receives a `FAST BLOCK / FAST REJECT` message from a specialist lane:
 
 1. **Acknowledge & Pause:** CEO acknowledges the blocker and pauses the reporting lane (e.g., QA) with status `BLOCKED` (preserving its working state).
 2. **Package Fast Repair Packet:** CEO extracts the exact *Blocker Evidence* and *Remedy Target & Action* provided by the specialist lane without second-guessing or manual debugging.
-3. **Reroute to Remediation Owner:** CEO immediately opens or messages the responsible lane (typically Coder or DevOps):
+3. **Reroute to Remediation Owner (Strict Separation of Concerns):** CEO immediately delegates the blocker to the specialized lane authorized to resolve it.
+   - **(MUST - FAST BLOCK Technical Delegation Iron Rule):** Khi FAST BLOCK liên quan đến code, kiến trúc, luồng dữ liệu, schema, hoặc mâu thuẫn Touch-Map (ví dụ cần remap file hay thay đổi scope): CEO TUYỆT ĐỐI KHÔNG ĐƯỢC tự ý quyết định kỹ thuật, không tự ý suy luận thiết kế, không tự ý mở rộng Touch-Map. CEO BẮT BUỘC phải mở ngay một Lane Kiến trúc sư (Architect Lane) qua `create_thread` để Kiến trúc sư thẩm định chuyên môn và ban hành quyết định kiến trúc/Addendum Touch-Map chính thức.
+   - Khi FAST BLOCK liên quan đến bug code triển khai/test failure: đẩy về Coder.
+   - Khi FAST BLOCK liên quan đến hạ tầng/build: đẩy về DevOps.
    - *Command Pattern:* "`<reporting_lane>` reported BLOCKED due to `<blocker_reason_and_evidence>`. `<remediation_owner>` must resolve the root cause, update evidence/artifacts, and re-issue `READY_FOR_<reporting_lane>` upon completion."
-   - *Example:* "QA reported BLOCKED due to stale manifest hash (F0D9... vs F308...). Coder must rebuild bindings, synchronize manifest hashes, update evidence.md, and re-issue `READY_FOR_QA` upon completion."
 4. **Resume Operational Workflow:** As soon as the recovery lane reports success (PASS), the CEO must immediately reactivate the original specialized lane (the agent lane that issued the FAST BLOCK / FAST REJECT) so the subagent can seamlessly resume its interrupted work.
 
 ---

@@ -116,16 +116,7 @@ Must NOT:
 - A file may call multiple other modules but must not encompass more than one unrelated business domain.
 - Never opportunistically refactor or touch areas outside scope.
 
-## 11. Use Anvien Strictly According to Rules
-- Must review Anvien instructions before use.
-- Must refresh graph (`anvien analyze --force`) before any graph-based work.
-- Before modifying functions, classes, methods, exported symbols, shared contracts, or objects listed in rules, run `file-detail` and `impact` analysis.
-- Must report blast radius.
-- HIGH or CRITICAL blast radius is a warning for extra caution, not a prohibition against editing.
-- Never reduce or conceal graph evidence to make output appear simpler.
-- Must run `detect-changes` before committing implementation work.
-
-## 12. Correct Code First, QA Second
+## 11. Correct Code First, QA Second
 Mandatory sequence:
 1. Understand rules and required behavior.
 2. Modify production code.
@@ -139,7 +130,7 @@ Mandatory sequence:
 
 Never modify tests beforehand to force a test PASS while production code is not yet correct.
 
-## 13. QA Must Prove Real Runtime Behavior
+## 12. QA Must Prove Real Runtime Behavior
 - Playwright scripts must be reusable under `playwright/`.
 - Do not use temporary scripts as official evidence.
 - `.tmp` is debug-only and must stay inside the repository.
@@ -150,7 +141,7 @@ Never modify tests beforehand to force a test PASS while production code is not 
 - Never use unrelated tests, stale tests, pass-by-default tests, or superseded evidence to claim completion.
 - Regression must verify both the changed feature and sibling boundaries at risk.
 
-## 14. Artifacts Must Follow Lifecycle Management
+## 13. Artifacts Must Follow Lifecycle Management
 - Failed, retried, duplicated, or superseded artifacts are dead work.
 - Dead work must be deleted at the close of the corresponding phase/slice.
 - Never allow intermediate artifacts to accumulate.
@@ -158,7 +149,7 @@ Never modify tests beforehand to force a test PASS while production code is not 
 - Active, valid evidence must be retained.
 - If the user requests retaining or committing specific artifacts, handle strictly within that scope.
 
-## 15. Acceptance Under Zero-Trust
+## 14. Acceptance Under Zero-Trust
 - Never self-declare completion simply because code runs.
 - All completion claims must pass through Supervisor.
 - Supervisor must independently verify source, diff, runtime, reports, screenshots, and required evidence.
@@ -166,7 +157,7 @@ Never modify tests beforehand to force a test PASS while production code is not 
 - Only mark a slice completed upon Supervisor PASS.
 - If Supervisor REJECTs, fix only the rejected invariant and repeat the verification cycle.
 
-## 16. Commit Slice-by-Slice
+## 15. Commit Slice-by-Slice
 Before committing implementation work:
 - Production code completed.
 - Full build PASS.
@@ -176,11 +167,10 @@ Before committing implementation work:
 - Intermediate artifacts cleaned up.
 - Plan ledgers updated.
 - Supervisor PASS.
-- Anvien `detect-changes` completed.
 
 Each slice must have an independent commit. Never bundle the next slice into the current commit.
 
-## 17. Communication Discipline During Work
+## 16. Communication Discipline During Work
 - Must report current actions and the governing rules or evidence.
 - Do not remain silent for extended periods during build, QA, or subagent waiting.
 - Do not report assumptions as facts.

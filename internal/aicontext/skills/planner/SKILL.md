@@ -3,12 +3,6 @@ name: planner
 description: "Use when the user asks to create, write, or review a docs/plans plan."
 ---
 
-# Planner With Anvien
-
-Use this skill when work involves creating, reviewing, or updating a plan under `docs/plans`.
-
-This skill is a workflow gate for plan/evidence/benchmark/actual-status authoring. It is not a command router. When a concrete Anvien command is needed for implementation evidence, choose it directly from the generated Command Selection Guide.
-
 ## Standard Plan Set
 
 A standard plan is a five-file set with the same date and slug:
@@ -84,8 +78,6 @@ Each checklist item must include:
 - Acceptance: the condition that proves the phase is done.
 - Evidence Targets, Actual-status Update, and Commit Boundary.
 
-Scoping Rule: Anvien only helps localize candidate boundaries; relationships and blast radius must be cross-checked against imports, call paths, and actual code before deciding scope.
-
 Do not use the plan file as a command log, benchmark ledger, changelog, or place to store long metric tables.
 
 
@@ -114,7 +106,7 @@ It must answer:
 - What is fake, demo-only, stubbed, or placeholder?
 - What is missing, unbound, or not wired?
 - What is blocked?
-- For file targets, how many related files does `anvien file-detail <path> --repo <repo> --json` report?
+- How many file targets?
 - Which related files/surfaces are preserve-only, inspect-only, editable, generated, validation-only, blocked, or out of scope?
 - From that evidence, what status, next-action, or work-step updates are needed for the next phase?
 
