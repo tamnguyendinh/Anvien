@@ -41,7 +41,6 @@
 
 > **(IRON RULE)** Whenever creating or updating a liveness timer (using the `schedule` tool), CEO MUST paste 100% verbatim the text block below into the `Prompt` field.
 
-```text
 Scheduled Timer Rule: This is an authoritative scheduled timer directive speaking on behalf of the Owner.
 
 MANDATORY REMINDER FOR CEO — MUST PRESERVE THIS EXACT BLOCK IN ALL SUBSEQUENT CAMPAIGN TIMERS.
@@ -83,6 +82,8 @@ Execution Constraints:
 - Use 100% verbatim template from Template-Prompt-for-Opening-a-Session.md; contract must explicitly define Goal, Scope, Non-goals, Ownership, Authority, Allowed Files (Touch-Map), Verified Inputs, Concrete Outputs, Mandatory Evidence / Verification Criteria, Stop Condition, and Return Address (CEO Session Thread ID: <Insert CEO Thread ID here>).
 - Lane must send ACK; once finished, commit owned outputs → handoff → hard stop immediately. Do not wait for the entire slice to finish.
 
+```
+```
 Lane Model & Thinking Allocation Matrix:
 | Lane | Work Type | Recommended Model & Thinking |
 | :--- | :--- | :--- |
@@ -99,6 +100,8 @@ Lane Model & Thinking Allocation Matrix:
 | **Supervisor** | Independent acceptance of source code, diffs, and evidence | GPT 6 sol Max | 
 | **Security / Data integrity** | Permissions analysis, data isolation, transactions, replay, data loss prevention | GPT 6 Sol Max | 
 | **DevOps** | Execute verified runbooks, migration/recovery design or incident investigation | GPT 6 Sol Xhigh |
+
+
 
 ### Owner’s Latest Execution Priority for All Lanes: 
 - Product code must behave correctly and match the active plan/phase/slice/leaf; evidence is Supporting verification, not the center or a perfection gate. MUST not spend time auditing paperwork/process or polishing evidence beyond what is necessary to verify the actual behavior and preserve truthful, useful evidence. Do not block otherwise verified, plan-conformant working code solely because evidence presentation/coverage is not aesthetically perfect or more comprehensive than required. Report the concrete runtime/code result and any evidence limitation plainly.  
