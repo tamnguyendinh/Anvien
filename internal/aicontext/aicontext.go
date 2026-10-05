@@ -102,7 +102,7 @@ func renderAnvienBlock(skillPathPrefix string, packages []SkillPackage) string {
 	builder.WriteString("- **MUST refresh the graph before graph-based work.** Run `anvien analyze --force` before using any Anvien CLI command, MCP tool, MCP resource, Web/API view, or accuracy/benchmark command that reads, queries, validates, mutates, or reports on the semantic graph. This includes `file-detail`, `query`, `context`, `impact`, `detect-changes`, `cypher`, `rename`, `file-hotspots`, MCP `route_map`/`tool_map`/`shape_check`/`api_impact`, CLI `api route-map`/`api tool-map`/`api shape-check`/`api impact`, `augment`, `graph-health`, `query-health`, `resolution-inventory`, `source-site-accuracy`, and `benchmark-compare`.\n")
 	builder.WriteString("- **MUST run `file-detail` + impact analysis before editing any function, class, method, exported symbol, API handler, graph builder, resolver, analyzer, or shared contract.**\n")
 	builder.WriteString("- **MUST report blast radius.** HIGH or CRITICAL impact means warn clearly and proceed carefully; it is not an automatic ban on editing.\n")
-	builder.WriteString("- **MUST run change detection before committing implementation work.** Use MCP `detect_changes` or CLI `anvien detect-changes --repo <repo> --scope all`.\n")
+	builder.WriteString("- **MUST run change detection after implementation work.** Use MCP `detect_changes` or CLI `anvien detect-changes --repo <repo> --scope all`.\n")
 	builder.WriteString("- When exploring unfamiliar code, start with the Anvien command that matches the task instead of defaulting to grep.\n")
 	builder.WriteString("- When a command has important flags, check `anvien <command> --help`.\n\n")
 	builder.WriteString("## Never Do\n\n")
@@ -172,23 +172,6 @@ func renderAnvienBlock(skillPathPrefix string, packages []SkillPackage) string {
 	writeCommandRow("Show or set wiki capability mode", "`anvien wiki-mode [off|local]`")
 	writeCommandRow("Check exact syntax and flags", "`anvien <command> --help`")
 	builder.WriteString("\n")
-	builder.WriteString("## Resources\n\n")
-	builder.WriteString("| Resource | Use for |\n")
-	builder.WriteString("|----------|---------|\n")
-	builder.WriteString("| `anvien://repos` | All indexed repositories |\n")
-	builder.WriteString("| `anvien://setup` | MCP setup and tool reference |\n")
-	builder.WriteString("| `anvien://repo/<repo>/context` | Codebase overview and index freshness |\n")
-	builder.WriteString("| `anvien://repo/<repo>/clusters` | Functional areas / communities |\n")
-	builder.WriteString("| `anvien://repo/<repo>/processes` | Execution flows |\n")
-	builder.WriteString("| `anvien://repo/<repo>/schema` | Graph schema for Cypher |\n")
-	builder.WriteString("| `anvien://repo/<repo>/cluster/{name}` | Functional area details |\n")
-	builder.WriteString("| `anvien://repo/<repo>/process/{name}` | Step-by-step execution trace |\n\n")
-	builder.WriteString("## MCP Prompts\n\n")
-	builder.WriteString("| Prompt | Use |\n")
-	builder.WriteString("|--------|-----|\n")
-	builder.WriteString("| `detect_impact` | Pre-commit impact workflow using `detect_changes`, `context`, and `impact`; HIGH/CRITICAL are blast-radius warnings, not edit bans. |\n")
-	builder.WriteString("| `generate_map` | Evidence-backed architecture map workflow; resolves the repo through `anvien://repos` when needed and uses only resources/tools/command output actually read. |\n\n")
-	builder.WriteString("MCP prompts are agent templates, not CLI commands. They guide tool/resource use and must still follow repository rules for freshness, impact-before-edit, and detect-changes before commit.\n\n")
 	builder.WriteString(RenderSkillSelectionGuide(skillPathPrefix, packages))
 	builder.WriteString(endMarker)
 	return builder.String()
@@ -231,18 +214,16 @@ func renderMasterRulesBlock() string {
 1. How to use Anvien: run command "anvien --help".
 2. As each task is completed, update the corresponding checklist item immediately.
 3. Anvien Blast-radius **CRITICAL/HIGH** is only a scope warning that the work must be handled carefully; it is **not** a prohibition against editing code.
-4. When SPEC context is required, use ` + "`SPEC-MAP.md`" + ` as the reading order and read the full relevant SPEC cluster; do not rely on keyword search or partial snippets before concluding, planning, or editing.
-5. Use planning proportionally: Before coding, use the planner skill and create a real docs/plans plan when the work is multi-step, affects multiple files or modules, changes behavior/contracts/architecture, carries meaningful risk, or when the user explicitly requests a plan. A plan is not required for a trivial, atomic, low-risk edit with obvious scope—such as correcting a few words, deleting one redundant line, or making a self-contained one-line change that does not alter behavior, contracts, architecture, or cross-module boundaries. Validate such edits at the nearest relevant boundary. When uncertain whether the change is trivial, create a plan.
-6. **Code first**; tests should only be updated after the behavior has been correctly implemented in code.
-7. Playwright scripts must be reusable under ` + "`playwright/`" + `, not one-off temp files; official QA evidence must go to ` + "`Reports/qa/playwright/...`" + ` as both ` + "`.json`" + ` and ` + "`.md`" + `, while ` + "`.tmp`" + ` is debug-only.
-8. Run a full build before validation.
+4. **Code first**; tests should only be updated after the behavior has been correctly implemented in code.
+5. Playwright scripts must be reusable under ` + "`playwright/`" + `, not one-off temp files; official QA evidence must go to ` + "`Reports/qa/playwright/...`" + ` as both ` + "`.json`" + ` and ` + "`.md`" + `, while ` + "`.tmp`" + ` is debug-only.
+6. Run a full build before validation.
    - For non-UI changes, validate the changed behavior or contract at its nearest real boundary, record what each command proves, and do not count unrelated, stale, broken, or pass-by-default tests as evidence.
    - For UI behavior changes, open the real user-visible runtime first: the web app in the user's browser or the desktop app on the user's PC. Then record browser or Playwright evidence for the changed behavior.
-9. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, or graph inventory counts; build/test/e2e timings are validation evidence unless the slice changes those systems.
-10. Record evidence as each evidenced task is completed.
-11. For "doc commits" only and mechanical ledger updates (ticking checklist items in plan.md, updating actual-status.md, evidence.md, or benchmark.md based on reports), do not use Anvien. When authoring new plans, modifying architectural scopes, or changing implementation approaches in plan.md, must use Anvien.
-12. After each completed implementation slice, commit the work, then continue until the full plan is complete.
-13. Before building, if any process is holding a build-related process or lock, terminate all such processes completely; start the build only after they are gone.
+7. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, or graph inventory counts; build/test/e2e timings are validation evidence unless the slice changes those systems.
+8. Record evidence as each evidenced task is completed.
+9. For "doc commits" only and mechanical ledger updates (ticking checklist items in plan.md, updating actual-status.md, evidence.md, or benchmark.md based on reports), do not use Anvien. When authoring new plans, modifying architectural scopes, or changing implementation approaches in plan.md, must use Anvien.
+10. After each completed implementation slice, commit the work, then continue until the full plan is complete.
+11. Before building, if any process is holding a build-related process or lock, terminate all such processes completely; start the build only after they are gone.
 `
 }
 
