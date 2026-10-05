@@ -1,6 +1,6 @@
 ---
 name: nguyen-ly-test-file-tach-biet
-description: (Use when) Dùng khi cần tạo, review, hoặc tổ chức cấu trúc test file (unit, component) theo mô hình tách biệt 100% khỏi mã nguồn sản phẩm, bao gồm fixtures, path aliases, build isolation, và phân định rõ giữa electron/test/ (nội bộ) với playwright/ (E2E).
+description: (Use when) Dùng khi cần tạo, review, hoặc tổ chức cấu trúc test file (unit, component) theo mô hình tách biệt 100% khỏi mã nguồn sản phẩm (Electron/Desktop/Frontend), hoặc theo Go convention (_test.go cùng package). Bao gồm fixtures, path aliases, build isolation, phân định rõ giữa electron/test/ (nội bộ) với playwright/ (E2E), và quy tắc riêng cho Go backend.
 ---
 
 # Nguyên Lý Thư Mục Kiểm Thử Tách Biệt (electron/test/) cho tầng Desktop/Frontend.
@@ -103,7 +103,61 @@ Môi trường chạy	Môi trường Node.js / DOM ảo (chạy mất vài phầ
 Mục đích	Kiểm tra logic tính tiền, render đúng màu nút, validate form	Kiểm tra toàn bộ thao tác click chuột, in hóa đơn thật, IPC bridge thật
 Báo cáo	In kết quả console	Xuất báo cáo Markdown + JSON vào Reports/qa/playwright/
 
-# 6. Tổng Kết Lợi Ích Của phương pháp
+# 6. Quy Tắc Riêng Cho Go Backend (_test.go)
+
+Nguyên lý "tách biệt 100%" ở các section trên **chỉ áp dụng cho Electron/Desktop/Frontend**.
+Go có convention riêng do thiết kế ngôn ngữ — **không được áp mô hình electron/test/ cho Go**.
+
+## 6.1. Test file nằm cùng package với source
+
+Go bắt buộc `_test.go` nằm **cạnh file source** trong cùng thư mục/package.
+Đây không phải lộn xộn — đây là convention của ngôn ngữ.
+
+```
+internal/analyze/
+├── analyze.go            <-- Code sản phẩm
+├── analyze_test.go       <-- Test cho analyze.go (cùng package)
+├── metrics.go
+├── metrics_test.go
+└── testdata/             <-- Dữ liệu test (Go convention, tương đương fixtures/)
+    ├── sample-repo/
+    └── expected-graph.json
+```
+
+
+**Không được** tạo thư mục `test/` riêng rồi dời `_test.go` ra khỏi package.
+
+## 6.2. Hai chế độ test package
+
+| Chế độ | Package declaration | Truy cập |
+|--------|-------------------|----------|
+| White-box | `package analyze` | Truy cập cả unexported (hàm viết thường) |
+| Black-box | `package analyze_test` | Chỉ truy cập exported — test như consumer bên ngoài |
+
+## 6.3. testdata/ thay cho fixtures/
+
+Go toolchain tự nhận thư mục `testdata/` trong mỗi package:
+- `go build` tự động bỏ qua `testdata/`
+- Truy cập bằng đường dẫn tương đối: `os.ReadFile("testdata/sample.json")`
+- Không cần path alias, không cần config exclude
+
+## 6.4. Build isolation là tự động
+
+- Go compiler **tự động loại** mọi file `_test.go` khỏi binary sản phẩm
+- Không cần `tsconfig.exclude`, không cần config gì thêm
+- `go build ./...` → sạch 100%, `go test ./...` → chạy test
+
+## 6.5. So sánh nhanh
+
+| Tiêu chí | Electron/Frontend | Go Backend |
+|----------|-------------------|------------|
+| Vị trí test | Tách ra `electron/test/` | Cùng package, cạnh source |
+| Dữ liệu mock | `test/fixtures/` | `testdata/` trong package |
+| Build isolation | Cần config exclude | Tự động bởi compiler |
+| Path alias | `@renderer/...` | Không cần — import trực tiếp |
+| Test runner | Vitest / Jest | `go test ./...` (built-in) |
+
+# 7. Tổng Kết Lợi Ích Của phương pháp
 1.	Sạch mắt & Ngăn nắp: Mở thư mục code nào là chỉ thấy code tính năng đó, không bị rối mắt bởi hàng chục file .test.tsx xen kẽ.
 2.	Quản lý Mock Data chuẩn: Toàn bộ file JSON giả lập menu, bàn ăn, tài khoản mẫu được gom vào fixtures/, không vương vãi trong component.
 3.	Tránh test mồ côi: Cây thư mục soi chiếu giúp nhìn vào là biết component nào đã có test, component nào chưa.
