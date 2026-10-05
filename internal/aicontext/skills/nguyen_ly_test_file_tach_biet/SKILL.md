@@ -46,7 +46,7 @@ G:\<root_repo>\
 │       │   ├── mock-menu-items.json
 │       │   └── mock-table-states.json
 │       │
-│       ├── setup.ts                    <-- Cấu hình môi trường test (DOM ảo, mock IPC bridge)
+│       ├── test_setup.ts                    <-- Cấu hình môi trường test (DOM ảo, mock IPC bridge)
 │       │
 │       ├── unit/                       <-- Test hàm thuần túy, logic tính toán, store state
 │       │   ├── currency-formatter.test.ts
