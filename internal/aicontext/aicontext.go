@@ -110,7 +110,6 @@ func renderAnvienBlock(skillPathPrefix string, packages []SkillPackage) string {
 	builder.WriteString("- NEVER edit a function, class, or method without first running `impact` on it.\n")
 	builder.WriteString("- NEVER ignore HIGH or CRITICAL impact warnings; explain them and keep the change scoped.\n")
 	builder.WriteString("- NEVER rename symbols with find-and-replace; use graph-guided rename when available.\n")
-	builder.WriteString("- NEVER commit implementation changes without running change detection.\n")
 	builder.WriteString("- NEVER reduce graph evidence just to make output smaller; preserve counts, samples, meaning, and traceability.\n\n")
 	builder.WriteString("## Command Selection Guide\n\n")
 	builder.WriteString("Use Anvien by task, not by a fixed workflow. Pick the command surface that matches the job.\n\n")
@@ -221,9 +220,8 @@ func renderMasterRulesBlock() string {
    - For UI behavior changes, open the real user-visible runtime first: the web app in the user's browser or the desktop app on the user's PC. Then record browser or Playwright evidence for the changed behavior.
 7. Record benchmark results as each benchmarkable task is completed. Benchmarkable means measured product/runtime performance, capacity, package/startup size, graph/DB throughput, or graph inventory counts; build/test/e2e timings are validation evidence unless the slice changes those systems.
 8. Record evidence as each evidenced task is completed.
-9. For "doc commits" only and mechanical ledger updates (ticking checklist items in plan.md, updating actual-status.md, evidence.md, or benchmark.md based on reports), do not use Anvien. When authoring new plans, modifying architectural scopes, or changing implementation approaches in plan.md, must use Anvien.
-10. After each completed implementation slice, commit the work, then continue until the full plan is complete.
-11. Before building, if any process is holding a build-related process or lock, terminate all such processes completely; start the build only after they are gone.
+9. After each completed implementation slice, commit the work, then continue until the full plan is complete.
+10. Before building, if any process is holding a build-related process or lock, terminate all such processes completely; start the build only after they are gone.
 `
 }
 
