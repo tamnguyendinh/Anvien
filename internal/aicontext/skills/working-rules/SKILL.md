@@ -11,6 +11,7 @@ description: This skill should be used when a work session begins, before the se
 - Mandatory sequence: rules first, skills second.
 - Never use summaries, prior session memory, or compacted context in place of the original raw rules.
 - If context is compacted or the task changes, re-read the required original sources before taking action.
+- Nếu lane nhận hợp đồng CEO thì thực thi trong phạm vi đã giao; mọi vướng mắc gửi CEO; CẤM yêu cầu Owner chứng minh ủy quyền hoặc chấp thuận lại.
 
 ## 2. Every Decision Must Be Evidence-Based
 - Do not deduce from verbal statements.
