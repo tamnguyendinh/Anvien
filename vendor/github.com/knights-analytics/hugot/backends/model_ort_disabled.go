@@ -10,10 +10,14 @@ import (
 )
 
 type ORTModel struct {
-	Destroy           func() error
-	GenerativeSession *disabledGenerativeSession // placeholder when ORT disabled
-	GenerativeEngine  *disabledGenerativeEngine  // placeholder when ORT disabled
+	Generative *generativeORTAdapter
 }
+
+type generativeORTAdapter struct{}
+
+func (*generativeORTAdapter) Statistics() PipelineStatistics { return PipelineStatistics{} }
+
+func (m *ORTModel) Close() error { return nil }
 
 func createORTModelBackend(_ *Model, _ *options.Options) error {
 	return errors.New("ORT is not enabled")
@@ -31,6 +35,10 @@ func createImageTensorsORT(_ *PipelineBatch, _ *Model, _ [][][][]float32) error 
 	return errors.New("ORT is not enabled")
 }
 
+func createAudioTensorsORT(_ *PipelineBatch, _ *Model, _ [][]float32) error {
+	return errors.New("ORT model execution is not available on this platform")
+}
+
 func createTabularTensorsORT(_ *PipelineBatch, _ *Model, _ [][]float32) error {
 	return errors.New("ORT is not enabled")
 }
@@ -45,26 +53,4 @@ func createORTGenerativeSession(_ context.Context, _ *Model, _ *options.Options)
 
 func CreateMessagesORT(_ *PipelineBatch, _ any, _ string) error {
 	return errors.New("ORT is not enabled")
-}
-
-type (
-	disabledGenerativeSession struct{}
-	disabledGenerativeEngine  struct{}
-)
-
-func (*disabledGenerativeSession) GetStatistics() disabledStatistics {
-	return disabledStatistics{}
-}
-
-func (*disabledGenerativeEngine) GetStatistics() disabledStatistics {
-	return disabledStatistics{}
-}
-
-type disabledStatistics struct {
-	AvgPrefillSeconds              float64
-	TokensPerSecond                float64
-	CumulativePrefillSum           float64
-	CumulativePrefillCount         int
-	CumulativeTokens               int
-	CumulativeTokenDurationSeconds float64
 }

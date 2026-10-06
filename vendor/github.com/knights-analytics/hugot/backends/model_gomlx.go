@@ -7,11 +7,11 @@ import (
 	"io"
 	"strings"
 
+	"github.com/gomlx/compute"
 	"github.com/gomlx/go-huggingface/tokenizers/bucket"
-	"github.com/gomlx/gomlx/backends"
-	"github.com/gomlx/gomlx/pkg/core/graph"
-	"github.com/gomlx/gomlx/pkg/core/tensors"
-	gomlxcontext "github.com/gomlx/gomlx/pkg/ml/context"
+	"github.com/gomlx/gomlx/core/graph"
+	"github.com/gomlx/gomlx/core/tensors"
+	mlmodel "github.com/gomlx/gomlx/ml/model"
 	"github.com/gomlx/onnx-gomlx/onnx"
 	"github.com/gomlx/onnx-gomlx/onnx/parser"
 	"github.com/knights-analytics/hugot/options"
@@ -27,15 +27,33 @@ var (
 )
 
 type GoMLXModel struct {
-	Backend         backends.Backend
+	Backend         compute.Backend
 	OnnxModel       onnx.Model
-	Ctx             *gomlxcontext.Context // ctx with the model's weights.
-	Exec            *gomlxcontext.Exec    // exec is used to execute the model with a context.
-	Call            func(ctx *gomlxcontext.Context, inputs []*graph.Node) []*graph.Node
-	Destroy         func()
+	Scope           *mlmodel.Scope
+	Store           *mlmodel.Store
+	Exec            *mlmodel.Exec
+	Call            func(scope *mlmodel.Scope, inputs []*graph.Node) []*graph.Node
 	BatchBuckets    []int // BatchBuckets defines bucket sizes for batch dimension padding.
 	SequenceBuckets []int // SequenceBuckets defines bucket sizes for sequence length padding.
 	MaxCache        int   // MaxCache sets the maximum number of unique input shapes to cache.
+}
+
+func (m *GoMLXModel) Close() {
+	if m == nil {
+		return
+	}
+	if m.Exec != nil {
+		m.Exec.Finalize()
+	}
+	if m.Store != nil {
+		m.Store.Finalize()
+	}
+	if m.Backend != nil {
+		m.Backend.Finalize()
+	}
+	if m.OnnxModel != nil {
+		_ = m.OnnxModel.Close()
+	}
 }
 
 func createGoMLXModelBackend(model *Model, options *options.Options) error {
@@ -60,18 +78,22 @@ func createGoMLXModelBackend(model *Model, options *options.Options) error {
 		outputNames = append(outputNames, v.Name)
 	}
 
-	ctx := gomlxcontext.New()
-	// Mark it to reuse variables: it will be an error to create a new variable – for safety.
-	ctx = ctx.Reuse()
+	store := mlmodel.NewStore()
+	scope := store.RootScope()
 
 	// Read variables from ONNX model.
-	err = modelParsed.VariablesToContext(ctx)
+	err = modelParsed.VariablesToScope(scope)
 	if err != nil {
 		return errors.Join(err, modelParsed.Close())
 	}
 
 	config := "go"
-	if options.GoMLXOptions.TPU {
+	if options.UseGoMLX {
+		if options.ORTOptions == nil || options.ORTOptions.LibraryPath == nil {
+			return errors.Join(errors.New("ONNX Runtime library path is not configured"), modelParsed.Close())
+		}
+		config = "onnx:" + *options.ORTOptions.LibraryPath
+	} else if options.GoMLXOptions.TPU {
 		config = "xla:tpu"
 	} else if options.GoMLXOptions.Cuda {
 		config = "xla:cuda"
@@ -79,21 +101,21 @@ func createGoMLXModelBackend(model *Model, options *options.Options) error {
 		config = "xla:cpu"
 	}
 
-	backend, backendErr := backends.NewWithConfig(config)
+	backend, backendErr := compute.NewWithConfig(config)
 	if backendErr != nil {
 		return errors.Join(backendErr, modelParsed.Close())
 	}
 
 	// Create model executor.
-	callFunc := func(ctx *gomlxcontext.Context, inputs []*graph.Node) []*graph.Node {
+	callFunc := func(scope *mlmodel.Scope, inputs []*graph.Node) []*graph.Node {
 		inputsMap := map[string]*graph.Node{}
 		for i, inputMeta := range model.InputsMeta {
 			inputsMap[inputMeta.Name] = inputs[i]
 		}
-		return modelParsed.CallGraph(ctx, inputs[0].Graph(), inputsMap, outputNames...)
+		return modelParsed.CallGraph(scope, inputs[0].Graph(), inputsMap, outputNames...)
 	}
 
-	exec, contextErr := gomlxcontext.NewExec(backend, ctx, callFunc)
+	exec, contextErr := mlmodel.NewExec(backend, store, callFunc)
 	if contextErr != nil {
 		return errors.Join(contextErr, modelParsed.Close())
 	}
@@ -104,17 +126,13 @@ func createGoMLXModelBackend(model *Model, options *options.Options) error {
 	model.GoMLXModel = &GoMLXModel{
 		Backend:         backend,
 		OnnxModel:       modelParsed,
-		Ctx:             ctx,
+		Scope:           scope,
+		Store:           store,
 		Exec:            exec,
 		Call:            callFunc,
 		MaxCache:        maxCache,
 		BatchBuckets:    batchBuckets,
 		SequenceBuckets: sequenceBuckets,
-		Destroy: func() {
-			exec.Finalize()
-			ctx.Finalize()
-			backend.Finalize()
-		},
 	}
 	model.InputsMeta = inputs
 	model.OutputsMeta = outputs
@@ -198,7 +216,7 @@ func createInputTensorsGoMLX(batch *PipelineBatch, model *Model, padBatchDimensi
 			return fmt.Errorf("sequence length larger than max bucket, please adjust WithGoMLXSequenceBuckets: %w", err)
 		}
 	}
-	total := batchSize * maxSeqLength
+	queryCount := max(batch.QueryCount, 1)
 
 	// 1) prepare result containers - now we use all inputs, not filtering
 	inputTensors := make([]*tensors.Tensor, len(model.InputsMeta))
@@ -206,52 +224,98 @@ func createInputTensorsGoMLX(batch *PipelineBatch, model *Model, padBatchDimensi
 
 	// 2) build each tensor
 	for mi, meta := range model.InputsMeta {
-		backing := make([]int64, total)
+		if isImageInput(meta.Name) {
+			backing, dimensions, err := flattenImageValues(model, batch.Size, batch.ImageValues)
+			if err != nil {
+				return err
+			}
+			if batchSize != batch.Size {
+				backing = append(backing, make([]float32, (batchSize-batch.Size)*int(dimensions[1])*int(dimensions[2])*int(dimensions[3]))...)
+			}
+			inputTensors[mi] = tensors.FromFlatDataAndDimensions(backing, batchSize, int(dimensions[1]), int(dimensions[2]), int(dimensions[3]))
+			continue
+		}
+		textRank := len(meta.Dimensions)
+		if textRank != 2 && textRank != 3 {
+			return fmt.Errorf("unsupported text input rank %d for %s", textRank, meta.Name)
+		}
+		if textRank == 3 && batch.QueryCount == 0 {
+			return fmt.Errorf("input %s requires a query dimension", meta.Name)
+		}
+		textBatchSize, textQueryCount := textTensorBatchCounts(textRank, batchSize, queryCount, batch.QueryCount > 0)
+		backing := make([]int64, textBatchSize*textQueryCount*maxSeqLength)
 		idx := 0
 		switch meta.Name {
 		case "input_ids":
-			for bi, inp := range batch.Input {
-				seqLen := len(inp.TokenIDs)
-				maskRow := make([]bool, maxSeqLength)
-				for pos := 0; pos < maxSeqLength; pos++ {
-					if pos < seqLen {
-						backing[idx] = int64(inp.TokenIDs[pos])
-						maskRow[pos] = true
+			for bi := range textBatchSize {
+				for qi := range textQueryCount {
+					inputIndex := bi
+					if textRank == 3 {
+						inputIndex = qi
 					}
-					idx++
+					inp := batch.Input[inputIndex]
+					maskRow := make([]bool, maxSeqLength)
+					for pos := 0; pos < maxSeqLength; pos++ {
+						if pos < len(inp.TokenIDs) {
+							backing[idx] = int64(inp.TokenIDs[pos])
+							maskRow[pos] = true
+						}
+						idx++
+					}
+					if bi < len(paddingMasks) && qi == 0 {
+						paddingMasks[bi] = maskRow
+					}
 				}
-				paddingMasks[bi] = maskRow
 			}
 		case "token_type_ids":
-			for _, inp := range batch.Input {
-				seqLen := len(inp.TokenIDs)
-				for pos := range maxSeqLength {
-					if pos < seqLen {
-						backing[idx] = int64(inp.TypeIDs[pos])
+			for bi := range textBatchSize {
+				for qi := range textQueryCount {
+					inputIndex := bi
+					if textRank == 3 {
+						inputIndex = qi
 					}
-					idx++
+					inp := batch.Input[inputIndex]
+					for pos := range maxSeqLength {
+						if pos < len(inp.TypeIDs) {
+							backing[idx] = int64(inp.TypeIDs[pos])
+						}
+						idx++
+					}
 				}
 			}
 		case "attention_mask":
-			for _, inp := range batch.Input {
-				for pos := range maxSeqLength {
-					if pos < len(inp.TokenIDs) {
-						backing[idx] = int64(inp.AttentionMask[pos])
+			for bi := range textBatchSize {
+				for qi := range textQueryCount {
+					inputIndex := bi
+					if textRank == 3 {
+						inputIndex = qi
 					}
-					idx++
+					inp := batch.Input[inputIndex]
+					for pos := range maxSeqLength {
+						if pos < len(inp.AttentionMask) {
+							backing[idx] = int64(inp.AttentionMask[pos])
+						}
+						idx++
+					}
 				}
 			}
 		case "position_ids":
-			for range batch.Input {
-				for pos := range maxSeqLength {
-					backing[idx] = int64(pos + 1)
-					idx++
+			for range textBatchSize {
+				for range textQueryCount {
+					for pos := range maxSeqLength {
+						backing[idx] = int64(pos + 1)
+						idx++
+					}
 				}
 			}
 		default:
 			return fmt.Errorf("unknown input meta name %s", meta.Name)
 		}
-		inputTensors[mi] = tensors.FromFlatDataAndDimensions(backing, batchSize, maxSeqLength)
+		if textRank == 3 {
+			inputTensors[mi] = tensors.FromFlatDataAndDimensions(backing, textBatchSize, textQueryCount, maxSeqLength)
+		} else {
+			inputTensors[mi] = tensors.FromFlatDataAndDimensions(backing, textBatchSize, maxSeqLength)
+		}
 	}
 
 	// 3) assign and prepare cleanup
@@ -355,7 +419,19 @@ func runGoMLXSessionOnBatch(ctx context.Context, batch *PipelineBatch, p *BasePi
 			}
 			rawOutput = trimmed
 		}
-		convertedOutput[i] = ReshapeOutput(rawOutput, p.Model.OutputsMeta[i], batch.Size, batch.PaddingMask, batch.MaxSequenceLength)
+		// Use the actual output tensor's shape (post-padded dimensions) so that
+		// reshapeOutput can validate the flat length against the real sequence
+		// width and apply the padding mask. The model metadata may carry
+		// dynamic axes (-1) for variable-length inputs, which would otherwise
+		// disable padding-mask application and produce rows of padded width
+		// while TokenizedInput metadata only tracks the real tokens.
+		actualMeta := p.Model.OutputsMeta[i]
+		actualDims := make(Shape, len(t.Shape().Dimensions))
+		for di, dv := range t.Shape().Dimensions {
+			actualDims[di] = int64(dv)
+		}
+		actualMeta.Dimensions = actualDims
+		convertedOutput[i] = ReshapeOutput(rawOutput, actualMeta, batch.Size, batch.PaddingMask)
 	}
 
 	batch.OutputValues = convertedOutput
@@ -385,11 +461,11 @@ func shapeBucket(n int, buckets []int) (int, error) {
 	return 0, fmt.Errorf("input shape %d exceeds maximum bucket size %v", n, buckets)
 }
 
-func (goMLXModel *GoMLXModel) Save(w io.Writer) error {
-	if err := goMLXModel.OnnxModel.ContextToONNX(goMLXModel.Ctx); err != nil {
+func (m *GoMLXModel) Save(w io.Writer) error {
+	if err := m.OnnxModel.ScopeToONNX(m.Scope); err != nil {
 		return err
 	}
-	err := goMLXModel.OnnxModel.Write(w)
+	err := m.OnnxModel.Write(w)
 	if err != nil {
 		return err
 	}
@@ -466,6 +542,38 @@ func createImageTensorsGoXLA(batch *PipelineBatch, model *Model, preprocessed []
 		}
 		return err
 	}
+	return nil
+}
+
+func createAudioTensorsGoMLX(batch *PipelineBatch, model *Model, samples [][]float32) error {
+	if len(samples) == 0 || len(samples) != batch.Size {
+		return errors.New("audio samples do not match batch size")
+	}
+	if len(model.InputsMeta) != 1 {
+		return errors.New("audio models with multiple inputs are not supported")
+	}
+	dims := model.InputsMeta[0].Dimensions
+	if len(dims) != 2 && len(dims) != 3 {
+		return fmt.Errorf("unsupported audio input rank %d", len(dims))
+	}
+	maxSamples := 0
+	for _, waveform := range samples {
+		if len(waveform) > maxSamples {
+			maxSamples = len(waveform)
+		}
+	}
+	backing := make([]float32, len(samples)*maxSamples)
+	for i, waveform := range samples {
+		copy(backing[i*maxSamples:], waveform)
+	}
+	var tensor *tensors.Tensor
+	if len(dims) == 3 {
+		tensor = tensors.FromFlatDataAndDimensions(backing, len(samples), 1, maxSamples)
+	} else {
+		tensor = tensors.FromFlatDataAndDimensions(backing, len(samples), maxSamples)
+	}
+	batch.InputValues = []*tensors.Tensor{tensor}
+	batch.DestroyInputs = tensor.FinalizeAll
 	return nil
 }
 
