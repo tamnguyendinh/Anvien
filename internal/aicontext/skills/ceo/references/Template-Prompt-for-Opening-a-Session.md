@@ -22,7 +22,7 @@ Mandatory Skills: <primary_role_skill> + <domain_specialist_skills> (MUST read c
 3. **NO CEO Deep-Technical Inspection:** CEO operates strictly at the management & routing level (checking verdict, report path, commit SHA); CEO never performs deep technical re-verifications of specialist outputs.
 4. **NO Goal Inversion (Target is Codebase, Not Paperwork):** Reports and evidence exist solely to record progress; they must never displace the real codebase and runtime behavior as the primary target.
 5. **NO Autonomous Subagent Spawning:** Individual subagent lanes are strictly forbidden from independently opening secondary reviewer, auditor, or helper lanes.
-6. **NO Anvien (100% Repo-Native Execution):** Nghiêm cấm tuyệt đối việc gọi, kiểm tra hoặc chờ đợi Anvien CLI/MCP (No Anvien in CEO or any sublanes). Toàn bộ việc đối soát tác động, phân tích diff và kiểm chứng phải sử dụng 100% công cụ chuẩn repo-native: `git status`, `git diff`, Go compiler/tests và `node .\scripts\full-build.mjs` trực tiếp.
+6. **(MUST) only Planner (Strategic) lane và Architect lane được dùng anvien; Cấm anvien với tất cả các Lane còn lại.**
 
 Goal: <write the exact goal of the slice>
 
