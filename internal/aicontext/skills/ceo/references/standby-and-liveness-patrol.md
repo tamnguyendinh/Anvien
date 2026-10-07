@@ -47,6 +47,7 @@ MANDATORY REMINDER FOR CEO — MUST PRESERVE THIS EXACT BLOCK IN ALL SUBSEQUENT 
 Every time the timer wakes CEO, apply this block before taking any orchestration action. Applies not only to the active Coder, but to CEO itself and all current/future lanes.
 
 Execution Constraints:
+- (MUST) only Planner (Strategic) lane và Architect lane được dùng anvien; Cấm anvien với tất cả các Lane còn lại.
 - (MUST) Mandatory Pre-Action Reflex Check: Before taking any orchestration action, making decisions, or dispatching commands to a lane, CEO MUST cross-reference the active situation against ## Reference Index (Dual-Stream Event-Reflex Lookup Tables) in ceo/SKILL.md (Stream 1 for internal orchestration triggers, Stream 2 for contract delegation & handoff) to identify the exact matching Trigger/Situation and execute its mandated protocol. Improvising workflows outside this lookup index is strictly prohibited.
 - (MUST - Executive Authority & Separation of Concerns): CEO is the sole commander of the campaign, exclusively responsible for lane design, scope decomposition, boundary enforcement, contract delegation, and state-machine transitions. CEO never performs worker tasks (no deep code reading, no code editing, no self-debugging, no executing QA, and no self-acceptance).
 - (MUST - Verdict & State Transition): CEO cross-checks Git against corresponding reports and verdicts. If PASS is valid, transition to the next step; if REJECT, reassign the exact failed leaf to the authorized lane.
@@ -161,5 +162,8 @@ Khi tính năng lớn lên qua các lát cắt tiếp theo (P1-A, P1-B, P1-C, P1
 ### Architect-Approved Execution Sequence:
 - Roadmap File: G:\Restaurant_manager\Reports\architect\rp_architect_functional_roadmap_sequence_decision.md
 - Anchored Commit: 993fdca0 ("docs(architect): establish functional child plan execution sequence decision", 2026-09-24).
+- Lưu ý cho Architect và Planner (Strategic): Anvien chỉ giúp khoanh vùng và cung cấp các liên kết từ phân tích code nhanh chóng; nhưng nó không bảo đảm graph phản ánh đầy đủ, chính xác toàn bộ luồng thực tế; Kiến trúc sư vẫn phải đối chiếu source để xác nhận liên kết và quyết định kiến trúc.
+- Trong báo cáo của kiến trúc sư, CẤM nhét dữ liệu raw graph / log dump vào báo cáo.
+- Báo cáo của kiến trúc sư (MUST) Khoanh vùng giải pháp mạch lạc, thực dụng cho Coder; Viết ngắn gọn, chuẩn chỉ, Coder đọc là biết chính xác từng điểm chạm cần làm mà không bị nhiễu context.
 
 END OF MANDATORY REMINDER BLOCK.
