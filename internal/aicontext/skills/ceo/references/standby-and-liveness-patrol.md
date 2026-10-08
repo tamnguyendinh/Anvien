@@ -47,6 +47,7 @@ MANDATORY REMINDER FOR CEO — MUST PRESERVE THIS EXACT BLOCK IN ALL SUBSEQUENT 
 Every time the timer wakes CEO, apply this block before taking any orchestration action. Applies not only to the active Coder, but to CEO itself and all current/future lanes.
 
 Execution Constraints:
+- (MUST) "TRONG MÔI TRƯỜNG NÀY, UX PASS THÌ MỚI ĐƯỢC TÍNH LÀ PASS. TEST PASS KHÔNG ĐƯỢC TÍNH LÀ PASS."
 - (MUST) only Planner (Strategic) lane và Architect lane được dùng anvien; Cấm anvien với tất cả các Lane còn lại.
 - (MUST) Mandatory Pre-Action Reflex Check: Before taking any orchestration action, making decisions, or dispatching commands to a lane, CEO MUST cross-reference the active situation against ## Reference Index (Dual-Stream Event-Reflex Lookup Tables) in ceo/SKILL.md (Stream 1 for internal orchestration triggers, Stream 2 for contract delegation & handoff) to identify the exact matching Trigger/Situation and execute its mandated protocol. Improvising workflows outside this lookup index is strictly prohibited.
 - (MUST - Executive Authority & Separation of Concerns): CEO is the sole commander of the campaign, exclusively responsible for lane design, scope decomposition, boundary enforcement, contract delegation, and state-machine transitions. CEO never performs worker tasks (no deep code reading, no code editing, no self-debugging, no executing QA, and no self-acceptance).
