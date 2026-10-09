@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dustin/go-humanize"
+	"github.com/gomlx/compute/support/humanize"
 	"github.com/gomlx/go-huggingface/internal/files"
 	"github.com/pkg/errors"
 )
@@ -38,6 +38,26 @@ func (r *Repo) IterFileNames() iter.Seq2[string, error] {
 				return
 			}
 			if !yield(fileName, nil) {
+				return
+			}
+		}
+	}
+}
+
+// IterFileInfos iterate over the FileInfo of the files stored in the repo.
+// It doesn't trigger the downloading of the repo, only of the repo info.
+func (r *Repo) IterFileInfos() iter.Seq2[*FileInfo, error] {
+	// Download info and files.
+	err := r.DownloadInfo(false)
+	if err != nil {
+		// Error downloading: yield error only.
+		return func(yield func(*FileInfo, error) bool) {
+			yield(nil, err)
+		}
+	}
+	return func(yield func(*FileInfo, error) bool) {
+		for _, fi := range r.info.Siblings {
+			if !yield(fi, nil) {
 				return
 			}
 		}
@@ -98,11 +118,45 @@ func cleanRelativeFilePath(repoFileName string) string {
 	return filepath.FromSlash(strings.Join(stack, "/"))
 }
 
-// DownloadFiles downloads the repository files (the names returned by repo.IterFileNames), and return the path to the
+// FetchFiles ensures that the specified repository files are downloaded and cached locally.
+//
+// In remote mode, it downloads any missing files in parallel into the local HuggingFace cache structure.
+// In local (NewLocal) or embedded (NewEmbed) mode, no network access is made and no files are written to disk;
+// it simply verifies that the requested files exist in the repository.
+func (r *Repo) FetchFiles(repoFiles ...string) error {
+	return r.FetchFilesCtx(context.Background(), repoFiles...)
+}
+
+// FetchFilesCtx is like FetchFiles but accepts a context for cancellation support.
+func (r *Repo) FetchFilesCtx(ctx context.Context, repoFiles ...string) error {
+	if len(repoFiles) == 0 {
+		return nil
+	}
+	if r.IsEmbed() {
+		// In embedded mode, verify files exist in fsys without extracting them to disk.
+		return r.verifyEmbedFilesExist(repoFiles...)
+	}
+	_, err := r.DownloadFilesCtx(ctx, repoFiles...)
+	return err
+}
+
+// FetchFile ensures that a single repository file is downloaded and cached locally.
+func (r *Repo) FetchFile(file string) error {
+	return r.FetchFileCtx(context.Background(), file)
+}
+
+// FetchFileCtx is like FetchFile but accepts a context for cancellation support.
+func (r *Repo) FetchFileCtx(ctx context.Context, file string) error {
+	return r.FetchFilesCtx(ctx, file)
+}
+
+// DownloadFiles downloads the repository files (the names returned by repo.IterFileNames), and returns the path to the
 // downloaded files in the cache structure.
 //
-// The returned downloadPaths can be read, but shouldn't be modified, since there may be other programs using the same
-// files.
+// RECOMMENDATION:
+// If your goal is to read file contents or stream data, prefer using Repo.Open or Repo.ReadFile instead of DownloadFiles.
+// Repo.Open and Repo.ReadFile work directly in-memory for embedded repositories (hub.NewEmbed) without extracting files
+// to temporary disk directories. To pre-download files without obtaining OS disk path strings, use Repo.FetchFiles.
 func (r *Repo) DownloadFiles(repoFiles ...string) (downloadedPaths []string, err error) {
 	return r.DownloadFilesCtx(context.Background(), repoFiles...)
 }
@@ -111,6 +165,13 @@ func (r *Repo) DownloadFiles(repoFiles ...string) (downloadedPaths []string, err
 func (r *Repo) DownloadFilesCtx(ctx context.Context, repoFiles ...string) (downloadedPaths []string, err error) {
 	if len(repoFiles) == 0 {
 		return nil, nil
+	}
+
+	if r.IsLocal() {
+		return r.localFiles(repoFiles...)
+	}
+	if r.IsEmbed() {
+		return r.extractEmbedFiles(repoFiles...)
 	}
 
 	// Create download manager, if one hasn't been created yet.
@@ -136,7 +197,6 @@ func (r *Repo) DownloadFilesCtx(ctx context.Context, repoFiles ...string) (downl
 	ctx, cancelFn := context.WithCancel(ctx)
 	defer cancelFn()
 
-	// Store results.
 	downloadedPaths = make([]string, len(repoFiles))
 
 	// Information about download progress, and firstError to report back if needed.
@@ -201,10 +261,7 @@ func (r *Repo) DownloadFilesCtx(ctx context.Context, repoFiles ...string) (downl
 		}
 
 		// Start downloading in a separate goroutine.
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-
+		wg.Go(func() {
 			// Download header of file for safety checks, and so we can find the blobPath.
 			header, contentLength, err := downloadManager.FetchHeader(ctx, fileURL)
 			if err != nil {
@@ -258,7 +315,7 @@ func (r *Repo) DownloadFilesCtx(ctx context.Context, repoFiles ...string) (downl
 			if err != nil {
 				reportErrorFn(errors.WithMessagef(err, "while downloading %q from repository %q", repoFileName, r.ID))
 			}
-		}()
+		})
 	}
 	wg.Wait()
 	if requireDownload > 0 {

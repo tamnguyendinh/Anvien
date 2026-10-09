@@ -10,7 +10,7 @@ import (
 )
 
 type GoTokenizer struct {
-	Tokenizer     api.Tokenizer
+	Tokenizer     *hftokenizer.Tokenizer
 	TypeIDs       bool
 	AttentionMask bool
 }
@@ -32,15 +32,13 @@ func loadGoTokenizer(tokenizerBytes []byte, model *Model) error {
 	}
 
 	model.Tokenizer = &Tokenizer{
-		Runtime: "GO",
 		GoTokenizer: &GoTokenizer{
 			Tokenizer:     tk,
 			TypeIDs:       typeIDs,
 			AttentionMask: attentionMask,
 		},
-		TokenizerTimings: &timings{},
 		MaxAllowedTokens: model.MaxPositionEmbeddings,
-		Destroy: func() error {
+		close: func() error {
 			return nil
 		},
 	}
@@ -65,7 +63,12 @@ func getGoTokenizerOptions(model *Model) (api.EncodeOptions, bool, bool, error) 
 			lowerName := strings.ToLower(input.Name)
 			if strings.HasPrefix(lowerName, "past_key_values") ||
 				strings.Contains(lowerName, "pixel_values") ||
-				strings.Contains(lowerName, "image") {
+				lowerName == "pixel_mask" ||
+				strings.Contains(lowerName, "image") ||
+				lowerName == "input_values" ||
+				lowerName == "input_features" ||
+				lowerName == "waveform" ||
+				lowerName == "audio" {
 				continue
 			}
 			return encodeOptions, false, false, fmt.Errorf("input %s not recognized", input.Name)
@@ -150,8 +153,13 @@ func decodeGo(tokens []uint32, tokenizer *Tokenizer) string {
 
 func getGoTokens(ids []int, tokenizer *Tokenizer) []string {
 	tokens := make([]string, len(ids))
+	tk := tokenizer.GoTokenizer.Tokenizer
 	for i, id := range ids {
-		tokens[i] = tokenizer.GoTokenizer.Tokenizer.Decode([]int{id})
+		if tok, found := tk.IDToToken(id); found {
+			tokens[i] = tok
+		} else {
+			tokens[i] = tk.Decode([]int{id})
+		}
 	}
 	return tokens
 }
