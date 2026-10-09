@@ -7,709 +7,613 @@ package ortgenai
 import "C"
 
 import (
-	"context"
 	"errors"
 	"fmt"
-	"runtime"
-	"slices"
-	"strings"
-	"sync"
-	"sync/atomic"
-	"time"
 	"unsafe"
 )
 
-var ErrEngineAPINotAvailable = errors.New("OgaEngine API not available in loaded ORT GenAI library (requires >= 0.9.1)")
-
-// Engine provides continuous batching via the OgaEngine C API.
-// Multiple goroutines may call Submit concurrently; the engine batches
-// their requests for efficient inference.
+// Engine owns requests and executes them synchronously. Calls that touch an engine, its requests,
+// or its event buffers must be serialized on the same goroutine pinned to an OS thread with
+// runtime.LockOSThread. Engine does not create worker goroutines.
 type Engine struct {
-	enginePtr  *C.OgaEngine
-	model      *model
-	tokenizer  *tokenizer
-	statistics *Statistics
-
-	mu       sync.Mutex
-	requests map[*C.OgaRequest]*engineRequest
-
-	submitCh chan *engineRequest
-	stopCh   chan struct{}
-	stopped  atomic.Bool
-	stopOnce sync.Once
-	submitMu sync.RWMutex // guards stopped check + submitCh send atomicity
-	wg       sync.WaitGroup
+	enginePtr *C.OgaEngine
+	requests  map[*C.OgaRequest]*Request
+	buffers   map[*EventBuffer]struct{}
 }
 
-// engineRequest is the internal state for one in-flight generation request.
-type engineRequest struct {
-	requestPtr      *C.OgaRequest
-	paramsPtr       *C.OgaGeneratorParams
-	tokenizerStream *tokenizerStream
-	outputChan      chan SequenceDelta
-	errChan         chan error
-	ctx             context.Context
-	firstToken      bool
-	eosReached      bool
-	runStart        time.Time
-	tokenCount      int
+// RequestOptions contains request-scoped resident-session settings.
+type RequestOptions struct{ MaxSessionTokens uint64 }
+
+// TurnOptions is a reusable set of generation settings bound to one Request.
+type TurnOptions struct {
+	request *Request
+	ptr     *C.OgaTurnOptions
 }
 
-// CreateEngine creates a new Engine from the given model path.
-// The engine starts a background loop that processes submitted requests.
+// EventBuffer is reusable storage bound to one Engine.
+type EventBuffer struct {
+	engine *Engine
+	ptr    *C.OgaEngineEventBuffer
+}
+
+// Request is permanently bound to its creating Engine.
+type Request struct {
+	engine *Engine
+	ptr    *C.OgaRequest
+	closed bool
+}
+
+type EventFlags uint32
+
+const (
+	EventFlagToken EventFlags = 1 << iota
+	EventFlagTurnFinished
+	EventFlagCapacityBlocked
+	EventFlagFailed
+	EventFlagRetryable
+)
+
+type FinishReason uint32
+
+const (
+	FinishReasonNone FinishReason = iota
+	FinishReasonEOS
+	FinishReasonStopString
+	FinishReasonMaxGeneratedTokens
+	FinishReasonMaxSessionTokens
+	FinishReasonCancelled
+	FinishReasonFailed
+)
+
+type ErrorCode uint32
+
+const (
+	ErrorCodeNone ErrorCode = iota
+	ErrorCodeCapacityDeferred
+	ErrorCodeExecutionCapacityExceeded
+	ErrorCodeRetryableExecution
+	ErrorCodeRequestUnserviceable
+	ErrorCodeEngineContractFailure
+	ErrorCodeEngineExecutionFailure
+)
+
+// TurnUsage is a copied snapshot; it remains valid after the next Engine.Run.
+type TurnUsage struct{ PromptTokens, GeneratedTokens, CachedPromptTokens uint64 }
+
+// Event is a copied engine event. Fields not present for an event remain at their zero value.
+type Event struct {
+	Flags                  EventFlags
+	Request                *Request
+	TurnID                 uint64
+	Token                  int32
+	FinishReason           FinishReason
+	MatchedStopStringIndex int32
+	ErrorCode              ErrorCode
+	Usage                  *TurnUsage
+}
+
+// EngineCapabilities is a copied snapshot of configured engine limits.
+type EngineCapabilities struct {
+	ConfiguredMaxBatchSize int
+	MaxScheduledTokens     int
+	MaxRequestLength       uint64
+}
+
+// CreateEngine loads a model and creates an explicit, synchronous inference engine.
 func CreateEngine(modelPath string) (*Engine, error) {
 	if !IsInitialized() {
 		return nil, ErrNotInitialized
 	}
-	if !IsEngineAPIAvailable() {
-		return nil, ErrEngineAPINotAvailable
-	}
 	if modelPath == "" {
-		return nil, errors.New("modelPath is empty")
+		return nil, errors.New("model path is empty")
 	}
-
 	cPath := C.CString(modelPath)
 	defer C.free(unsafe.Pointer(cPath))
-
-	var cModel *C.OgaModel
-	res := C.CreateOgaModel(cPath, &cModel)
-	if err := OgaResultToError(res); err != nil {
-		return nil, fmt.Errorf("CreateOgaModel failed: %w", err)
+	var model *C.OgaModel
+	if err := OgaResultToError(C.CreateOgaModel(cPath, &model)); err != nil {
+		return nil, fmt.Errorf("creating model: %w", err)
 	}
-	if cModel == nil {
-		return nil, errors.New("CreateOgaModel returned nil model without error")
+	if model == nil {
+		return nil, errors.New("model creation returned nil without error")
 	}
-
-	m := &model{modelPtr: cModel}
-	return newEngine(m)
+	defer C.DestroyOgaModel(model)
+	return createEngineFromModel(model)
 }
 
-// CreateEngineWithOptions creates a new Engine with explicit execution provider configuration.
-func CreateEngineWithOptions(configDirectoryPath string, providers []string, providerOptions map[string]map[string]string) (*Engine, error) {
+// CreateEngineWithRuntimeSettings creates an engine using owned runtime settings.
+func CreateEngineWithRuntimeSettings(modelPath string, settings *RuntimeSettings) (*Engine, error) {
 	if !IsInitialized() {
 		return nil, ErrNotInitialized
 	}
-	if !IsEngineAPIAvailable() {
-		return nil, ErrEngineAPINotAvailable
+	if modelPath == "" {
+		return nil, errors.New("model path is empty")
 	}
-
-	var cfg *C.OgaConfig
-	cConfigPath := C.CString(configDirectoryPath)
-	defer C.free(unsafe.Pointer(cConfigPath))
-	res := C.CreateOgaConfig(cConfigPath, &cfg)
-	if err := OgaResultToError(res); err != nil {
-		return nil, fmt.Errorf("CreateOgaConfig failed: %w", err)
+	if settings == nil || settings.ptr == nil {
+		return nil, errors.New("runtime settings are nil or destroyed")
 	}
-	if cfg == nil {
-		return nil, errors.New("CreateOgaConfig returned nil without error")
+	cPath := C.CString(modelPath)
+	defer C.free(unsafe.Pointer(cPath))
+	var model *C.OgaModel
+	if err := OgaResultToError(C.CreateModelWithRuntimeSettings(cPath, settings.ptr, &model)); err != nil {
+		return nil, fmt.Errorf("creating model with runtime settings: %w", err)
 	}
-	defer C.DestroyOgaConfig(cfg)
-
-	res = C.OgaConfigClearProviders(cfg)
-	if err := OgaResultToError(res); err != nil {
-		return nil, fmt.Errorf("OgaConfigClearProviders failed: %w", err)
+	if model == nil {
+		return nil, errors.New("model creation returned nil without error")
 	}
-
-	for _, providerName := range providers {
-		cp := C.CString(providerName)
-		res = C.OgaConfigAppendProvider(cfg, cp)
-		if err := OgaResultToError(res); err != nil {
-			C.free(unsafe.Pointer(cp))
-			return nil, fmt.Errorf("OgaConfigAppendProvider(%s) failed: %w", providerName, err)
-		}
-		if opts, ok := providerOptions[providerName]; ok {
-			for k, v := range opts {
-				ck := C.CString(k)
-				cv := C.CString(v)
-				res = C.OgaConfigSetProviderOption(cfg, cp, ck, cv)
-				C.free(unsafe.Pointer(ck))
-				C.free(unsafe.Pointer(cv))
-				if err := OgaResultToError(res); err != nil {
-					C.free(unsafe.Pointer(cp))
-					return nil, fmt.Errorf("OgaConfigSetProviderOption(%s,%s=%s) failed: %w", providerName, k, v, err)
-				}
-			}
-		}
-		C.free(unsafe.Pointer(cp))
-	}
-
-	var cModel *C.OgaModel
-	res = C.CreateOgaModelFromConfig(cfg, &cModel)
-	if err := OgaResultToError(res); err != nil {
-		return nil, fmt.Errorf("CreateOgaModelFromConfig failed: %w", err)
-	}
-	if cModel == nil {
-		return nil, errors.New("CreateOgaModelFromConfig returned nil without error")
-	}
-
-	m := &model{modelPtr: cModel}
-	return newEngine(m)
+	defer C.DestroyOgaModel(model)
+	return createEngineFromModel(model)
 }
 
-func newEngine(m *model) (*Engine, error) {
-	tok, err := newTokenizerFromModel(*m)
-	if err != nil {
-		m.destroy()
-		return nil, fmt.Errorf("newTokenizerFromModel failed: %w", err)
+func createEngineFromModel(model *C.OgaModel) (*Engine, error) {
+	var ptr *C.OgaEngine
+	if err := OgaResultToError(C.EngineCreate(model, &ptr)); err != nil {
+		return nil, fmt.Errorf("creating engine: %w", err)
 	}
-
-	var cEngine *C.OgaEngine
-	res := C.CreateOgaEngine(m.modelPtr, &cEngine)
-	if err := OgaResultToError(res); err != nil {
-		tok.destroy()
-		m.destroy()
-		return nil, fmt.Errorf("CreateOgaEngine failed: %w", err)
+	if ptr == nil {
+		return nil, errors.New("engine creation returned nil without error")
 	}
-	if cEngine == nil {
-		tok.destroy()
-		m.destroy()
-		return nil, errors.New("CreateOgaEngine returned nil without error")
-	}
-
-	e := &Engine{
-		enginePtr:  cEngine,
-		model:      m,
-		tokenizer:  &tok,
-		statistics: &Statistics{},
-		requests:   make(map[*C.OgaRequest]*engineRequest),
-		submitCh:   make(chan *engineRequest, 256),
-		stopCh:     make(chan struct{}),
-	}
-	e.wg.Add(1)
-	go e.runStepLoop()
-	return e, nil
+	return &Engine{enginePtr: ptr, requests: make(map[*C.OgaRequest]*Request), buffers: make(map[*EventBuffer]struct{})}, nil
 }
 
-// GetStatistics returns generation performance metrics for the engine.
-func (e *Engine) GetStatistics() *Statistics {
-	return e.statistics
+// CreateEventBuffer allocates reusable event storage for this Engine.
+func (e *Engine) CreateEventBuffer(capacity int) (*EventBuffer, error) {
+	if e == nil || e.enginePtr == nil {
+		return nil, errors.New("engine is destroyed")
+	}
+	if capacity <= 0 {
+		return nil, errors.New("event buffer capacity must be positive")
+	}
+	var ptr *C.OgaEngineEventBuffer
+	if err := OgaResultToError(C.EngineCreateEventBuffer(e.enginePtr, C.size_t(capacity), &ptr)); err != nil {
+		return nil, fmt.Errorf("creating event buffer: %w", err)
+	}
+	if ptr == nil {
+		return nil, errors.New("event buffer creation returned nil without error")
+	}
+	buffer := &EventBuffer{engine: e, ptr: ptr}
+	e.buffers[buffer] = struct{}{}
+	return buffer, nil
 }
 
-// Submit submits a generation request to the engine and returns channels for
-// streaming output. Multiple goroutines may call Submit concurrently.
-//
-// Callers should pass a context with a deadline or timeout. If more than 256
-// goroutines submit concurrently without deadlines, Stop may block until the
-// excess callers' contexts are cancelled.
-func (e *Engine) Submit(ctx context.Context, messages []Message, tools []string, opts *GenerationOptions) (<-chan SequenceDelta, <-chan error, error) {
-	// Tokenize
-	seqs, streams, err := e.tokenizer.tokenizeMessages([][]Message{messages}, tools)
-	if err != nil {
-		return nil, nil, fmt.Errorf("tokenize failed: %w", err)
-	}
-	if len(streams) != 1 {
-		tokenizeCleanup(seqs, streams)
-		return nil, nil, errors.New("expected exactly one tokenizer stream")
-	}
-
-	// Copy opts to avoid mutating the caller's struct across concurrent Submit calls.
-	var localOpts GenerationOptions
-	if opts != nil {
-		localOpts = *opts
-	}
-
-	if localOpts.MaxLength <= 0 {
-		localOpts.MaxLength = defaultMaxLength
-	}
-	if localOpts.BatchSize <= 0 {
-		localOpts.BatchSize = 1
-	}
-	setDefaultGenerationOptions(&localOpts)
-
-	paramsPtr, err := createGeneratorParams(e.model, &localOpts)
-	if err != nil {
-		tokenizeCleanup(seqs, streams)
-		return nil, nil, fmt.Errorf("createGeneratorParams failed: %w", err)
-	}
-
-	// Create request
-	var cRequest *C.OgaRequest
-	res := C.CreateOgaRequest(paramsPtr, &cRequest)
-	if err = OgaResultToError(res); err != nil {
-		C.DestroyOgaGeneratorParams(paramsPtr)
-		tokenizeCleanup(seqs, streams)
-		return nil, nil, fmt.Errorf("CreateOgaRequest failed: %w", err)
-	}
-	if cRequest == nil {
-		C.DestroyOgaGeneratorParams(paramsPtr)
-		tokenizeCleanup(seqs, streams)
-		return nil, nil, errors.New("CreateOgaRequest returned nil without error")
-	}
-
-	// Add tokens to request
-	res = C.RequestAddTokens(cRequest, seqs.sequencesPtr)
-	if err = OgaResultToError(res); err != nil {
-		C.DestroyOgaRequest(cRequest)
-		C.DestroyOgaGeneratorParams(paramsPtr)
-		tokenizeCleanup(seqs, streams)
-		return nil, nil, fmt.Errorf("RequestAddTokens failed: %w", err)
-	}
-	// Sequences consumed by request; prevent double-free.
-	C.DestroyOgaSequences(seqs.sequencesPtr)
-	seqs.sequencesPtr = nil
-
-	outputChan := make(chan SequenceDelta, 1000)
-	errChan := make(chan error, 1)
-
-	req := &engineRequest{
-		requestPtr:      cRequest,
-		paramsPtr:       paramsPtr,
-		tokenizerStream: streams[0],
-		outputChan:      outputChan,
-		errChan:         errChan,
-		ctx:             ctx,
-		runStart:        time.Now(),
-	}
-
-	// Hold the read-lock so that the stopped check + send is atomic with
-	// respect to Stop's write-lock + final drain. This prevents a request
-	// from being queued after Stop has finished draining.
-	e.submitMu.RLock()
-	if e.stopped.Load() {
-		e.submitMu.RUnlock()
-		req.destroy()
-		return nil, nil, errors.New("engine is stopped")
-	}
-	select {
-	case e.submitCh <- req:
-	case <-ctx.Done():
-		e.submitMu.RUnlock()
-		req.destroy()
-		return nil, nil, ctx.Err()
-	}
-	e.submitMu.RUnlock()
-
-	return outputChan, errChan, nil
-}
-
-func (e *Engine) Generate(ctx context.Context, messages [][]Message, tools []string, opts *GenerationOptions) (<-chan SequenceDelta, <-chan error, error) {
-	if len(messages) == 0 {
-		return nil, nil, errors.New("no messages provided")
-	}
-
-	outputChan := make(chan SequenceDelta, 1000)
-	errChan := make(chan error, len(messages))
-	var wg sync.WaitGroup
-
-	for idx, message := range messages {
-		wg.Go(
-			func() {
-				out, errs, err := e.Submit(ctx, message, tools, opts)
-				if err != nil {
-					errChan <- fmt.Errorf("sequence %d: %w", idx, err)
-					return
-				}
-				for delta := range out {
-					delta.Sequence = idx
-					outputChan <- delta
-				}
-				for err = range errs {
-					if err != nil {
-						errChan <- fmt.Errorf("sequence %d: %w", idx, err)
-					}
-				}
-			})
-	}
-
-	go func() {
-		wg.Wait()
-		close(outputChan)
-		close(errChan)
-	}()
-
-	return outputChan, errChan, nil
-}
-
-func (e *Engine) Stop() {
-	e.stopOnce.Do(func() {
-		e.stopped.Store(true)
-		close(e.stopCh)
-	})
-	e.wg.Wait()
-	// Acquire the write-lock so no Submit can be in-flight, then drain any
-	// stragglers that were queued before the lock was acquired.
-	e.submitMu.Lock()
-	for {
-		select {
-		case req := <-e.submitCh:
-			sendGenerationError(req.errChan, errors.New("engine stopped"))
-			close(req.outputChan)
-			close(req.errChan)
-			req.destroy()
-		default:
-			e.submitMu.Unlock()
-			return
-		}
-	}
-}
-
-// Destroy stops the engine and releases all resources.
-// It must not be called concurrently with Submit or other Engine methods.
-func (e *Engine) Destroy() {
-	e.Stop()
-	if e.enginePtr != nil {
-		C.DestroyOgaEngine(e.enginePtr)
-		e.enginePtr = nil
-	}
-	if e.tokenizer != nil {
-		e.tokenizer.destroy()
-		e.tokenizer = nil
-	}
-	if e.model != nil {
-		e.model.destroy()
-		e.model = nil
-	}
-}
-
-func (e *Engine) runStepLoop() {
-	defer e.wg.Done()
-	// If the loop exits unexpectedly (not via Stop), mark the engine as
-	// stopped so that subsequent Submit calls fail fast instead of hanging.
-	defer func() {
-		e.stopOnce.Do(func() {
-			e.stopped.Store(true)
-			close(e.stopCh)
-		})
-	}()
-
-	for {
-		// Drain all pending submissions first.
-		drained := false
-		for !drained {
-			select {
-			case req := <-e.submitCh:
-				e.addRequest(req)
-			default:
-				drained = true
-			}
-		}
-
-		// Check stop signal.
-		select {
-		case <-e.stopCh:
-			e.drainOnStop()
-			return
-		default:
-		}
-
-		// Check if there are pending requests.
-		hasPending, err := e.hasPendingRequests()
-		if err != nil {
-			// Fatal engine error; drain and exit.
-			e.drainOnStop()
-			return
-		}
-		if !hasPending {
-			// No work — wait for a submission or stop.
-			select {
-			case req := <-e.submitCh:
-				e.addRequest(req)
-			case <-e.stopCh:
-				e.drainOnStop()
-				return
-			}
-			continue
-		}
-
-		// Run one engine step.
-		var cReady *C.OgaRequest
-		res := C.EngineStep(e.enginePtr, &cReady)
-		if err = OgaResultToError(res); err != nil {
-			// TODO: do not rely on error/recover here, but does not work if moved to hasPendingRequests
-			if err.Error() == "Expected at least one request to be ready, but none were found." {
-				e.checkDoneRequests()
-				continue
-			}
-			// EngineStep failed — error and remove all active requests, but
-			// keep the engine loop running. The failure is request-level (e.g.
-			// model couldn't process the input) not engine-level.
-			e.errorAndRemoveAllRequests(fmt.Errorf("EngineStep failed: %w", err))
-			continue
-		}
-
-		if cReady != nil {
-			e.processReadyRequest(cReady)
-		} else {
-			// EngineStep may be non-blocking; yield to avoid a tight CPU spin
-			// while waiting for the next token to become ready.
-			runtime.Gosched()
-		}
-
-		// Check for cancelled contexts.
-		e.checkCancellations()
-	}
-}
-
-func (e *Engine) addRequest(req *engineRequest) {
-	res := C.EngineAddRequest(e.enginePtr, req.requestPtr)
-	if err := OgaResultToError(res); err != nil {
-		sendGenerationError(req.errChan, fmt.Errorf("EngineAddRequest failed: %w", err))
-		close(req.outputChan)
-		close(req.errChan)
-		req.destroy()
+// Destroy releases the buffer and all borrowed native views it contained.
+func (b *EventBuffer) Destroy() {
+	if b == nil || b.ptr == nil {
 		return
 	}
-	e.mu.Lock()
-	e.requests[req.requestPtr] = req
-	e.mu.Unlock()
+	C.EngineDestroyEventBuffer(b.ptr)
+	if b.engine != nil {
+		delete(b.engine.buffers, b)
+	}
+	b.ptr = nil
+	b.engine = nil
 }
 
-func (e *Engine) processReadyRequest(cReady *C.OgaRequest) {
-	e.mu.Lock()
-	req, ok := e.requests[cReady]
-	e.mu.Unlock()
-	if !ok {
-		return
+// CreateRequest creates a request permanently bound to this Engine.
+func (e *Engine) CreateRequest(options *RequestOptions) (*Request, error) {
+	if e == nil || e.enginePtr == nil {
+		return nil, errors.New("engine is destroyed")
 	}
-
-	// Drain all unseen tokens.
-	var tokenErr error
-	for {
-		var hasTokens C.bool
-		res := C.RequestHasUnseenTokens(cReady, &hasTokens)
-		if err := OgaResultToError(res); err != nil {
-			tokenErr = fmt.Errorf("RequestHasUnseenTokens failed: %w", err)
-			break
+	var nativeOptions *C.OgaRequestOptions
+	if options != nil {
+		if err := OgaResultToError(C.CreateRequestOptions(&nativeOptions)); err != nil {
+			return nil, fmt.Errorf("creating request options: %w", err)
 		}
-		if !bool(hasTokens) {
-			break
+		if nativeOptions == nil {
+			return nil, errors.New("request options creation returned nil without error")
 		}
-
-		var token C.int32_t
-		res = C.RequestGetUnseenToken(cReady, &token)
-		if err := OgaResultToError(res); err != nil {
-			tokenErr = fmt.Errorf("RequestGetUnseenToken failed: %w", err)
-			break
-		}
-
-		// Check for EOS.
-		if slices.Contains(e.tokenizer.EOSTokenIDs, int(token)) {
-			if !req.eosReached {
-				select {
-				case req.outputChan <- SequenceDelta{Sequence: 0, EOSReached: true}:
-					req.eosReached = true
-				case <-req.ctx.Done():
-					// Context cancelled; stop processing. checkCancellations will clean up.
-					return
-				}
-			}
-			continue
-		}
-
-		// Suppress non-EOS tokens after EOS has been emitted.
-		if req.eosReached {
-			continue
-		}
-
-		decoded, decErr := req.tokenizerStream.Decode(token)
-		if decErr != nil {
-			tokenErr = decErr
-			break
-		}
-		if decoded == "" {
-			continue
-		}
-
-		// Leading-space normalization for first emitted token.
-		if !req.firstToken {
-			trimmed := strings.TrimLeft(decoded, " ")
-			if trimmed == "" {
-				continue
-			}
-			decoded = trimmed
-			req.firstToken = true
-
-			prefill := time.Since(req.runStart).Seconds()
-			e.mu.Lock()
-			e.statistics.CumulativePrefillSum += prefill
-			e.statistics.CumulativePrefillCount++
-			e.statistics.AvgPrefillSeconds = e.statistics.CumulativePrefillSum / float64(e.statistics.CumulativePrefillCount)
-			e.mu.Unlock()
-		}
-
-		e.mu.Lock()
-		e.statistics.CumulativeTokens++
-		e.mu.Unlock()
-		req.tokenCount++
-
-		select {
-		case req.outputChan <- SequenceDelta{Sequence: 0, Token: decoded}:
-		case <-req.ctx.Done():
-			return
-		}
-	}
-
-	// On any token-drain error, finish the request immediately so channels are closed.
-	if tokenErr != nil {
-		sendGenerationError(req.errChan, tokenErr)
-		e.finishRequest(cReady, req)
-		return
-	}
-
-	// Check if request is done.
-	var isDone C.bool
-	res := C.RequestIsDone(cReady, &isDone)
-	if err := OgaResultToError(res); err != nil {
-		sendGenerationError(req.errChan, fmt.Errorf("RequestIsDone failed: %w", err))
-		e.finishRequest(cReady, req)
-		return
-	}
-	if bool(isDone) {
-		e.finishRequest(cReady, req)
-	}
-}
-
-func (e *Engine) finishRequest(cReady *C.OgaRequest, req *engineRequest) {
-	e.mu.Lock()
-	delete(e.requests, cReady)
-	if req.tokenCount > 0 {
-		dur := time.Since(req.runStart).Seconds()
-		if dur > 0 {
-			e.statistics.CumulativeTokenDurationSeconds += dur
-			e.statistics.TokensPerSecond = float64(e.statistics.CumulativeTokens) / e.statistics.CumulativeTokenDurationSeconds
-		}
-	}
-	e.mu.Unlock()
-
-	res := C.EngineRemoveRequest(e.enginePtr, cReady)
-	if err := OgaResultToError(res); err != nil {
-		sendGenerationError(req.errChan, fmt.Errorf("EngineRemoveRequest failed: %w", err))
-	}
-	close(req.outputChan)
-	close(req.errChan)
-	req.destroy()
-}
-
-// errorAndRemoveAllRequests sends err to every active request's error channel,
-// removes each request from the C engine, and closes their channels.
-// The engine loop continues running after this call.
-func (e *Engine) errorAndRemoveAllRequests(err error) {
-	e.mu.Lock()
-	active := make(map[*C.OgaRequest]*engineRequest, len(e.requests))
-	for k, v := range e.requests {
-		active[k] = v
-	}
-	e.requests = make(map[*C.OgaRequest]*engineRequest)
-	e.mu.Unlock()
-
-	for ptr, req := range active {
-		sendGenerationError(req.errChan, err)
-		C.EngineRemoveRequest(e.enginePtr, ptr)
-		close(req.outputChan)
-		close(req.errChan)
-		req.destroy()
-	}
-}
-
-func (e *Engine) checkCancellations() {
-	e.mu.Lock()
-	var cancelled []*C.OgaRequest
-	for ptr, req := range e.requests {
-		select {
-		case <-req.ctx.Done():
-			cancelled = append(cancelled, ptr)
-		default:
-		}
-	}
-	e.mu.Unlock()
-
-	for _, ptr := range cancelled {
-		e.mu.Lock()
-		req, ok := e.requests[ptr]
-		if ok {
-			delete(e.requests, ptr)
-		}
-		e.mu.Unlock()
-		if !ok {
-			continue
-		}
-
-		// Send the caller's cancellation reason first (this is the error they care about).
-		sendGenerationError(req.errChan, req.ctx.Err())
-		C.EngineRemoveRequest(e.enginePtr, ptr)
-		close(req.outputChan)
-		close(req.errChan)
-		req.destroy()
-	}
-}
-
-func (e *Engine) checkDoneRequests() {
-	e.mu.Lock()
-	active := make([]*C.OgaRequest, 0, len(e.requests))
-	for ptr := range e.requests {
-		active = append(active, ptr)
-	}
-	e.mu.Unlock()
-
-	for _, ptr := range active {
-		var isDone C.bool
-		res := C.RequestIsDone(ptr, &isDone)
-		if err := OgaResultToError(res); err != nil {
-			continue
-		}
-		if bool(isDone) {
-			e.mu.Lock()
-			req, ok := e.requests[ptr]
-			e.mu.Unlock()
-			if ok {
-				e.finishRequest(ptr, req)
+		defer C.DestroyRequestOptions(nativeOptions)
+		if options.MaxSessionTokens != 0 {
+			if err := OgaResultToError(C.RequestOptionsSetMaxSessionTokens(nativeOptions, C.uint64_t(options.MaxSessionTokens))); err != nil {
+				return nil, fmt.Errorf("setting maximum session tokens: %w", err)
 			}
 		}
 	}
+	var ptr *C.OgaRequest
+	if err := OgaResultToError(C.EngineCreateRequest(e.enginePtr, nativeOptions, &ptr)); err != nil {
+		return nil, fmt.Errorf("creating request: %w", err)
+	}
+	if ptr == nil {
+		return nil, errors.New("request creation returned nil without error")
+	}
+	request := &Request{engine: e, ptr: ptr}
+	e.requests[ptr] = request
+	return request, nil
 }
 
-func (e *Engine) hasPendingRequests() (bool, error) {
+// CreateTurnOptions creates reusable generation settings for this Request.
+func (r *Request) CreateTurnOptions() (*TurnOptions, error) {
+	if r == nil || r.ptr == nil || r.closed {
+		return nil, errors.New("request is closed or destroyed")
+	}
+	var ptr *C.OgaTurnOptions
+	if err := OgaResultToError(C.RequestCreateTurnOptions(r.ptr, &ptr)); err != nil {
+		return nil, fmt.Errorf("creating turn options: %w", err)
+	}
+	if ptr == nil {
+		return nil, errors.New("turn options creation returned nil without error")
+	}
+	return &TurnOptions{request: r, ptr: ptr}, nil
+}
+
+// Destroy releases native turn options.
+func (o *TurnOptions) Destroy() {
+	if o != nil && o.ptr != nil {
+		C.DestroyTurnOptions(o.ptr)
+		o.ptr = nil
+		o.request = nil
+	}
+}
+func (o *TurnOptions) check() error {
+	if o == nil || o.ptr == nil || o.request == nil || o.request.ptr == nil || o.request.closed {
+		return errors.New("turn options are destroyed or their request is closed")
+	}
+	return nil
+}
+func (o *TurnOptions) setResult(operation string, result *C.OgaResult) error {
+	if err := OgaResultToError(result); err != nil {
+		return fmt.Errorf("%s: %w", operation, err)
+	}
+	return nil
+}
+func (o *TurnOptions) SetMaxGeneratedTokens(v uint64) error {
+	if err := o.check(); err != nil {
+		return err
+	}
+	return o.setResult("setting maximum generated tokens", C.TurnOptionsSetMaxGeneratedTokens(o.ptr, C.uint64_t(v)))
+}
+func (o *TurnOptions) SetMinGeneratedTokens(v uint64) error {
+	if err := o.check(); err != nil {
+		return err
+	}
+	return o.setResult("setting minimum generated tokens", C.TurnOptionsSetMinGeneratedTokens(o.ptr, C.uint64_t(v)))
+}
+func (o *TurnOptions) SetDoSample(v bool) error {
+	if err := o.check(); err != nil {
+		return err
+	}
+	return o.setResult("setting sampling mode", C.TurnOptionsSetDoSample(o.ptr, C.bool(v)))
+}
+func (o *TurnOptions) SetTemperature(v float32) error {
+	if err := o.check(); err != nil {
+		return err
+	}
+	return o.setResult("setting temperature", C.TurnOptionsSetTemperature(o.ptr, C.float(v)))
+}
+func (o *TurnOptions) SetTopP(v float32) error {
+	if err := o.check(); err != nil {
+		return err
+	}
+	return o.setResult("setting top-p", C.TurnOptionsSetTopP(o.ptr, C.float(v)))
+}
+func (o *TurnOptions) SetTopK(v int32) error {
+	if err := o.check(); err != nil {
+		return err
+	}
+	return o.setResult("setting top-k", C.TurnOptionsSetTopK(o.ptr, C.int32_t(v)))
+}
+func (o *TurnOptions) SetRepetitionPenalty(v float32) error {
+	if err := o.check(); err != nil {
+		return err
+	}
+	return o.setResult("setting repetition penalty", C.TurnOptionsSetRepetitionPenalty(o.ptr, C.float(v)))
+}
+func (o *TurnOptions) SetNoRepeatNgramSize(v int32) error {
+	if err := o.check(); err != nil {
+		return err
+	}
+	return o.setResult("setting no-repeat n-gram size", C.TurnOptionsSetNoRepeatNgramSize(o.ptr, C.int32_t(v)))
+}
+func (o *TurnOptions) SetSeed(v uint64) error {
+	if err := o.check(); err != nil {
+		return err
+	}
+	return o.setResult("setting seed", C.TurnOptionsSetSeed(o.ptr, C.uint64_t(v)))
+}
+func (o *TurnOptions) ClearSeed() error {
+	if err := o.check(); err != nil {
+		return err
+	}
+	return o.setResult("clearing seed", C.TurnOptionsClearSeed(o.ptr))
+}
+func (o *TurnOptions) SetStopStrings(values []string) error {
+	if err := o.check(); err != nil {
+		return err
+	}
+	var list *C.OgaStringArray
+	if err := OgaResultToError(C.CreateOgaStringArray(&list)); err != nil {
+		return fmt.Errorf("creating stop-string array: %w", err)
+	}
+	if list == nil {
+		return errors.New("stop-string array creation returned nil without error")
+	}
+	defer C.DestroyOgaStringArray(list)
+	for _, value := range values {
+		s := C.CString(value)
+		result := C.AddStringToOgaStringArray(list, s)
+		C.free(unsafe.Pointer(s))
+		if err := OgaResultToError(result); err != nil {
+			return fmt.Errorf("adding stop string: %w", err)
+		}
+	}
+	return o.setResult("setting stop strings", C.TurnOptionsSetStopStrings(o.ptr, list))
+}
+func (o *TurnOptions) SetGuidance(kind GuidanceType, data string) error {
+	if err := o.check(); err != nil {
+		return err
+	}
+	t, d := C.CString(string(kind)), C.CString(data)
+	defer C.free(unsafe.Pointer(t))
+	defer C.free(unsafe.Pointer(d))
+	return o.setResult("setting guidance", C.TurnOptionsSetGuidance(o.ptr, t, d))
+}
+func (o *TurnOptions) ClearGuidance() error {
+	if err := o.check(); err != nil {
+		return err
+	}
+	return o.setResult("clearing guidance", C.TurnOptionsClearGuidance(o.ptr))
+}
+func (o *TurnOptions) Reset() error {
+	if err := o.check(); err != nil {
+		return err
+	}
+	return o.setResult("resetting turn options", C.TurnOptionsReset(o.ptr))
+}
+
+// BeginTurn starts generation from token IDs and returns its unique turn ID.
+func (r *Request) BeginTurn(inputIDs []int32, options ...*TurnOptions) (uint64, error) {
+	if r == nil || r.ptr == nil || r.closed {
+		return 0, errors.New("request is closed or destroyed")
+	}
+	if len(options) > 1 {
+		return 0, errors.New("at most one turn options value may be supplied")
+	}
+	var nativeOptions *C.OgaTurnOptions
+	if len(options) == 1 && options[0] != nil {
+		if err := options[0].check(); err != nil {
+			return 0, err
+		}
+		if options[0].request != r {
+			return 0, errors.New("turn options belong to a different request")
+		}
+		nativeOptions = options[0].ptr
+	}
+	if len(inputIDs) == 0 {
+		return 0, errors.New("turn input IDs are empty")
+	}
+	var ids *C.int32_t
+	if len(inputIDs) > 0 {
+		ids = (*C.int32_t)(unsafe.Pointer(&inputIDs[0]))
+	}
+	var id C.uint64_t
+	if err := OgaResultToError(C.RequestBeginTurn(r.ptr, nativeOptions, ids, C.uint64_t(len(inputIDs)), &id)); err != nil {
+		return 0, fmt.Errorf("beginning turn: %w", err)
+	}
+	return uint64(id), nil
+}
+func (r *Request) CancelTurn(id uint64) (bool, error) {
+	if r == nil || r.ptr == nil || r.closed {
+		return false, errors.New("request is closed or destroyed")
+	}
+	var cancelled C.bool
+	if err := OgaResultToError(C.RequestCancelTurn(r.ptr, C.uint64_t(id), &cancelled)); err != nil {
+		return false, fmt.Errorf("cancelling turn: %w", err)
+	}
+	return bool(cancelled), nil
+}
+func (r *Request) RewindToStartOfTurn(id uint64) error {
+	if r == nil || r.ptr == nil || r.closed {
+		return errors.New("request is closed or destroyed")
+	}
+	if err := OgaResultToError(C.RequestRewindToStartOfTurn(r.ptr, C.uint64_t(id))); err != nil {
+		return fmt.Errorf("rewinding request: %w", err)
+	}
+	return nil
+}
+
+// Close removes this Request from scheduling; Destroy must still be called afterward.
+func (r *Request) Close() error {
+	if r == nil || r.ptr == nil || r.closed {
+		return nil
+	}
+	if err := OgaResultToError(C.RequestClose(r.ptr)); err != nil {
+		return fmt.Errorf("closing request: %w", err)
+	}
+	r.closed = true
+	return nil
+}
+
+func (r *Request) SetDraftTokens(tokens []int32) error {
+	if r == nil || r.ptr == nil || r.closed {
+		return errors.New("request is closed or destroyed")
+	}
+	var sequences *C.OgaSequences
+	if err := OgaResultToError(C.CreateOgaSequences(&sequences)); err != nil {
+		return fmt.Errorf("creating draft sequence: %w", err)
+	}
+	if sequences == nil {
+		return errors.New("draft sequence creation returned nil without error")
+	}
+	defer C.DestroyOgaSequences(sequences)
+	if len(tokens) > 0 {
+		if err := OgaResultToError(C.AppendTokenSequence((*C.int32_t)(unsafe.Pointer(&tokens[0])), C.size_t(len(tokens)), sequences)); err != nil {
+			return fmt.Errorf("appending draft tokens: %w", err)
+		}
+	}
+	if err := OgaResultToError(C.RequestSetDraftTokens(r.ptr, sequences)); err != nil {
+		return fmt.Errorf("setting draft tokens: %w", err)
+	}
+	return nil
+}
+
+// Destroy releases the Request handle.
+func (r *Request) Destroy() {
+	if r == nil || r.ptr == nil {
+		return
+	}
+	if !r.closed {
+		_ = r.Close()
+	}
+	C.DestroyRequest(r.ptr)
+	if r.engine != nil {
+		delete(r.engine.requests, r.ptr)
+	}
+	r.ptr = nil
+	r.engine = nil
+}
+
+func (e *Engine) MaxDraftTokensPerProposal() (int, error) {
+	if e == nil || e.enginePtr == nil {
+		return 0, errors.New("engine is destroyed")
+	}
+	var n C.size_t
+	if err := OgaResultToError(C.EngineMaxDraftTokensPerProposal(e.enginePtr, &n)); err != nil {
+		return 0, fmt.Errorf("getting draft token limit: %w", err)
+	}
+	return int(n), nil
+}
+func (e *Engine) HasPendingRequests() (bool, error) {
+	if e == nil || e.enginePtr == nil {
+		return false, errors.New("engine is destroyed")
+	}
 	var pending C.bool
-	res := C.EngineHasPendingRequests(e.enginePtr, &pending)
-	if err := OgaResultToError(res); err != nil {
-		return false, err
+	if err := OgaResultToError(C.EngineHasPendingRequests(e.enginePtr, &pending)); err != nil {
+		return false, fmt.Errorf("checking pending requests: %w", err)
 	}
 	return bool(pending), nil
 }
 
-func (e *Engine) drainOnStop() {
-	// Drain submit channel.
-	for {
-		select {
-		case req := <-e.submitCh:
-			sendGenerationError(req.errChan, errors.New("engine stopped"))
-			close(req.outputChan)
-			close(req.errChan)
-			req.destroy()
-		default:
-			goto done
+// Run advances the engine and copies all borrowed event data before returning.
+func (e *Engine) Run(buffer *EventBuffer) ([]Event, error) {
+	if e == nil || e.enginePtr == nil {
+		return nil, errors.New("engine is destroyed")
+	}
+	if buffer == nil || buffer.ptr == nil || buffer.engine != e {
+		return nil, errors.New("event buffer is nil, destroyed, or belongs to another engine")
+	}
+	if err := OgaResultToError(C.EngineRun(e.enginePtr, buffer.ptr)); err != nil {
+		return nil, fmt.Errorf("running engine: %w", err)
+	}
+	count := int(C.EventBufferGetCount(buffer.ptr))
+	events := make([]Event, 0, count)
+	for i := range count {
+		view := C.EventBufferGet(buffer.ptr, C.size_t(i))
+		if view == nil {
+			continue
 		}
+		var event Event
+		var flags C.OgaEngineEventFlags
+		if err := OgaResultToError(C.EngineEventGetFlags(view, &flags)); err != nil {
+			return nil, fmt.Errorf("reading event flags: %w", err)
+		}
+		event.Flags = EventFlags(flags)
+		var requestPtr *C.OgaRequest
+		if err := OgaResultToError(C.EngineEventGetRequest(view, (**C.OgaRequest)(unsafe.Pointer(&requestPtr)))); err != nil {
+			return nil, fmt.Errorf("reading event request: %w", err)
+		}
+		event.Request = e.requests[requestPtr]
+		var id C.uint64_t
+		if err := OgaResultToError(C.EngineEventGetTurnId(view, &id)); err != nil {
+			return nil, fmt.Errorf("reading event turn ID: %w", err)
+		}
+		event.TurnID = uint64(id)
+		if event.Flags&EventFlagToken != 0 {
+			var token C.int32_t
+			if err := OgaResultToError(C.EngineEventGetToken(view, &token)); err != nil {
+				return nil, fmt.Errorf("reading event token: %w", err)
+			}
+			event.Token = int32(token)
+		}
+		if event.Flags&EventFlagTurnFinished != 0 {
+			var reason C.OgaFinishReason
+			var stop C.int32_t
+			if err := OgaResultToError(C.EngineEventGetFinishReason(view, &reason)); err != nil {
+				return nil, fmt.Errorf("reading finish reason: %w", err)
+			}
+			if err := OgaResultToError(C.EngineEventGetMatchedStopStringIndex(view, &stop)); err != nil {
+				return nil, fmt.Errorf("reading stop-string index: %w", err)
+			}
+			event.FinishReason = FinishReason(reason)
+			event.MatchedStopStringIndex = int32(stop)
+			var usage *C.OgaTurnUsage
+			if err := OgaResultToError(C.EngineEventGetUsage(view, (**C.OgaTurnUsage)(unsafe.Pointer(&usage)))); err != nil {
+				return nil, fmt.Errorf("reading turn usage: %w", err)
+			}
+			if usage != nil {
+				usageCopy := &TurnUsage{}
+				var n C.uint64_t
+				if err := OgaResultToError(C.TurnUsageGetPromptTokens(usage, &n)); err != nil {
+					return nil, fmt.Errorf("reading prompt usage: %w", err)
+				}
+				usageCopy.PromptTokens = uint64(n)
+				if err := OgaResultToError(C.TurnUsageGetGeneratedTokens(usage, &n)); err != nil {
+					return nil, fmt.Errorf("reading generated usage: %w", err)
+				}
+				usageCopy.GeneratedTokens = uint64(n)
+				if err := OgaResultToError(C.TurnUsageGetCachedPromptTokens(usage, &n)); err != nil {
+					return nil, fmt.Errorf("reading cached prompt usage: %w", err)
+				}
+				usageCopy.CachedPromptTokens = uint64(n)
+				event.Usage = usageCopy
+			}
+		}
+		if event.Flags&(EventFlagFailed|EventFlagRetryable) != 0 {
+			var code C.OgaErrorCode
+			if err := OgaResultToError(C.EngineEventGetErrorCode(view, &code)); err != nil {
+				return nil, fmt.Errorf("reading event error code: %w", err)
+			}
+			event.ErrorCode = ErrorCode(code)
+		}
+		events = append(events, event)
 	}
-done:
-	// Close all active requests.
-	e.mu.Lock()
-	active := make(map[*C.OgaRequest]*engineRequest, len(e.requests))
-	for k, v := range e.requests {
-		active[k] = v
-	}
-	e.requests = make(map[*C.OgaRequest]*engineRequest)
-	e.mu.Unlock()
-
-	for ptr, req := range active {
-		sendGenerationError(req.errChan, errors.New("engine stopped"))
-		C.EngineRemoveRequest(e.enginePtr, ptr)
-		close(req.outputChan)
-		close(req.errChan)
-		req.destroy()
-	}
+	return events, nil
 }
 
-func (r *engineRequest) destroy() {
-	if r.tokenizerStream != nil {
-		r.tokenizerStream.destroy()
-		r.tokenizerStream = nil
+// SpeculativeStats returns an owned snapshot of engine-wide speculative decoding counters.
+func (e *Engine) SpeculativeStats() (*SpeculativeStats, error) {
+	if e == nil || e.enginePtr == nil {
+		return nil, errors.New("engine is destroyed")
 	}
-	if r.requestPtr != nil {
-		C.DestroyOgaRequest(r.requestPtr)
-		r.requestPtr = nil
+	var ptr *C.OgaSpeculativeStats
+	if err := OgaResultToError(C.EngineGetSpeculativeStats(e.enginePtr, &ptr)); err != nil {
+		return nil, fmt.Errorf("getting engine speculative statistics: %w", err)
 	}
-	if r.paramsPtr != nil {
-		C.DestroyOgaGeneratorParams(r.paramsPtr)
-		r.paramsPtr = nil
+	if ptr == nil {
+		return nil, errors.New("engine speculative statistics returned nil without error")
 	}
+	return &SpeculativeStats{ptr: ptr}, nil
+}
+
+// Capabilities returns a copied snapshot of the engine's configured runtime capabilities.
+func (e *Engine) Capabilities() (EngineCapabilities, error) {
+	if e == nil || e.enginePtr == nil {
+		return EngineCapabilities{}, errors.New("engine is destroyed")
+	}
+	var ptr *C.OgaEngineCapabilities
+	if err := OgaResultToError(C.EngineGetCapabilities(e.enginePtr, &ptr)); err != nil {
+		return EngineCapabilities{}, fmt.Errorf("getting engine capabilities: %w", err)
+	}
+	if ptr == nil {
+		return EngineCapabilities{}, errors.New("engine capabilities returned nil without error")
+	}
+	defer C.DestroyEngineCapabilities(ptr)
+	return EngineCapabilities{
+		ConfiguredMaxBatchSize: int(C.EngineCapabilitiesGetConfiguredMaxBatchSize(ptr)),
+		MaxScheduledTokens:     int(C.EngineCapabilitiesGetMaxScheduledTokens(ptr)),
+		MaxRequestLength:       uint64(C.EngineCapabilitiesGetMaxRequestLength(ptr)),
+	}, nil
+}
+
+// Destroy releases requests, event buffers, and the engine in dependency order.
+func (e *Engine) Destroy() {
+	if e == nil || e.enginePtr == nil {
+		return
+	}
+	for _, r := range e.requests {
+		r.Destroy()
+	}
+	for b := range e.buffers {
+		b.Destroy()
+	}
+	C.EngineDestroy(e.enginePtr)
+	e.enginePtr = nil
 }

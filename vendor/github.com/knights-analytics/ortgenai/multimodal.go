@@ -54,6 +54,23 @@ type NamedTensors struct {
 	tensorsPtr *C.OgaNamedTensors
 }
 
+// Audios owns one or more loaded audio samples.
+type Audios struct {
+	audiosPtr *C.OgaAudios
+}
+
+// AudioProcessor owns a model and its multimodal processor.
+type AudioProcessor struct {
+	modelPtr     *C.OgaModel
+	processorPtr *C.OgaMultiModalProcessor
+}
+
+// Adapters manages model adapters and must be destroyed before its source Session.
+type Adapters struct {
+	ptr     *C.OgaAdapters
+	session *Session
+}
+
 func (nt *NamedTensors) destroy() {
 	if nt.tensorsPtr != nil {
 		C.DestroyOgaNamedTensors(nt.tensorsPtr)
@@ -64,6 +81,311 @@ func (nt *NamedTensors) destroy() {
 // Destroy releases the named tensors resources.
 func (nt *NamedTensors) Destroy() {
 	nt.destroy()
+}
+
+func createOgaStringArray(values []string) (*C.OgaStringArray, error) {
+	var stringArray *C.OgaStringArray
+	if err := OgaResultToError(C.CreateOgaStringArray(&stringArray)); err != nil {
+		return nil, fmt.Errorf("creating string array: %w", err)
+	}
+	if stringArray == nil {
+		return nil, errors.New("string array creation returned nil without error")
+	}
+	for _, value := range values {
+		cValue := C.CString(value)
+		result := C.AddStringToOgaStringArray(stringArray, cValue)
+		C.free(unsafe.Pointer(cValue))
+		if err := OgaResultToError(result); err != nil {
+			C.DestroyOgaStringArray(stringArray)
+			return nil, fmt.Errorf("adding string to array: %w", err)
+		}
+	}
+	return stringArray, nil
+}
+
+// LoadAudio loads one audio sample from a path.
+func LoadAudio(path string) (*Audios, error) {
+	if !IsInitialized() {
+		return nil, ErrNotInitialized
+	}
+	cPath := C.CString(path)
+	defer C.free(unsafe.Pointer(cPath))
+	var ptr *C.OgaAudios
+	if err := OgaResultToError(C.LoadAudio(cPath, &ptr)); err != nil {
+		return nil, fmt.Errorf("loading audio: %w", err)
+	}
+	if ptr == nil {
+		return nil, errors.New("audio loading returned nil without error")
+	}
+	return &Audios{audiosPtr: ptr}, nil
+}
+
+// LoadAudios loads audio samples from paths.
+func LoadAudios(paths []string) (*Audios, error) {
+	if !IsInitialized() {
+		return nil, ErrNotInitialized
+	}
+	if len(paths) == 0 {
+		return nil, errors.New("audio paths are empty")
+	}
+	stringArray, err := createOgaStringArray(paths)
+	if err != nil {
+		return nil, err
+	}
+	defer C.DestroyOgaStringArray(stringArray)
+	var ptr *C.OgaAudios
+	if err = OgaResultToError(C.LoadAudios(stringArray, &ptr)); err != nil {
+		return nil, fmt.Errorf("loading audios: %w", err)
+	}
+	if ptr == nil {
+		return nil, errors.New("audio loading returned nil without error")
+	}
+	return &Audios{audiosPtr: ptr}, nil
+}
+
+// LoadAudiosFromBuffers loads audio samples, copying the caller's bytes during the call.
+func LoadAudiosFromBuffers(buffers [][]byte) (*Audios, error) {
+	if !IsInitialized() {
+		return nil, ErrNotInitialized
+	}
+	if len(buffers) == 0 {
+		return nil, errors.New("audio buffers are empty")
+	}
+	data := make([]unsafe.Pointer, len(buffers))
+	sizes := make([]C.size_t, len(buffers))
+	for i, buffer := range buffers {
+		if len(buffer) == 0 {
+			for _, ptr := range data {
+				C.free(ptr)
+			}
+			return nil, fmt.Errorf("audio buffer %d is empty", i)
+		}
+		data[i] = C.CBytes(buffer)
+		sizes[i] = C.size_t(len(buffer))
+	}
+	defer func() {
+		for _, ptr := range data {
+			C.free(ptr)
+		}
+	}()
+	var ptr *C.OgaAudios
+	if err := OgaResultToError(C.LoadAudiosFromBuffers(&data[0], (*C.size_t)(unsafe.Pointer(&sizes[0])), C.size_t(len(data)), &ptr)); err != nil {
+		return nil, fmt.Errorf("loading audio buffers: %w", err)
+	}
+	if ptr == nil {
+		return nil, errors.New("audio buffer loading returned nil without error")
+	}
+	return &Audios{audiosPtr: ptr}, nil
+}
+
+// Destroy releases loaded audio data.
+func (a *Audios) Destroy() {
+	if a != nil && a.audiosPtr != nil {
+		C.DestroyAudios(a.audiosPtr)
+		a.audiosPtr = nil
+	}
+}
+
+// CreateAudioProcessor creates an audio/multimodal processor from a model directory.
+func CreateAudioProcessor(modelPath string) (*AudioProcessor, error) {
+	if !IsInitialized() {
+		return nil, ErrNotInitialized
+	}
+	path := C.CString(modelPath)
+	defer C.free(unsafe.Pointer(path))
+	var model *C.OgaModel
+	if err := OgaResultToError(C.CreateOgaModel(path, &model)); err != nil {
+		return nil, fmt.Errorf("creating audio processor model: %w", err)
+	}
+	if model == nil {
+		return nil, errors.New("audio processor model creation returned nil without error")
+	}
+	var processor *C.OgaMultiModalProcessor
+	if err := OgaResultToError(C.CreateOgaMultiModalProcessor(model, &processor)); err != nil {
+		C.DestroyOgaModel(model)
+		return nil, fmt.Errorf("creating audio processor: %w", err)
+	}
+	if processor == nil {
+		C.DestroyOgaModel(model)
+		return nil, errors.New("audio processor creation returned nil without error")
+	}
+	return &AudioProcessor{modelPtr: model, processorPtr: processor}, nil
+}
+
+// ProcessAudios converts audio and a prompt to copied-owner named tensors.
+func (p *AudioProcessor) ProcessAudios(prompt string, audios *Audios) (*NamedTensors, error) {
+	if p == nil || p.processorPtr == nil || audios == nil || audios.audiosPtr == nil {
+		return nil, errors.New("audio processor or audios are destroyed")
+	}
+	cPrompt := C.CString(prompt)
+	defer C.free(unsafe.Pointer(cPrompt))
+	var tensors *C.OgaNamedTensors
+	if err := OgaResultToError(C.ProcessAudios(p.processorPtr, cPrompt, audios.audiosPtr, &tensors)); err != nil {
+		return nil, fmt.Errorf("processing audios: %w", err)
+	}
+	if tensors == nil {
+		return nil, errors.New("audio processing returned nil tensors without error")
+	}
+	return &NamedTensors{tensorsPtr: tensors}, nil
+}
+
+func (p *AudioProcessor) ProcessAudiosAndPrompts(prompts []string, audios *Audios) (*NamedTensors, error) {
+	if p == nil || p.processorPtr == nil || audios == nil || audios.audiosPtr == nil {
+		return nil, errors.New("audio processor or audios are destroyed")
+	}
+	stringArray, err := createOgaStringArray(prompts)
+	if err != nil {
+		return nil, err
+	}
+	defer C.DestroyOgaStringArray(stringArray)
+	var tensors *C.OgaNamedTensors
+	if err := OgaResultToError(C.ProcessAudiosAndPrompts(p.processorPtr, stringArray, audios.audiosPtr, &tensors)); err != nil {
+		return nil, fmt.Errorf("processing audio prompts: %w", err)
+	}
+	if tensors == nil {
+		return nil, errors.New("audio prompt processing returned nil tensors without error")
+	}
+	return &NamedTensors{tensorsPtr: tensors}, nil
+}
+
+func (p *AudioProcessor) ProcessImagesAndAudios(prompt string, images *Images, audios *Audios) (*NamedTensors, error) {
+	if p == nil || p.processorPtr == nil || audios == nil || audios.audiosPtr == nil {
+		return nil, errors.New("audio processor or audios are destroyed")
+	}
+	var imagePtr *C.OgaImages
+	if images != nil {
+		imagePtr = images.imagesPtr
+		if imagePtr == nil {
+			return nil, errors.New("images are destroyed")
+		}
+	}
+	cPrompt := C.CString(prompt)
+	defer C.free(unsafe.Pointer(cPrompt))
+	var tensors *C.OgaNamedTensors
+	if err := OgaResultToError(C.ProcessImagesAndAudios(p.processorPtr, cPrompt, imagePtr, audios.audiosPtr, &tensors)); err != nil {
+		return nil, fmt.Errorf("processing image and audio prompt: %w", err)
+	}
+	if tensors == nil {
+		return nil, errors.New("image and audio processing returned nil tensors without error")
+	}
+	return &NamedTensors{tensorsPtr: tensors}, nil
+}
+
+func (p *AudioProcessor) ProcessImagesAndAudiosAndPrompts(prompts []string, images *Images, audios *Audios) (*NamedTensors, error) {
+	if p == nil || p.processorPtr == nil || audios == nil || audios.audiosPtr == nil {
+		return nil, errors.New("audio processor or audios are destroyed")
+	}
+	var imagePtr *C.OgaImages
+	if images != nil {
+		imagePtr = images.imagesPtr
+		if imagePtr == nil {
+			return nil, errors.New("images are destroyed")
+		}
+	}
+	stringArray, err := createOgaStringArray(prompts)
+	if err != nil {
+		return nil, err
+	}
+	defer C.DestroyOgaStringArray(stringArray)
+	var tensors *C.OgaNamedTensors
+	if err := OgaResultToError(C.ProcessImagesAndAudiosAndPrompts(p.processorPtr, stringArray, imagePtr, audios.audiosPtr, &tensors)); err != nil {
+		return nil, fmt.Errorf("processing image and audio prompts: %w", err)
+	}
+	if tensors == nil {
+		return nil, errors.New("image and audio prompt processing returned nil tensors without error")
+	}
+	return &NamedTensors{tensorsPtr: tensors}, nil
+}
+
+// Destroy releases the processor and its model.
+func (p *AudioProcessor) Destroy() {
+	if p == nil {
+		return
+	}
+	if p.processorPtr != nil {
+		C.DestroyOgaMultiModalProcessor(p.processorPtr)
+		p.processorPtr = nil
+	}
+	if p.modelPtr != nil {
+		C.DestroyOgaModel(p.modelPtr)
+		p.modelPtr = nil
+	}
+}
+
+// CreateAdapters creates a manager bound to this Session's model.
+func (s *Session) CreateAdapters() (*Adapters, error) {
+	if s == nil || s.model == nil || s.model.modelPtr == nil {
+		return nil, errors.New("session is destroyed")
+	}
+	var ptr *C.OgaAdapters
+	if err := OgaResultToError(C.CreateAdapters(s.model.modelPtr, &ptr)); err != nil {
+		return nil, fmt.Errorf("creating adapters: %w", err)
+	}
+	if ptr == nil {
+		return nil, errors.New("adapter creation returned nil without error")
+	}
+	return &Adapters{ptr: ptr, session: s}, nil
+}
+
+func (a *Adapters) Load(path, name string) error {
+	if a == nil || a.ptr == nil {
+		return errors.New("adapters are destroyed")
+	}
+	cPath, cName := C.CString(path), C.CString(name)
+	defer C.free(unsafe.Pointer(cPath))
+	defer C.free(unsafe.Pointer(cName))
+	if err := OgaResultToError(C.LoadAdapter(a.ptr, cPath, cName)); err != nil {
+		return fmt.Errorf("loading adapter: %w", err)
+	}
+	return nil
+}
+
+func (a *Adapters) Unload(name string) error {
+	if a == nil || a.ptr == nil {
+		return errors.New("adapters are destroyed")
+	}
+	cName := C.CString(name)
+	defer C.free(unsafe.Pointer(cName))
+	if err := OgaResultToError(C.UnloadAdapter(a.ptr, cName)); err != nil {
+		return fmt.Errorf("unloading adapter: %w", err)
+	}
+	return nil
+}
+
+func (s *Session) SetActiveAdapter(adapters *Adapters, name string) error {
+	if s == nil {
+		return errors.New("session is nil")
+	}
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	if s.model == nil || s.model.modelPtr == nil {
+		return errors.New("session is destroyed")
+	}
+	if adapters == nil || adapters.ptr == nil || adapters.session != s {
+		return errors.New("adapters are destroyed or belong to another session")
+	}
+	if name == "" {
+		return errors.New("adapter name is empty")
+	}
+	s.activeAdapters = adapters
+	s.activeAdapterName = name
+	return nil
+}
+
+func (a *Adapters) Destroy() {
+	if a != nil && a.ptr != nil {
+		if a.session != nil {
+			a.session.mutex.Lock()
+			if a.session.activeAdapters == a {
+				a.session.activeAdapters = nil
+				a.session.activeAdapterName = ""
+			}
+			a.session.mutex.Unlock()
+		}
+		C.DestroyAdapters(a.ptr)
+		a.ptr = nil
+		a.session = nil
+	}
 }
 
 // Supports format: data:image/png;base64,<base64-encoded-data>.
@@ -339,6 +661,57 @@ func (p *multiModalProcessor) ProcessImages(prompt string, images *Images) (*Nam
 	}
 	if cTensors == nil {
 		return nil, errors.New("ProcessImages returned nil without error")
+	}
+	return &NamedTensors{tensorsPtr: cTensors}, nil
+}
+
+// ProcessAudios converts audio and a prompt to copied-owner named tensors
+// using the session's multimodal processor.
+func (p *multiModalProcessor) ProcessAudios(prompt string, audios *Audios) (*NamedTensors, error) {
+	if p == nil || p.processorPtr == nil {
+		return nil, errors.New("processor is not initialized")
+	}
+	if audios == nil || audios.audiosPtr == nil {
+		return nil, errors.New("audios is nil")
+	}
+	var cTensors *C.OgaNamedTensors
+	promptC := C.CString(prompt)
+	defer C.free(unsafe.Pointer(promptC))
+	if err := OgaResultToError(C.ProcessAudios(p.processorPtr, promptC, audios.audiosPtr, &cTensors)); err != nil {
+		if cTensors != nil {
+			C.DestroyOgaNamedTensors(cTensors)
+		}
+		return nil, fmt.Errorf("ProcessAudios failed: %w", err)
+	}
+	if cTensors == nil {
+		return nil, errors.New("ProcessAudios returned nil without error")
+	}
+	return &NamedTensors{tensorsPtr: cTensors}, nil
+}
+
+// ProcessImagesAndAudios converts images, audio, and a prompt to copied-owner
+// named tensors using the session's multimodal processor.
+func (p *multiModalProcessor) ProcessImagesAndAudios(prompt string, images *Images, audios *Audios) (*NamedTensors, error) {
+	if p == nil || p.processorPtr == nil {
+		return nil, errors.New("processor is not initialized")
+	}
+	if images == nil || images.imagesPtr == nil {
+		return nil, errors.New("images is nil")
+	}
+	if audios == nil || audios.audiosPtr == nil {
+		return nil, errors.New("audios is nil")
+	}
+	var cTensors *C.OgaNamedTensors
+	promptC := C.CString(prompt)
+	defer C.free(unsafe.Pointer(promptC))
+	if err := OgaResultToError(C.ProcessImagesAndAudios(p.processorPtr, promptC, images.imagesPtr, audios.audiosPtr, &cTensors)); err != nil {
+		if cTensors != nil {
+			C.DestroyOgaNamedTensors(cTensors)
+		}
+		return nil, fmt.Errorf("ProcessImagesAndAudios failed: %w", err)
+	}
+	if cTensors == nil {
+		return nil, errors.New("ProcessImagesAndAudios returned nil without error")
 	}
 	return &NamedTensors{tensorsPtr: cTensors}, nil
 }

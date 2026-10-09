@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"github.com/knights-analytics/hugot/backends"
-	"github.com/knights-analytics/hugot/options"
 	"github.com/knights-analytics/hugot/util/safeconv"
 	"github.com/knights-analytics/hugot/util/vectorutil"
 )
@@ -66,23 +65,20 @@ func (t *CrossEncoderOutput) GetOutput() []any {
 	return out
 }
 
-func NewCrossEncoderPipeline(sessionContext context.Context, config backends.PipelineConfig[*CrossEncoderPipeline], s *options.Options, model *backends.Model) (*CrossEncoderPipeline, error) {
-	defaultPipeline, err := backends.NewBasePipeline(sessionContext, config, s, model)
-	if err != nil {
-		return nil, err
-	}
+func NewCrossEncoderPipeline(sessionContext context.Context, config backends.PipelineConfig[*CrossEncoderPipeline], model *backends.Model) (*CrossEncoderPipeline, error) {
+	defaultPipeline := backends.NewBasePipeline(sessionContext, config, model)
 	pipeline := &CrossEncoderPipeline{
 		BasePipeline: defaultPipeline,
 		batchSize:    1,
 		sortResults:  true,
 	}
 	for _, o := range config.Options {
-		err = o(pipeline)
+		err := o(pipeline)
 		if err != nil {
 			return nil, err
 		}
 	}
-	err = pipeline.Validate()
+	err := pipeline.Validate()
 	if err != nil {
 		return nil, err
 	}
@@ -116,8 +112,10 @@ func (p *CrossEncoderPipeline) GetStatistics() backends.PipelineStatistics {
 		avgLatency = time.Duration(float64(p.statistics.AverageLatency) / float64(p.statistics.TotalQueries))
 	}
 	statistics := backends.PipelineStatistics{}
-	statistics.ComputeTokenizerStatistics(p.Model.Tokenizer.TokenizerTimings)
-	statistics.ComputeOnnxStatistics(p.PipelineTimings)
+	if p.TokenizerTimings != nil {
+		statistics.ComputeTokenizerStatistics(p.TokenizerTimings)
+	}
+	statistics.ComputeOnnxStatistics(p.ONNXTimings)
 	statistics.TotalQueries = p.statistics.TotalQueries
 	statistics.TotalDocuments = p.statistics.TotalDocuments
 	statistics.AverageLatency = avgLatency
@@ -162,9 +160,9 @@ func (p *CrossEncoderPipeline) Validate() error {
 func (p *CrossEncoderPipeline) preprocessPairs(batch *backends.PipelineBatch, inputs [][2]string) error {
 	start := time.Now()
 	backends.TokenizeInputPairs(batch, p.Model.Tokenizer, inputs, p.Model.SeparatorToken)
-	atomic.AddUint64(&p.Model.Tokenizer.TokenizerTimings.NumCalls, 1)
-	atomic.AddUint64(&p.Model.Tokenizer.TokenizerTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
-	err := backends.CreateInputTensors(batch, p.Model, p.Runtime)
+	atomic.AddUint64(&p.TokenizerTimings.NumCalls, 1)
+	atomic.AddUint64(&p.TokenizerTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
+	err := backends.CreateInputTensors(batch, p.Model)
 	return err
 }
 
@@ -177,8 +175,8 @@ func (p *CrossEncoderPipeline) forward(ctx context.Context, batch *backends.Pipe
 	if err != nil {
 		return err
 	}
-	atomic.AddUint64(&p.PipelineTimings.NumCalls, 1)
-	atomic.AddUint64(&p.PipelineTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
+	atomic.AddUint64(&p.ONNXTimings.NumCalls, 1)
+	atomic.AddUint64(&p.ONNXTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
 	return nil
 }
 
@@ -255,29 +253,19 @@ func (p *CrossEncoderPipeline) RunPipeline(ctx context.Context, query string, do
 }
 
 func (p *CrossEncoderPipeline) runBatch(ctx context.Context, query string, documents []string, startIndex int) (*CrossEncoderOutput, error) {
-	var runErrors []error
 	inputs := make([][2]string, len(documents))
 	for i, doc := range documents {
 		inputs[i] = [2]string{query, doc}
 	}
-	batch := backends.NewBatch(len(inputs))
-	defer func(*backends.PipelineBatch) {
-		runErrors = append(runErrors, batch.Destroy())
-	}(batch)
-	runErrors = append(runErrors, p.preprocessPairs(batch, inputs))
-	if e := errors.Join(runErrors...); e != nil {
-		return nil, e
-	}
-	runErrors = append(runErrors, p.forward(ctx, batch))
-	if e := errors.Join(runErrors...); e != nil {
-		return nil, e
-	}
-	result, postErr := p.postprocess(batch, documents)
-	runErrors = append(runErrors, postErr)
+	result, err := backends.RunPipeline(ctx, len(inputs), func(batch *backends.PipelineBatch) error {
+		return p.preprocessPairs(batch, inputs)
+	}, p.forward, func(batch *backends.PipelineBatch) (*CrossEncoderOutput, error) {
+		return p.postprocess(batch, documents)
+	})
 	if result != nil {
 		for i := range result.Results {
 			result.Results[i].Index += startIndex
 		}
 	}
-	return result, errors.Join(runErrors...)
+	return result, err
 }

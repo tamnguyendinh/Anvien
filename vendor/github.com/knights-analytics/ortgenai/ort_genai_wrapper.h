@@ -57,6 +57,14 @@ typedef const int32_t* (*PFN_OgaGeneratorGetSequenceData)(const OgaGenerator*, s
 typedef OgaResult* (*PFN_OgaTokenizerStreamDecode)(OgaTokenizerStream*, int32_t, const char**);
 typedef bool (*PFN_OgaGeneratorIsDone)(const OgaGenerator*);
 typedef OgaResult* (*PFN_OgaTokenizerGetEosTokenIds)(const OgaTokenizer*, const int32_t** , size_t*);
+typedef void (*PFN_OgaShutdown)();
+typedef void (*PFN_OgaSetTelemetryEnabled)(bool);
+typedef OgaResult* (*PFN_OgaCreateConfigFromPackageEp)(const char*, const char*, OgaConfig**);
+typedef OgaResult* (*PFN_OgaTokenizerGetPadTokenId)(const OgaTokenizer*, int32_t*);
+typedef OgaResult* (*PFN_OgaTokenizerGetBotTokenId)(const OgaTokenizer*, int32_t*);
+typedef OgaResult* (*PFN_OgaTokenizerGetEotTokenId)(const OgaTokenizer*, int32_t*);
+typedef OgaResult* (*PFN_OgaTokenizerGetBorTokenId)(const OgaTokenizer*, int32_t*);
+typedef OgaResult* (*PFN_OgaTokenizerGetEorTokenId)(const OgaTokenizer*, int32_t*);
 
 // Config-related API
 typedef OgaResult* (*PFN_OgaCreateConfig)(const char*, OgaConfig**);
@@ -80,21 +88,6 @@ typedef void (*PFN_OgaDestroyStringArray)(OgaStringArray*);
 typedef OgaResult* (*PFN_OgaStringArrayAddString)(OgaStringArray*, const char*);
 typedef OgaResult* (*PFN_OgaProcessorProcessImagesAndPrompts)(const OgaMultiModalProcessor*, const OgaStringArray*, const OgaImages*, OgaNamedTensors**);
 
-// Engine/Request API (continuous batching)
-typedef OgaResult* (*PFN_OgaCreateEngine)(OgaModel*, OgaEngine**);
-typedef void (*PFN_OgaDestroyEngine)(OgaEngine*);
-typedef OgaResult* (*PFN_OgaEngineStep)(OgaEngine*, OgaRequest**);
-typedef OgaResult* (*PFN_OgaEngineHasPendingRequests)(OgaEngine*, bool*);
-typedef OgaResult* (*PFN_OgaEngineAddRequest)(OgaEngine*, OgaRequest*);
-typedef OgaResult* (*PFN_OgaEngineRemoveRequest)(OgaEngine*, OgaRequest*);
-typedef OgaResult* (*PFN_OgaCreateRequest)(OgaGeneratorParams*, OgaRequest**);
-typedef void (*PFN_OgaDestroyRequest)(OgaRequest*);
-typedef OgaResult* (*PFN_OgaRequestAddTokens)(OgaRequest*, const OgaSequences*);
-typedef OgaResult* (*PFN_OgaRequestSetOpaqueData)(OgaRequest*, void*);
-typedef OgaResult* (*PFN_OgaRequestGetOpaqueData)(OgaRequest*, void**);
-typedef OgaResult* (*PFN_OgaRequestHasUnseenTokens)(const OgaRequest*, bool*);
-typedef OgaResult* (*PFN_OgaRequestGetUnseenToken)(OgaRequest*, int32_t*);
-typedef OgaResult* (*PFN_OgaRequestIsDone)(const OgaRequest*, bool*);
 
 // Aggregated API table mirroring the pattern used by OrtApi in onnxruntime_go.
 typedef struct GenAiApiTable {
@@ -145,21 +138,15 @@ typedef struct GenAiApiTable {
 	PFN_OgaDestroyStringArray DestroyStringArray;
 	PFN_OgaStringArrayAddString StringArrayAddString;
 	PFN_OgaProcessorProcessImagesAndPrompts ProcessorProcessImagesAndPrompts;
-	// Engine (continuous batching)
-	PFN_OgaCreateEngine CreateEngine;
-	PFN_OgaDestroyEngine DestroyEngine;
-	PFN_OgaEngineStep EngineStep;
-	PFN_OgaEngineHasPendingRequests EngineHasPendingRequests;
-	PFN_OgaEngineAddRequest EngineAddRequest;
-	PFN_OgaEngineRemoveRequest EngineRemoveRequest;
-	PFN_OgaCreateRequest CreateRequest;
-	PFN_OgaDestroyRequest DestroyRequest;
-	PFN_OgaRequestAddTokens RequestAddTokens;
-	PFN_OgaRequestSetOpaqueData RequestSetOpaqueData;
-	PFN_OgaRequestGetOpaqueData RequestGetOpaqueData;
-	PFN_OgaRequestHasUnseenTokens RequestHasUnseenTokens;
-	PFN_OgaRequestGetUnseenToken RequestGetUnseenToken;
-	PFN_OgaRequestIsDone RequestIsDone;
+	// Extended / Release API
+	PFN_OgaShutdown Shutdown;
+	PFN_OgaSetTelemetryEnabled SetTelemetryEnabled;
+	PFN_OgaCreateConfigFromPackageEp CreateConfigFromPackageEp;
+	PFN_OgaTokenizerGetPadTokenId TokenizerGetPadTokenId;
+	PFN_OgaTokenizerGetBotTokenId TokenizerGetBotTokenId;
+	PFN_OgaTokenizerGetEotTokenId TokenizerGetEotTokenId;
+	PFN_OgaTokenizerGetBorTokenId TokenizerGetBorTokenId;
+	PFN_OgaTokenizerGetEorTokenId TokenizerGetEorTokenId;
 } GenAiApiTable;
 
 // Sets the global function pointer table. All pointers must be non-null.
@@ -210,8 +197,19 @@ int SetGenAiApi(void* createModel,
 	void* destroyStringArray,
 	void* stringArrayAddString,
 	void* processorProcessImagesAndPrompts,
-	// Guidance/constrained-generation (optional — may be NULL on older runtimes)
-	void* generatorParamsSetGuidance);
+	// Guidance/constrained-generation
+	void* generatorParamsSetGuidance,
+	// Extended API
+	void* shutdown,
+	void* setTelemetryEnabled,
+	void* createConfigFromPackageEp,
+	void* tokenizerGetPadTokenId,
+	void* tokenizerGetBotTokenId,
+	void* tokenizerGetEotTokenId,
+	void* tokenizerGetBorTokenId,
+	void* tokenizerGetEorTokenId);
+
+int SetGenAiEngineApi(void** symbols, size_t count);
 
 // Returns non-zero if the API table is initialized.
 int GenAiApiIsInitialized(void);
@@ -270,33 +268,139 @@ void DestroyOgaStringArray(OgaStringArray* string_array);
 OgaResult* AddStringToOgaStringArray(OgaStringArray* string_array, const char* str);
 OgaResult* ProcessOgaImagesAndPrompts(const OgaMultiModalProcessor* processor,  const OgaStringArray* prompts, const OgaImages* images, OgaNamedTensors** out);
 
-// Engine API initialization (separate from SetGenAiApi for backward compat).
-// Returns 0 on success, non-zero on failure.
-int SetGenAiEngineApi(void* createEngine, void* destroyEngine,
-	void* engineStep, void* engineHasPendingRequests,
-	void* engineAddRequest, void* engineRemoveRequest,
-	void* createRequest, void* destroyRequest,
-	void* requestAddTokens, void* requestSetOpaqueData,
-	void* requestGetOpaqueData, void* requestHasUnseenTokens,
-	void* requestGetUnseenToken, void* requestIsDone);
-
-int GenAiEngineApiIsInitialized(void);
-
-// Engine thin wrappers
-OgaResult* CreateOgaEngine(OgaModel* model, OgaEngine** out);
-void DestroyOgaEngine(OgaEngine* engine);
-OgaResult* EngineStep(OgaEngine* engine, OgaRequest** request);
+OgaResult* EngineCreate(OgaModel* model, OgaEngine** out);
+void EngineDestroy(OgaEngine* engine);
+OgaResult* EngineCreateEventBuffer(OgaEngine* engine, size_t capacity, OgaEngineEventBuffer** out);
+void EngineDestroyEventBuffer(OgaEngineEventBuffer* buffer);
+OgaResult* EngineRun(OgaEngine* engine, OgaEngineEventBuffer* buffer);
+size_t EventBufferGetCount(const OgaEngineEventBuffer* buffer);
+const OgaEngineEvent* EventBufferGet(const OgaEngineEventBuffer* buffer, size_t index);
+OgaResult* EngineEventGetFlags(const OgaEngineEvent* event, OgaEngineEventFlags* out);
+OgaResult* EngineEventGetTurnId(const OgaEngineEvent* event, uint64_t* out);
+OgaResult* EngineEventGetToken(const OgaEngineEvent* event, int32_t* out);
+OgaResult* EngineEventGetFinishReason(const OgaEngineEvent* event, OgaFinishReason* out);
+OgaResult* EngineEventGetMatchedStopStringIndex(const OgaEngineEvent* event, int32_t* out);
+OgaResult* EngineEventGetErrorCode(const OgaEngineEvent* event, OgaErrorCode* out);
+OgaResult* EngineEventGetUsage(const OgaEngineEvent* event, const OgaTurnUsage** out);
+OgaResult* TurnUsageGetPromptTokens(const OgaTurnUsage* usage, uint64_t* out);
+OgaResult* TurnUsageGetGeneratedTokens(const OgaTurnUsage* usage, uint64_t* out);
+OgaResult* TurnUsageGetCachedPromptTokens(const OgaTurnUsage* usage, uint64_t* out);
 OgaResult* EngineHasPendingRequests(OgaEngine* engine, bool* out);
-OgaResult* EngineAddRequest(OgaEngine* engine, OgaRequest* request);
-OgaResult* EngineRemoveRequest(OgaEngine* engine, OgaRequest* request);
-OgaResult* CreateOgaRequest(OgaGeneratorParams* params, OgaRequest** out);
-void DestroyOgaRequest(OgaRequest* request);
-OgaResult* RequestAddTokens(OgaRequest* request, const OgaSequences* tokens);
-OgaResult* RequestSetOpaqueData(OgaRequest* request, void* opaque_data);
-OgaResult* RequestGetOpaqueData(OgaRequest* request, void** opaque_data);
-OgaResult* RequestHasUnseenTokens(const OgaRequest* request, bool* out);
-OgaResult* RequestGetUnseenToken(OgaRequest* request, int32_t* out);
-OgaResult* RequestIsDone(const OgaRequest* request, bool* out);
+OgaResult* EngineCreateRequest(OgaEngine* engine, const OgaRequestOptions* options, OgaRequest** out);
+OgaResult* CreateRequestOptions(OgaRequestOptions** out);
+void DestroyRequestOptions(OgaRequestOptions* options);
+OgaResult* RequestOptionsSetMaxSessionTokens(OgaRequestOptions* options, uint64_t max_tokens);
+OgaResult* RequestCreateTurnOptions(OgaRequest* request, OgaTurnOptions** out);
+void DestroyTurnOptions(OgaTurnOptions* options);
+OgaResult* TurnOptionsSetMaxGeneratedTokens(OgaTurnOptions* options, uint64_t value);
+OgaResult* TurnOptionsSetMinGeneratedTokens(OgaTurnOptions* options, uint64_t value);
+OgaResult* TurnOptionsSetDoSample(OgaTurnOptions* options, bool value);
+OgaResult* TurnOptionsSetTemperature(OgaTurnOptions* options, float value);
+OgaResult* TurnOptionsSetTopP(OgaTurnOptions* options, float value);
+OgaResult* TurnOptionsSetTopK(OgaTurnOptions* options, int32_t value);
+OgaResult* TurnOptionsSetRepetitionPenalty(OgaTurnOptions* options, float value);
+OgaResult* TurnOptionsSetNoRepeatNgramSize(OgaTurnOptions* options, int32_t value);
+OgaResult* TurnOptionsSetSeed(OgaTurnOptions* options, uint64_t value);
+OgaResult* TurnOptionsClearSeed(OgaTurnOptions* options);
+OgaResult* TurnOptionsSetStopStrings(OgaTurnOptions* options, const OgaStringArray* strings);
+OgaResult* TurnOptionsSetGuidance(OgaTurnOptions* options, const char* type, const char* data);
+OgaResult* TurnOptionsClearGuidance(OgaTurnOptions* options);
+OgaResult* TurnOptionsReset(OgaTurnOptions* options);
+OgaResult* RequestBeginTurn(OgaRequest* request, const OgaTurnOptions* options, const int32_t* ids, uint64_t count, uint64_t* turn_id);
+OgaResult* RequestCancelTurn(OgaRequest* request, uint64_t turn_id, bool* cancelled);
+OgaResult* RequestRewindToStartOfTurn(OgaRequest* request, uint64_t turn_id);
+OgaResult* RequestClose(OgaRequest* request);
+OgaResult* RequestSetDraftTokens(OgaRequest* request, const OgaSequences* tokens);
+void DestroyRequest(OgaRequest* request);
+OgaResult* EngineMaxDraftTokensPerProposal(const OgaEngine* engine, size_t* out);
+OgaResult* AppendTokenSequence(const int32_t* ids, size_t count, OgaSequences* sequences);
+size_t SequencesCount(const OgaSequences* sequences);
+size_t SequencesGetSequenceCount(const OgaSequences* sequences, size_t index);
+const int32_t* SequencesGetSequenceData(const OgaSequences* sequences, size_t index);
+OgaResult* TokenizerDecode(const OgaTokenizer* tokenizer, const int32_t* ids, size_t count, const char** out);
+OgaResult* TokenizerToTokenId(const OgaTokenizer* tokenizer, const char* text, int32_t* out);
+OgaResult* TokenizerEncodeBatch(const OgaTokenizer* tokenizer, const char** strings, size_t count, OgaTensor** out);
+OgaResult* TokenizerDecodeBatch(const OgaTokenizer* tokenizer, const OgaTensor* tensor, OgaStringArray** out);
+OgaResult* CreateTensorFromBuffer(void* data, const int64_t* shape, size_t rank, OgaElementType type, OgaTensor** out);
+void DestroyTensor(OgaTensor* tensor);
+OgaResult* TensorGetType(OgaTensor* tensor, OgaElementType* out);
+OgaResult* TensorGetShapeRank(OgaTensor* tensor, size_t* out);
+OgaResult* TensorGetShape(OgaTensor* tensor, int64_t* shape, size_t rank);
+OgaResult* TensorGetData(OgaTensor* tensor, void** out);
+OgaResult* StringArrayGetCount(const OgaStringArray* strings, size_t* out);
+OgaResult* StringArrayGetString(const OgaStringArray* strings, size_t index, const char** out);
+OgaResult* SetLogBool(const char* name, bool value);
+OgaResult* SetLogString(const char* name, const char* value);
+OgaResult* SetCurrentGpuDeviceId(int id);
+OgaResult* GetCurrentGpuDeviceId(int* id);
+OgaResult* CreateRuntimeSettings(OgaRuntimeSettings** out);
+void DestroyRuntimeSettings(OgaRuntimeSettings* settings);
+OgaResult* RuntimeSettingsSetHandle(OgaRuntimeSettings* settings, const char* name, void* handle);
+OgaResult* CreateModelWithRuntimeSettings(const char* path, const OgaRuntimeSettings* settings, OgaModel** out);
+OgaResult* LoadAudio(const char* path, OgaAudios** out);
+OgaResult* LoadAudios(const OgaStringArray* paths, OgaAudios** out);
+OgaResult* LoadAudiosFromBuffers(const void** data, const size_t* sizes, size_t count, OgaAudios** out);
+void DestroyAudios(OgaAudios* audios);
+OgaResult* ProcessAudios(const OgaMultiModalProcessor* processor, const char* prompt, const OgaAudios* audios, OgaNamedTensors** out);
+OgaResult* ProcessAudiosAndPrompts(const OgaMultiModalProcessor* processor, const OgaStringArray* prompts, const OgaAudios* audios, OgaNamedTensors** out);
+OgaResult* ProcessImagesAndAudios(const OgaMultiModalProcessor* processor, const char* prompt, const OgaImages* images, const OgaAudios* audios, OgaNamedTensors** out);
+OgaResult* ProcessImagesAndAudiosAndPrompts(const OgaMultiModalProcessor* processor, const OgaStringArray* prompts, const OgaImages* images, const OgaAudios* audios, OgaNamedTensors** out);
+OgaResult* CreateAdapters(const OgaModel* model, OgaAdapters** out);
+void DestroyAdapters(OgaAdapters* adapters);
+OgaResult* LoadAdapter(OgaAdapters* adapters, const char* path, const char* name);
+OgaResult* UnloadAdapter(OgaAdapters* adapters, const char* name);
+OgaResult* SetActiveAdapter(OgaGenerator* generator, OgaAdapters* adapters, const char* name);
+OgaResult* CreateMtpGenerator(const OgaModel* main_model, const OgaModel* mtp_model, const OgaGeneratorParams* params, OgaMtpGenerator** out);
+OgaResult* MtpGeneratorAppendTokens(OgaMtpGenerator* generator, const int32_t* ids, size_t count);
+OgaResult* MtpGeneratorGenerateNextToken(OgaMtpGenerator* generator);
+OgaResult* MtpGeneratorReset(OgaMtpGenerator* generator);
+bool MtpGeneratorIsDone(const OgaMtpGenerator* generator);
+size_t MtpGeneratorGetSequenceCount(const OgaMtpGenerator* generator);
+const int32_t* MtpGeneratorGetSequenceData(const OgaMtpGenerator* generator);
+size_t MtpGeneratorGetForwardCount(const OgaMtpGenerator* generator);
+size_t MtpGeneratorGetAcceptCount(const OgaMtpGenerator* generator);
+size_t MtpGeneratorGetTrialCount(const OgaMtpGenerator* generator);
+OgaResult* MtpGeneratorGetSpeculativeStats(const OgaMtpGenerator* generator, OgaSpeculativeStats** out);
+void DestroyMtpGenerator(OgaMtpGenerator* generator);
+OgaResult* GeneratorParamsSetSearchBool(OgaGeneratorParams* params, const char* name, bool value);
+OgaResult* GeneratorSetModelInput(OgaGenerator* generator, const char* name, OgaTensor* tensor);
+OgaResult* GeneratorAppendTokens(OgaGenerator* generator, const int32_t* ids, size_t count);
+size_t GeneratorTokenCount(const OgaGenerator* generator);
+OgaResult* GeneratorGetNextTokens(const OgaGenerator* generator, const int32_t** out, size_t* count);
+OgaResult* GeneratorSetRuntimeOption(OgaGenerator* generator, const char* key, const char* value);
+OgaResult* GeneratorRewindTo(OgaGenerator* generator, size_t length);
+OgaResult* GeneratorSnapshotState(OgaGenerator* generator);
+OgaResult* GeneratorSetHiddenStates(OgaGenerator* generator, OgaTensor* tensor);
+OgaResult* GeneratorGetInput(const OgaGenerator* generator, const char* name, OgaTensor** out);
+OgaResult* GeneratorGetOutput(const OgaGenerator* generator, const char* name, OgaTensor** out);
+OgaResult* GeneratorGetLogits(OgaGenerator* generator, OgaTensor** out);
+OgaResult* GeneratorSetLogits(OgaGenerator* generator, OgaTensor* tensor);
+OgaResult* GeneratorGetSpeculativeStats(const OgaGenerator* generator, OgaSpeculativeStats** out);
+void DestroySpeculativeStats(OgaSpeculativeStats* stats);
+OgaResult* SpeculativeStatsGetCount(const OgaSpeculativeStats* stats, const char* name, uint64_t* out);
+OgaResult* SpeculativeStatsGetAcceptanceLengthCount(const OgaSpeculativeStats* stats, size_t length, uint64_t* out);
+OgaResult* SpeculativeStatsGetAcceptanceLengthHistogramSize(const OgaSpeculativeStats* stats, size_t* out);
+OgaResult* SpeculativeStatsGetNumber(const OgaSpeculativeStats* stats, const char* name, double* out);
+OgaResult* SpeculativeStatsGetBool(const OgaSpeculativeStats* stats, const char* name, bool* out);
+OgaResult* TokenizerUpdateOptions(OgaTokenizer* tokenizer, const char* const* keys, const char* const* values, size_t count);
+OgaResult* SetLogCallback(bool enabled);
+OgaResult* EngineEventGetRequest(const OgaEngineEvent* event, const OgaRequest** out);
+OgaResult* EngineGetSpeculativeStats(const OgaEngine* engine, OgaSpeculativeStats** out);
+OgaResult* EngineGetCapabilities(const OgaEngine* engine, OgaEngineCapabilities** out);
+size_t EngineCapabilitiesGetConfiguredMaxBatchSize(const OgaEngineCapabilities* capabilities);
+size_t EngineCapabilitiesGetMaxScheduledTokens(const OgaEngineCapabilities* capabilities);
+uint64_t EngineCapabilitiesGetMaxRequestLength(const OgaEngineCapabilities* capabilities);
+void DestroyEngineCapabilities(OgaEngineCapabilities* capabilities);
+
+
+void OgaShutdown(void);
+void OgaSetTelemetryEnabled(bool enabled);
+OgaResult* OgaCreateConfigFromPackageEp(const char* config_path, const char* ep, OgaConfig** out);
+OgaResult* OgaTokenizerGetPadTokenId(const OgaTokenizer* tokenizer, int32_t* token_id);
+OgaResult* OgaTokenizerGetBotTokenId(const OgaTokenizer* tokenizer, int32_t* token_id);
+OgaResult* OgaTokenizerGetEotTokenId(const OgaTokenizer* tokenizer, int32_t* token_id);
+OgaResult* OgaTokenizerGetBorTokenId(const OgaTokenizer* tokenizer, int32_t* token_id);
+OgaResult* OgaTokenizerGetEorTokenId(const OgaTokenizer* tokenizer, int32_t* token_id);
 
 #ifdef __cplusplus
 } // extern "C"
