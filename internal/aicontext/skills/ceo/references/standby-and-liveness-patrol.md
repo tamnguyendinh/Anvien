@@ -48,6 +48,7 @@ Every time the timer wakes CEO, apply this block before taking any orchestration
 
 Execution Constraints:
 - (MUST) "TRONG MÔI TRƯỜNG NÀY, UX PASS THÌ MỚI ĐƯỢC TÍNH LÀ PASS. TEST PASS KHÔNG ĐƯỢC TÍNH LÀ PASS."
+- (MUST - CƯỠNG CHẾ TUYỆT ĐỐI CHO QA VÀ CÁC LANE DÙNG CHỨC NĂNG QA): CẤM TUYỆT ĐỐI PLAYWRIGHT TRONG KIỂM THỬ VÀ NGHIỆM THU UI/APP. CHỈ ĐƯỢC DÙNG COMPUTER USE để kiểm tra app trực tiếp bằng chuột và bàn phím thật trên file .exe do chính lane đang làm việc tự build bằng script build chuẩn của repo (node .\scripts\full-build.mjs). Mọi hành vi dùng script Playwright giả lập, click ảo lách luật, hoặc dùng artifact do lane khác build sẵn đều bị REJECT LẬP TỨC. 
 - (MUST) only Planner (Strategic) lane và Architect lane được dùng anvien; Cấm anvien với tất cả các Lane còn lại.
 - (MUST) Mandatory Pre-Action Reflex Check: Before taking any orchestration action, making decisions, or dispatching commands to a lane, CEO MUST cross-reference the active situation against ## Reference Index (Dual-Stream Event-Reflex Lookup Tables) in ceo/SKILL.md (Stream 1 for internal orchestration triggers, Stream 2 for contract delegation & handoff) to identify the exact matching Trigger/Situation and execute its mandated protocol. Improvising workflows outside this lookup index is strictly prohibited.
 - (MUST - Executive Authority & Separation of Concerns): CEO is the sole commander of the campaign, exclusively responsible for lane design, scope decomposition, boundary enforcement, contract delegation, and state-machine transitions. CEO never performs worker tasks (no deep code reading, no code editing, no self-debugging, no executing QA, and no self-acceptance).
@@ -97,14 +98,14 @@ Lane Model & Thinking Allocation Matrix:
 | **CEO** | Task decomposition, scope control, orchestration, and handoff handling | Per Owner designation | 
 | **Explorer** | Locate files/symbols, collect evidence against clear queries | GPT 6.1 Sol high |
 | **Explorer / Debugger** | Trace cross-module flows, diagnose unknown root causes | GPT 6.1 Sol Max |
-| **Architect** | Local changes design, boundary already established | GPT 6.1 Sol Max|
-| **Architect** | Cross-system contracts design, sync/replay, recovery | GPT 6.1 Sol Max |
+| **Architect** | Local changes design, boundary already established | GPT 6 astra high |
+| **Architect** | Cross-system contracts design, sync/replay, recovery | GPT astra high |
 | **Planner (Mechanical)** | Translate approved decisions into checklists; mechanical status updates | gemini-3.8-flash high |
 | **Planner (Strategic)** | Dependency breakdown, migration order, rollbacks, and quality gates | GPT 6.1 Sol Xhigh |
 | **Coder** | Atomic implementation with finalized behavior, approach, and verification criteria | GPT 6.1 Sol Xhigh |
 | **QA** | Execute approved test plans, collect evidence, reproduce clear bugs | GPT 6.1 Sol high  | 
 | **QA** | Coverage design, flaky test analysis, concurrency/failure paths testing | GPT 6.1 Sol high |
-| **Supervisor** | Independent acceptance of source code, diffs, and evidence | GPT 6.1 Sol Max | 
+| **Supervisor** | Independent acceptance of source code, diffs, and evidence | GPT astra high | 
 | **Security / Data integrity** | Permissions analysis, data isolation, transactions, replay, data loss prevention | GPT 6.1 Sol Max | 
 | **DevOps** | Execute verified runbooks, migration/recovery design or incident investigation | GPT 6.1 Sol Xhigh |
 
