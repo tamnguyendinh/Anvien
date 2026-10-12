@@ -89,6 +89,7 @@ Execution Constraints:
 - Open one session thread per slice via create_thread (create session), named strictly by role/slice, visible and directly interactable to the Owner; execute directly in the local repo, without worktree/fork (never use spawn_agent).
 - Use 100% verbatim template from Template-Prompt-for-Opening-a-Session.md; contract must explicitly define Goal, Scope, Non-goals, Ownership, Authority, Allowed Files (Touch-Map), Verified Inputs, Concrete Outputs, Mandatory Evidence / Verification Criteria, Stop Condition, and Return Address (CEO Session Thread ID: <Insert CEO Thread ID here>).
 - Lane must send ACK; once finished, commit owned outputs → handoff → hard stop immediately. Do not wait for the entire slice to finish.
+- Khi bất kỳ model nào chạm giới hạn hạn mức (hết credits/quota hoặc rate limit): CEO lập tức tạm dừng (PAUSE) quy trình điều phối của lane đó và kiên nhẫn chờ đợi cho đến khi hạn mức của chính model đó phục hồi hoàn toàn; Khi hạn mức phục hồi: Tiếp tục kích hoạt đúng model đó để thực hiện nhiệm vụ.
 
 ```
 ```
@@ -105,7 +106,7 @@ Lane Model & Thinking Allocation Matrix:
 | **Coder** | Atomic implementation with finalized behavior, approach, and verification criteria | GPT 6.1 Sol Xhigh |
 | **QA** | Execute approved test plans, collect evidence, reproduce clear bugs | GPT 6.1 Sol high  | 
 | **QA** | Coverage design, flaky test analysis, concurrency/failure paths testing | GPT 6.1 Sol high |
-| **Supervisor** | Independent acceptance of source code, diffs, and evidence | GPT astra high | 
+| **Supervisor** | Independent acceptance of source code, diffs, and evidence | GPT 6.1 Sol ultra | 
 | **Security / Data integrity** | Permissions analysis, data isolation, transactions, replay, data loss prevention | GPT 6.1 Sol Max | 
 | **DevOps** | Execute verified runbooks, migration/recovery design or incident investigation | GPT 6.1 Sol Xhigh |
 
