@@ -185,11 +185,11 @@
     4. Repeat until supervisor passes or records a blocker.
   - Implementation Gate: all planned implementation phases must be completed or explicitly blocked before this review.
   - Acceptance: supervisor review passes, or the plan records a blocker with evidence and no closure is performed.
-- [ ] Pn-B: Remove dead work created during this plan.
+- [ ] Pn-B: Remove dead work and deadcode created during this plan.
   - Goal: ensure the final diff contains only artifacts that still serve the accepted plan.
   - Work Steps:
-    1. Review files, sections, generated output, tests, temp files, and plan artifacts created or modified during this plan.
-    2. Remove or rewrite any artifact made obsolete by actual-status findings, user corrections, failed approaches, or phase status updates.
+    1. Review files, sections, generated output, tests, and plan artifacts created or modified during this plan.
+    2. Remove or rewrite any artifact, deadcode made obsolete by actual-status findings, user corrections, failed approaches, or phase status updates.
     3. Verify no rejected approach, stale placeholder, unused generated output, or dead helper artifact remains in the final diff.
     4. Call supervisor to review the dead-work cleanup.
     5. If supervisor fails the cleanup, return to the responsible implementation workflow/skill for the failed cleanup scope only, then re-run supervisor review.
