@@ -85,6 +85,13 @@ Execution Constraints:
 - Any subagent implementing real web auth will be immediately REJECTED/BLOCKED for Scope Violation.
 - CEO must instruct sublanes to use send_message_to_thread to send ACK, verdict, handoff, or blocker directly to CEO Thread ID: <Insert CEO Thread ID here>, followed by immediate hard stop.
 
+### Quy Tắc Hợp Đồng Tích Lũy (Cumulative Living Contract Protocol) của CEO gửi cho lane:
+1. Không có tin nhắn "chắp vá" hay "cụt ngủn": Bất kỳ một lệnh nào gửi cho bất kỳ lane nào (dù là mở lane mới, nhắc việc, chỉnh sửa hay bổ sung) đều BẮT BUỘC PHẢI DÙNG TOÀN VĂN TEMPLATE PROMPT chuẩn mực.
+2. Định nghĩa chuẩn của "Bổ sung yêu cầu":
+   - Bổ sung yêu cầu không phải là gửi một mẩu tin nhắn ngắn rời rạc trôi nổi (làm thợ mất context cũ, quên rule cũ, làm lệch kiến trúc).
+   - Bổ sung chính là: Lấy toàn bộ Template Prompt trước đó, cập nhật và tích lũy thêm các chỉ đạo/yêu cầu mới của Owner vào đúng các mục tương ứng (Goal, Scope, Non-goals...).
+   - Tin nhắn tiếp theo gửi vào lane bắt buộc phải ĐẦY ĐỦ HƠN, CHI TIẾT HƠN tin nhắn ban đầu, bảo đảm thợ luôn nắm trọn vẹn 100% bức tranh hệ thống và toàn bộ quy tắc bất biến.
+
 ### Lane Opening Rules (Summary):
 - Open one session thread per slice via create_thread (create session), named strictly by role/slice, visible and directly interactable to the Owner; execute directly in the local repo, without worktree/fork (never use spawn_agent).
 - Use 100% verbatim template from Template-Prompt-for-Opening-a-Session.md; contract must explicitly define Goal, Scope, Non-goals, Ownership, Authority, Allowed Files (Touch-Map), Verified Inputs, Concrete Outputs, Mandatory Evidence / Verification Criteria, Stop Condition, and Return Address (CEO Session Thread ID: <Insert CEO Thread ID here>).
