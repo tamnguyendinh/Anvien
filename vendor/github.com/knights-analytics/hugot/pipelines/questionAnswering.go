@@ -23,7 +23,6 @@ import (
 	"time"
 
 	"github.com/knights-analytics/hugot/backends"
-	"github.com/knights-analytics/hugot/options"
 	"github.com/knights-analytics/hugot/util/safeconv"
 	"github.com/knights-analytics/hugot/util/vectorutil"
 )
@@ -91,11 +90,9 @@ func WithTopKAnswers(k int) backends.PipelineOption[*QuestionAnsweringPipeline] 
 }
 
 // NewQuestionAnsweringPipeline initialises a question answering pipeline.
-func NewQuestionAnsweringPipeline(sessionContext context.Context, config backends.PipelineConfig[*QuestionAnsweringPipeline], s *options.Options, model *backends.Model) (*QuestionAnsweringPipeline, error) {
-	defaultPipeline, err := backends.NewBasePipeline(sessionContext, config, s, model)
-	if err != nil {
-		return nil, err
-	}
+func NewQuestionAnsweringPipeline(sessionContext context.Context, config backends.PipelineConfig[*QuestionAnsweringPipeline], model *backends.Model) (*QuestionAnsweringPipeline, error) {
+	defaultPipeline := backends.NewBasePipeline(sessionContext, config, model)
+	var err error
 	pipeline := &QuestionAnsweringPipeline{
 		BasePipeline:    defaultPipeline,
 		MaxAnswerLength: 15,
@@ -141,10 +138,10 @@ func (p *QuestionAnsweringPipeline) GetMetadata() backends.PipelineMetadata {
 // GetStatistics returns runtime statistics for the pipeline.
 func (p *QuestionAnsweringPipeline) GetStatistics() backends.PipelineStatistics {
 	stats := backends.PipelineStatistics{}
-	if p.Model.Tokenizer != nil && p.Model.Tokenizer.TokenizerTimings != nil {
-		stats.ComputeTokenizerStatistics(p.Model.Tokenizer.TokenizerTimings)
+	if p.TokenizerTimings != nil {
+		stats.ComputeTokenizerStatistics(p.TokenizerTimings)
 	}
-	stats.ComputeOnnxStatistics(p.PipelineTimings)
+	stats.ComputeOnnxStatistics(p.ONNXTimings)
 	return stats
 }
 
@@ -183,9 +180,9 @@ func (p *QuestionAnsweringPipeline) preprocess(batch *backends.PipelineBatch, in
 		inputPairs = append(inputPairs, [2]string{in.Question, in.Context})
 	}
 	backends.TokenizeInputPairs(batch, p.Model.Tokenizer, inputPairs, p.Model.SeparatorToken)
-	atomic.AddUint64(&p.Model.Tokenizer.TokenizerTimings.NumCalls, 1)
-	atomic.AddUint64(&p.Model.Tokenizer.TokenizerTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
-	err := backends.CreateInputTensors(batch, p.Model, p.Runtime)
+	atomic.AddUint64(&p.TokenizerTimings.NumCalls, 1)
+	atomic.AddUint64(&p.TokenizerTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
+	err := backends.CreateInputTensors(batch, p.Model)
 	return err
 }
 
@@ -195,8 +192,8 @@ func (p *QuestionAnsweringPipeline) forward(ctx context.Context, batch *backends
 	if err := backends.RunSessionOnBatch(ctx, batch, p.BasePipeline); err != nil {
 		return err
 	}
-	atomic.AddUint64(&p.PipelineTimings.NumCalls, 1)
-	atomic.AddUint64(&p.PipelineTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
+	atomic.AddUint64(&p.ONNXTimings.NumCalls, 1)
+	atomic.AddUint64(&p.ONNXTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
 	return nil
 }
 
@@ -254,25 +251,11 @@ func (p *QuestionAnsweringPipeline) Run(ctx context.Context, inputs []string) (b
 
 // RunPipeline is the typed entry point for the question answering pipeline.
 func (p *QuestionAnsweringPipeline) RunPipeline(ctx context.Context, inputs []QuestionAnsweringInput) (*QuestionAnsweringBatchOutput, error) {
-	var runErrors []error
-	batch := backends.NewBatch(len(inputs))
-	defer func(*backends.PipelineBatch) {
-		runErrors = append(runErrors, batch.Destroy())
-	}(batch)
-
-	runErrors = append(runErrors, p.preprocess(batch, inputs))
-	if e := errors.Join(runErrors...); e != nil {
-		return nil, e
-	}
-
-	runErrors = append(runErrors, p.forward(ctx, batch))
-	if e := errors.Join(runErrors...); e != nil {
-		return nil, e
-	}
-
-	result, postErr := p.postprocess(batch, inputs)
-	runErrors = append(runErrors, postErr)
-	return result, errors.Join(runErrors...)
+	return backends.RunPipeline(ctx, len(inputs), func(batch *backends.PipelineBatch) error {
+		return p.preprocess(batch, inputs)
+	}, p.forward, func(batch *backends.PipelineBatch) (*QuestionAnsweringBatchOutput, error) {
+		return p.postprocess(batch, inputs)
+	})
 }
 
 // HELPERS
@@ -368,7 +351,7 @@ func spanToContextChars(input backends.TokenizedInput, startTok, endTok int, con
 	// input.Raw = question + separator + context, so the context begins at len(input.Raw) - len(context).
 	if !found && len(input.Raw) >= len(context) {
 		diff := len(input.Raw) - len(context) // non-negative by the guard above
-		ctxCharOffset = uint(diff)            //nolint:gosec // diff is guaranteed non-negative
+		ctxCharOffset = uint(diff)
 	}
 
 	if startTok >= len(input.Offsets) || endTok >= len(input.Offsets) {

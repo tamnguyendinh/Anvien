@@ -6,12 +6,16 @@ This package provides a thin, idiomatic Go wrapper around the ONNX Runtime GenAI
 
 - Session and model creation from local model folders
 - Tokenization and chat templating
-- Batched, streaming text generation with per-token deltas
+- Owned tokenizer and tensor resources, including batch encode/decode
+- Session-based batched, streaming text generation with per-token deltas
+- Synchronous engine requests with reusable event buffers and per-turn options
+- Standalone generators, tensor/logit access, and MTP speculative generation
+- Audio resources, model adapters, runtime settings, and process-wide device/logging controls
 - Runtime statistics (tokens/sec, prefill timings)
 - Provider selection and advanced provider options
-- Multimodal input support (text + images)
+- Multimodal input support (text, images, and audio)
 
-Note: The current implementation loads the GenAI shared library via `dlopen`, and targets Linux (ELF `.so`).
+The GenAI shared library is loaded dynamically. Linux (`.so`) and Windows (`.dll`) are supported.
 
 Note: This implementation is still alpha so the API may change in future releases. You might want to rely on [hugot](https://github.com/knights-analytics/hugot) for a higher-level interface to ONNX Runtime GenAI in Go.
 
@@ -29,11 +33,12 @@ Note: This implementation is still alpha so the API may change in future release
 
 ## Requirements
 
-- Go 1.19+
-- Linux with glibc (uses `dlfcn.h` and `.so` loading)
+- Go 1.27+
+- Linux with glibc, or 64-bit Windows
 - ONNX Runtime GenAI shared library and dependencies available at runtime:
-  - `libonnxruntime-genai.so`
-  - `libonnxruntime.so` (must be available in the same directory as `libonnxruntime-genai.so`)
+  - ORT GenAI `0.17.0` or newer with the explicit engine/request API
+  - Linux: `libonnxruntime-genai.so` and `libonnxruntime.so`
+  - Windows: `onnxruntime-genai.dll` and `onnxruntime.dll`
 - A local model directory compatible with ONNX Runtime GenAI (e.g., a converted `Phi-3.5` model folder)
 
 
@@ -43,10 +48,10 @@ Note: This implementation is still alpha so the API may change in future release
 go get github.com/knights-analytics/ortgenai
 ```
 
-At runtime, the wrapper needs to `dlopen` the ONNX Runtime GenAI shared library. You can:
+At runtime, the wrapper needs to load the ONNX Runtime GenAI shared library. You can:
 
-1) Place `libonnxruntime-genai.so` next to your application binary (with `libonnxruntime.so` in the same folder), or
-2) Call `genai.SetSharedLibraryPath("/path/to/libonnxruntime-genai.so")` before initialization.
+1) Place the GenAI library and its ONNX Runtime dependency next to your application binary, or
+2) Call `genai.SetSharedLibraryPath(...)` before initialization with the library path (`.so` on Linux or `.dll` on Windows).
 
 
 ## Quick start
@@ -125,7 +130,7 @@ genai.SetSharedLibraryPath("/opt/onnxruntime/lib/libonnxruntime-genai.so")
 if err := genai.InitializeEnvironment(); err != nil { /* handle */ }
 ```
 
-If not set, the code tries `libonnxruntime-genai.so` relative to the loader’s search path. Ensure `libonnxruntime.so` is colocated with the GenAI `.so`.
+If not set, the code tries `libonnxruntime-genai.so` on Linux or `onnxruntime-genai.dll` on Windows. Keep the matching ONNX Runtime library (`libonnxruntime.so` or `onnxruntime.dll`) alongside it.
 
 ### Provider selection and options
 
@@ -148,6 +153,54 @@ session, err := genai.CreateSessionWithOptions(
 
 `Session.Generate` accepts multiple conversations in one call: `[][]Message`. The returned channel carries `SequenceDelta` items, each labeled with the `Sequence` index so you can route output per-conversation.
 
+### Explicit engine turns
+
+`Engine` uses a synchronous, owner-thread API rather than channels or background dispatch. Keep all calls for an engine, its requests, and event buffers serialized on the same OS thread. Native events and usage views are copied before `Run` returns, so Go values remain valid when the event buffer is reused.
+
+```go
+runtime.LockOSThread()
+defer runtime.UnlockOSThread()
+
+engine, err := genai.CreateEngine("./models/phi3.5")
+if err != nil { panic(err) }
+defer engine.Destroy()
+
+tokenizer, err := genai.CreateTokenizer("./models/phi3.5")
+if err != nil { panic(err) }
+defer tokenizer.Destroy()
+inputTokenIDs, err := tokenizer.Encode("What is the capital of France?")
+if err != nil { panic(err) }
+
+buffer, err := engine.CreateEventBuffer(8)
+if err != nil { panic(err) }
+defer buffer.Destroy()
+
+request, err := engine.CreateRequest(nil)
+if err != nil { panic(err) }
+defer request.Destroy()
+
+turnOptions, err := request.CreateTurnOptions()
+if err != nil { panic(err) }
+defer turnOptions.Destroy()
+if err := turnOptions.SetMaxGeneratedTokens(128); err != nil { panic(err) }
+
+turnID, err := request.BeginTurn(inputTokenIDs, turnOptions)
+if err != nil { panic(err) }
+for {
+    events, err := engine.Run(buffer)
+    if err != nil { panic(err) }
+    finished := false
+    for _, event := range events {
+        if event.TurnID == turnID && event.Flags&genai.EventFlagTurnFinished != 0 {
+            finished = true
+        }
+    }
+    if finished { break }
+}
+```
+
+Token IDs can be supplied directly to `BeginTurn`; `Tokenizer.Encode` and `Tokenizer.Decode` provide copied Go values. Destroy requests, tokenizers, and buffers before shutting down the GenAI environment.
+
 ### Statistics
 
 After generation, inspect `session.GetStatistics()` for fields such as `TokensPerSecond`, cumulative token counts, and prefill timings.
@@ -155,15 +208,19 @@ After generation, inspect `session.GetStatistics()` for fields such as `TokensPe
 
 ## Running tests
 
-Local tests require the GenAI shared libraries and a local model directory. The provided unit test expects:
+Local tests require the matching GenAI shared library and local model directories. Model-dependent tests skip when their fixtures are absent. On Windows, set `ONNXRUNTIME_GENAI_LIB` to the library path before running tests, for example:
 
-- `libonnxruntime-genai.so` available (by default at `/usr/lib/libonnxruntime-genai.so` in the test; adjust via `SetSharedLibraryPath`), and
-- a model directory at `./_models/phi3.5` (update the path as needed).
+- `libonnxruntime-genai.so` on Linux or `onnxruntime-genai.dll` on Windows (adjust via `SetSharedLibraryPath`), and
+- the model directories referenced by the integration tests.
 
 Run:
 
 ```bash
 go test ./...
+```
+
+```powershell
+$env:ONNXRUNTIME_GENAI_LIB='C:\ort-lib\onnxruntime-genai.dll'; go test ./...
 ```
 
 
@@ -184,8 +241,9 @@ You may also use `compose-test.yaml` to orchestrate test runs.
 
 ## Troubleshooting
 
-- error loading GenAI shared library: Ensure the path to `libonnxruntime-genai.so` is correct and readable by the process. Set it explicitly with `SetSharedLibraryPath`.
-- missing `Oga...` symbols or "missing Oga..." errors: The GenAI `.so` must export required symbols (e.g., `OgaCreateModel`). Make sure versions of `libonnxruntime-genai.so` and `libonnxruntime.so` are compatible and colocated.
+- error loading GenAI shared library: Ensure the path to the platform-specific GenAI library is correct and readable by the process. Set it explicitly with `SetSharedLibraryPath`.
+- Windows build errors about a missing C compiler: install a CGo-compatible compiler such as MinGW-w64 GCC, ensure it is on `PATH`, and enable CGo.
+- missing `Oga...` symbols or "missing Oga..." errors: The GenAI library must export required symbols (e.g., `OgaCreateModel`). Make sure the GenAI and ONNX Runtime libraries are compatible and colocated.
 - segmentation fault on load: Verify that your system’s CUDA/CPU provider dependencies match the `.so` build (driver/runtime versions).
 - no output / stuck: Ensure your model folder is valid for ONNX Runtime GenAI and accessible; increase timeouts during first-run warmup.
 

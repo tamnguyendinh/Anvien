@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"path"
 	"path/filepath"
 	"strings"
@@ -26,16 +27,19 @@ type DownloadOptions struct {
 	RetryInterval         int
 	ConcurrentConnections int
 	Verbose               bool
+	AdditionalFilePaths   []string
+	PreservePaths         bool
 }
 
 // NewDownloadOptions creates new DownloadOptions struct with default values.
 // Override the values to specify different download options.
 func NewDownloadOptions() DownloadOptions {
-	d := DownloadOptions{}
-	d.Branch = "main"
-	d.MaxRetries = 5
-	d.RetryInterval = 5
-	d.ConcurrentConnections = 5
+	d := DownloadOptions{
+		Branch:                "main",
+		MaxRetries:            5,
+		RetryInterval:         5,
+		ConcurrentConnections: 5,
+	}
 	return d
 }
 
@@ -43,11 +47,32 @@ func NewDownloadOptions() DownloadOptions {
 // validation occurs to ensure there is an .onnx and tokenizers.json file. Hugot only works with onnx models.
 func DownloadModel(ctx context.Context, modelName string, destination string, options DownloadOptions) (string, error) {
 	// replicates code in hf downloader
+	// DownloadModel is usable without a session, so bind the default filesystem
+	// before using the context-based file helpers below.
+	ctx = fileutil.WithFileSystem(ctx, nil)
 	modelP := modelName
 	if strings.Contains(modelP, ":") {
 		modelP = strings.Split(modelName, ":")[0]
 	}
 	modelPath := path.Join(destination, strings.ReplaceAll(modelP, "/", "_"))
+
+	// The files are only copied under destination after the whole model has
+	// been fetched, so reject a destination that cannot hold them before
+	// contacting the hub.
+	info, statErr := fileutil.FileStats(ctx, destination)
+	if statErr != nil {
+		return "", fmt.Errorf("could not inspect destination %s: %w", destination, statErr)
+	}
+	if !info.IsDir() {
+		return "", fmt.Errorf("destination %s is not a directory", destination)
+	}
+	if options.PreservePaths {
+		for _, name := range options.AdditionalFilePaths {
+			if _, err := preservedDownloadPath(modelPath, name); err != nil {
+				return "", err
+			}
+		}
+	}
 
 	repo := hub.New(modelName)
 	if options.AuthToken != "" {
@@ -68,9 +93,16 @@ func DownloadModel(ctx context.Context, modelName string, destination string, op
 	}
 
 	// make sure it's an onnx model with tokenizer
-	downloadFiles, err := validateDownloadedHFModel(repo, options)
+	downloadFiles, err := ValidateDownloadedHFModel(repo, options)
 	if err != nil {
 		return "", err
+	}
+	if options.PreservePaths {
+		for _, name := range downloadFiles {
+			if _, err := preservedDownloadPath(modelPath, name); err != nil {
+				return "", err
+			}
+		}
 	}
 
 	for i := 0; i < options.MaxRetries; i++ {
@@ -83,12 +115,26 @@ func DownloadModel(ctx context.Context, modelName string, destination string, op
 			continue
 		}
 
+		if mkdirErr := os.MkdirAll(modelPath, 0o755); mkdirErr != nil {
+			return "", mkdirErr
+		}
+
 		for j, downloadPath := range downloadPaths {
 			truePath, symErr := filepath.EvalSymlinks(downloadPath)
 			if symErr != nil {
 				return "", symErr
 			}
-			moveErr := fileutil.CopyFile(ctx, truePath, fmt.Sprintf("%s/%s", modelPath, path.Base(downloadFiles[j])))
+			destinationPath := filepath.Join(modelPath, path.Base(downloadFiles[j]))
+			if options.PreservePaths {
+				destinationPath, err = preservedDownloadPath(modelPath, downloadFiles[j])
+				if err != nil {
+					return "", err
+				}
+				if mkdirErr := os.MkdirAll(filepath.Dir(destinationPath), 0o755); mkdirErr != nil {
+					return "", mkdirErr
+				}
+			}
+			moveErr := fileutil.CopyFile(ctx, truePath, destinationPath)
 			if moveErr != nil {
 				return "", moveErr
 			}
@@ -103,7 +149,24 @@ func DownloadModel(ctx context.Context, modelName string, destination string, op
 	return "", fmt.Errorf("failed to download %s after %d attempts", modelName, options.MaxRetries)
 }
 
-func validateDownloadedHFModel(repo *hub.Repo, options DownloadOptions) ([]string, error) {
+func preservedDownloadPath(modelPath, name string) (string, error) {
+	if name == "" || path.IsAbs(name) || filepath.IsAbs(name) || strings.ContainsAny(name, `\:`) {
+		return "", fmt.Errorf("invalid hub-relative path %q", name)
+	}
+	for segment := range strings.SplitSeq(name, "/") {
+		if segment == ".." || segment == "." || segment == "" {
+			return "", fmt.Errorf("invalid hub-relative path %q", name)
+		}
+	}
+	destinationPath := filepath.Join(modelPath, filepath.FromSlash(name))
+	rel, err := filepath.Rel(modelPath, destinationPath)
+	if err != nil || rel == ".." || strings.HasPrefix(rel, ".."+string(filepath.Separator)) {
+		return "", fmt.Errorf("invalid hub-relative path %q", name)
+	}
+	return destinationPath, nil
+}
+
+func ValidateDownloadedHFModel(repo *hub.Repo, options DownloadOptions) ([]string, error) {
 	for i := 0; i < options.MaxRetries; i++ {
 		err := repo.DownloadInfo(false)
 		if err != nil {
@@ -169,5 +232,6 @@ func validateDownloadedHFModel(repo *hub.Repo, options DownloadOptions) ([]strin
 	if tokenizerPath != "" {
 		files = append(files, tokenizerPath)
 	}
+	files = append(files, options.AdditionalFilePaths...)
 	return files, errors.Join(errs...)
 }

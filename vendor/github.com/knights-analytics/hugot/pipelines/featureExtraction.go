@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/knights-analytics/hugot/backends"
-	"github.com/knights-analytics/hugot/options"
 	"github.com/knights-analytics/hugot/util/imageutil"
 	"github.com/knights-analytics/hugot/util/safeconv"
 	"github.com/knights-analytics/hugot/util/vectorutil"
@@ -29,7 +28,8 @@ type FeatureExtractionPipeline struct {
 	OutputIndex        int // Record the index of the output selected, defaults to first (0)
 	Normalization      bool
 	// Image mode fields (for vision encoders like CLIP visual)
-	imageMode bool // true if this is a vision model
+	imageMode   bool // true if this is a vision model
+	modelPooler bool
 }
 
 type FeatureExtractionOutput struct {
@@ -39,7 +39,7 @@ type FeatureExtractionOutput struct {
 func (t *FeatureExtractionOutput) GetOutput() []any {
 	out := make([]any, len(t.Embeddings))
 	for i, embedding := range t.Embeddings {
-		out[i] = any(embedding)
+		out[i] = embedding
 	}
 	return out
 }
@@ -75,6 +75,15 @@ func WithOutputName(outputName string) backends.PipelineOption[*FeatureExtractio
 	}
 }
 
+// WithModelPooler selects the model's rank-two pooler_output instead of mean
+// pooling hidden states. Models without that output are rejected.
+func WithModelPooler() backends.PipelineOption[*FeatureExtractionPipeline] {
+	return func(pipeline *FeatureExtractionPipeline) error {
+		pipeline.modelPooler = true
+		return nil
+	}
+}
+
 // WithImageMode enables image feature extraction mode for vision encoders (e.g., CLIP visual encoder).
 // When enabled, the pipeline accepts images instead of text and skips tokenization.
 func WithImageMode() backends.PipelineOption[*FeatureExtractionPipeline] {
@@ -85,11 +94,9 @@ func WithImageMode() backends.PipelineOption[*FeatureExtractionPipeline] {
 }
 
 // NewFeatureExtractionPipeline init a feature extraction pipeline.
-func NewFeatureExtractionPipeline(sessionContext context.Context, config backends.PipelineConfig[*FeatureExtractionPipeline], s *options.Options, model *backends.Model) (*FeatureExtractionPipeline, error) {
-	defaultPipeline, err := backends.NewBasePipeline(sessionContext, config, s, model)
-	if err != nil {
-		return nil, err
-	}
+func NewFeatureExtractionPipeline(sessionContext context.Context, config backends.PipelineConfig[*FeatureExtractionPipeline], model *backends.Model) (*FeatureExtractionPipeline, error) {
+	defaultPipeline := backends.NewBasePipeline(sessionContext, config, model)
+	var err error
 	pipeline := &FeatureExtractionPipeline{BasePipeline: defaultPipeline}
 	for _, o := range config.Options {
 		err = o(pipeline)
@@ -106,6 +113,13 @@ func NewFeatureExtractionPipeline(sessionContext context.Context, config backend
 		pipeline.imageFormat = detectedFormat
 	}
 	// filter outputs
+	if pipeline.modelPooler {
+		index, err := modelPoolerIndex(model)
+		if err != nil {
+			return nil, err
+		}
+		pipeline.OutputName = model.OutputsMeta[index].Name
+	}
 	if pipeline.OutputName != "" {
 		for index, output := range model.OutputsMeta {
 			if output.Name == pipeline.OutputName {
@@ -157,10 +171,10 @@ func (p *FeatureExtractionPipeline) GetMetadata() backends.PipelineMetadata {
 // GetStatistics returns the runtime statistics for the pipeline.
 func (p *FeatureExtractionPipeline) GetStatistics() backends.PipelineStatistics {
 	statistics := backends.PipelineStatistics{}
-	if p.Model.Tokenizer != nil && p.Model.Tokenizer.TokenizerTimings != nil {
-		statistics.ComputeTokenizerStatistics(p.Model.Tokenizer.TokenizerTimings)
+	if p.TokenizerTimings != nil {
+		statistics.ComputeTokenizerStatistics(p.TokenizerTimings)
 	}
-	statistics.ComputeOnnxStatistics(p.PipelineTimings)
+	statistics.ComputeOnnxStatistics(p.ONNXTimings)
 	return statistics
 }
 
@@ -200,9 +214,9 @@ func (p *FeatureExtractionPipeline) Validate() error {
 func (p *FeatureExtractionPipeline) preprocess(batch *backends.PipelineBatch, inputs []string) error {
 	start := time.Now()
 	backends.TokenizeInputs(batch, p.Model.Tokenizer, inputs)
-	atomic.AddUint64(&p.Model.Tokenizer.TokenizerTimings.NumCalls, 1)
-	atomic.AddUint64(&p.Model.Tokenizer.TokenizerTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
-	err := backends.CreateInputTensors(batch, p.Model, p.Runtime)
+	atomic.AddUint64(&p.TokenizerTimings.NumCalls, 1)
+	atomic.AddUint64(&p.TokenizerTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
+	err := backends.CreateInputTensors(batch, p.Model)
 	return err
 }
 
@@ -213,18 +227,14 @@ func (p *FeatureExtractionPipeline) forward(ctx context.Context, batch *backends
 	if err != nil {
 		return err
 	}
-	atomic.AddUint64(&p.PipelineTimings.NumCalls, 1)
-	atomic.AddUint64(&p.PipelineTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
+	atomic.AddUint64(&p.ONNXTimings.NumCalls, 1)
+	atomic.AddUint64(&p.ONNXTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
 	return nil
 }
 
 // postprocess parses the first output from the network similar to the transformers' implementation.
 func (p *FeatureExtractionPipeline) postprocess(batch *backends.PipelineBatch) (*FeatureExtractionOutput, error) {
-	// TODO: this works if token embeddings are returned or sentence embeddings are returned.
-	// in the former case embeddings are mean pooled. In the latter they are just returned.
-	// to make this more general for other pipelines and to allow return of raw token embeddings,
-	// we need an ndarray type that can be the return type of this pipeline. Need to think
-	// about how to do this in a lightweight manner.
+	// Rank-three hidden states are mean pooled; rank-two model embeddings pass through.
 	output := batch.OutputValues[p.OutputIndex] // Use the index of the output we want to return
 	batchEmbeddings := make([][]float32, batch.Size)
 	outputDimensions := []int64(p.Output.Dimensions)
@@ -241,8 +251,9 @@ func (p *FeatureExtractionPipeline) postprocess(batch *backends.PipelineBatch) (
 	}
 	// Normalize embeddings (if asked), like in https://huggingface.co/sentence-transformers/all-mpnet-base-v2
 	if p.Normalization {
+		batchEmbeddings = append([][]float32(nil), batchEmbeddings...)
 		for i, embedding := range batchEmbeddings {
-			batchEmbeddings[i] = vectorutil.Normalize(embedding, 2)
+			batchEmbeddings[i] = vectorutil.Normalize(append([]float32(nil), embedding...), 2)
 		}
 	}
 	return &FeatureExtractionOutput{Embeddings: batchEmbeddings}, nil
@@ -287,22 +298,57 @@ func (p *FeatureExtractionPipeline) Run(ctx context.Context, inputs []string) (b
 
 // RunPipeline is like Run, but returns the concrete feature extraction output type rather than the interface.
 func (p *FeatureExtractionPipeline) RunPipeline(ctx context.Context, inputs []string) (*FeatureExtractionOutput, error) {
-	var runErrors []error
-	batch := backends.NewBatch(len(inputs))
-	defer func(*backends.PipelineBatch) {
-		runErrors = append(runErrors, batch.Destroy())
-	}(batch)
-	runErrors = append(runErrors, p.preprocess(batch, inputs))
-	if e := errors.Join(runErrors...); e != nil {
-		return nil, e
+	return backends.RunPipeline(ctx, len(inputs), func(batch *backends.PipelineBatch) error {
+		return p.preprocess(batch, inputs)
+	}, p.forward, p.postprocess)
+}
+
+func (p *FeatureExtractionPipeline) postprocessRaw(batch *backends.PipelineBatch) (*RawFeatureOutput, error) {
+	return rawFeatures(batch, p.Output, p.OutputIndex)
+}
+
+func (p *FeatureExtractionPipeline) forwardRaw(ctx context.Context, batch *backends.PipelineBatch) error {
+	// Input tensors already contain attention masks. Only disable output trimming.
+	batch.PaddingMask = nil
+	return p.forward(ctx, batch)
+}
+
+// RunRaw returns unpooled, unnormalized text features, including padding tokens.
+func (p *FeatureExtractionPipeline) RunRaw(ctx context.Context, inputs []string) (*RawFeatureOutput, error) {
+	if p.imageMode {
+		return nil, errors.New("RunRaw requires text mode; use RunRawWithImages or RunRawWithImagePaths")
 	}
-	runErrors = append(runErrors, p.forward(ctx, batch))
-	if e := errors.Join(runErrors...); e != nil {
-		return nil, e
+	if len(inputs) == 0 {
+		return nil, errors.New("raw features require a nonempty batch")
 	}
-	result, postErr := p.postprocess(batch)
-	runErrors = append(runErrors, postErr)
-	return result, errors.Join(runErrors...)
+	return backends.RunPipeline(ctx, len(inputs), func(batch *backends.PipelineBatch) error {
+		return p.preprocess(batch, inputs)
+	}, p.forwardRaw, p.postprocessRaw)
+}
+
+// RunRawWithImages returns the selected image tensor without pooling or normalization.
+func (p *FeatureExtractionPipeline) RunRawWithImages(ctx context.Context, images []image.Image) (*RawFeatureOutput, error) {
+	if !p.imageMode {
+		return nil, errors.New("RunRawWithImages requires ImageMode to be enabled")
+	}
+	if len(images) == 0 {
+		return nil, errors.New("raw features require a nonempty batch")
+	}
+	return backends.RunPipeline(ctx, len(images), func(batch *backends.PipelineBatch) error {
+		return p.PreprocessImages(batch, images)
+	}, p.forwardRaw, p.postprocessRaw)
+}
+
+// RunRawWithImagePaths loads images and returns their raw features.
+func (p *FeatureExtractionPipeline) RunRawWithImagePaths(ctx context.Context, paths []string) (*RawFeatureOutput, error) {
+	if !p.imageMode || len(paths) == 0 {
+		return nil, errors.New("raw image features require ImageMode and a nonempty batch")
+	}
+	images, err := imageutil.LoadImagesFromPaths(p.SessionContext, paths)
+	if err != nil {
+		return nil, fmt.Errorf("failed to load images: %w", err)
+	}
+	return p.RunRawWithImages(ctx, images)
 }
 
 // IMAGE MODE METHODS
@@ -313,7 +359,7 @@ func (p *FeatureExtractionPipeline) PreprocessImages(batch *backends.PipelineBat
 	if err != nil {
 		return fmt.Errorf("failed to preprocess images: %w", err)
 	}
-	return backends.CreateImageTensors(batch, p.Model, preprocessed, p.Runtime)
+	return backends.CreateImageTensors(batch, p.Model, preprocessed)
 }
 
 // RunWithImages runs the pipeline on a batch of images (for vision models).
@@ -322,28 +368,15 @@ func (p *FeatureExtractionPipeline) RunWithImages(ctx context.Context, images []
 	if !p.imageMode {
 		return nil, fmt.Errorf("RunWithImages requires ImageMode to be enabled; use WithImageMode() option")
 	}
-	var runErrors []error
-	batch := backends.NewBatch(len(images))
-	defer func(*backends.PipelineBatch) {
-		runErrors = append(runErrors, batch.Destroy())
-	}(batch)
-	runErrors = append(runErrors, p.PreprocessImages(batch, images))
-	if e := errors.Join(runErrors...); e != nil {
-		return nil, e
-	}
-	runErrors = append(runErrors, p.forward(ctx, batch))
-	if e := errors.Join(runErrors...); e != nil {
-		return nil, e
-	}
-	result, postErr := p.postprocess(batch)
-	runErrors = append(runErrors, postErr)
-	return result, errors.Join(runErrors...)
+	return backends.RunPipeline(ctx, len(images), func(batch *backends.PipelineBatch) error {
+		return p.PreprocessImages(batch, images)
+	}, p.forward, p.postprocess)
 }
 
 // RunWithImagePaths loads images from file paths and runs the pipeline.
 // Convenience method that combines image loading with RunWithImages.
 func (p *FeatureExtractionPipeline) RunWithImagePaths(ctx context.Context, paths []string) (*FeatureExtractionOutput, error) {
-	images, err := imageutil.LoadImagesFromPaths(ctx, paths)
+	images, err := imageutil.LoadImagesFromPaths(p.SessionContext, paths)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load images: %w", err)
 	}

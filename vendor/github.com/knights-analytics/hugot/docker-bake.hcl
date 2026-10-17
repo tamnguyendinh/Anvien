@@ -1,12 +1,12 @@
 # docker-bake.hcl
 
 # ---- Versions ----
-variable "GO_VERSION"                { default = "1.26.2" }
+variable "GO_VERSION"                { default = "1.27.1" }
 variable "GOTESTSUM_VERSION"         { default = "1.13.0" }
-variable "GOPJRT_VERSION"            { default = "0.98.0" }
-variable "ONNXRUNTIME_VERSION"       { default = "1.25.0" }
-variable "ONNXRUNTIME_GENAI_VERSION" { default = "0.13.1" }
-variable "JAX_CUDA_VERSION"          { default = "0.9.1" }
+variable "GOPJRT_VERSION"            { default = "0.114.0" }
+variable "ONNXRUNTIME_VERSION"       { default = "1.30.0" }
+variable "ONNXRUNTIME_GENAI_VERSION" { default = "0.17.0" }
+variable "JAX_CUDA_VERSION"          { default = "0.11.0" }
 
 target "base" {
   context   = "."
