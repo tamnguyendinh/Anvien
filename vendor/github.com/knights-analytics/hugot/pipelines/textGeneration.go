@@ -5,20 +5,19 @@ import (
 	"errors"
 
 	"github.com/knights-analytics/hugot/backends"
-	"github.com/knights-analytics/hugot/options"
 )
 
 type TextGenerationPipeline struct {
 	*backends.BasePipeline
-	SystemPrompt  string
-	MaxLength     int
-	Streaming     bool
 	Temperature   *float64
 	TopP          *float64
 	Seed          *int
+	Guidance      *backends.Guidance
+	SystemPrompt  string
 	StopSequences []string
 	Tools         []string
-	Guidance      *backends.Guidance
+	MaxLength     int
+	Streaming     bool
 }
 
 type TextGenerationOutput struct {
@@ -109,11 +108,9 @@ func WithGuidance(guidance *backends.Guidance) backends.PipelineOption[*TextGene
 }
 
 // NewTextGenerationPipeline initializes a new text generation pipeline.
-func NewTextGenerationPipeline(sessionContext context.Context, config backends.PipelineConfig[*TextGenerationPipeline], s *options.Options, model *backends.Model) (*TextGenerationPipeline, error) {
-	defaultPipeline, err := backends.NewBasePipeline(sessionContext, config, s, model)
-	if err != nil {
-		return nil, err
-	}
+func NewTextGenerationPipeline(sessionContext context.Context, config backends.PipelineConfig[*TextGenerationPipeline], model *backends.Model) (*TextGenerationPipeline, error) {
+	defaultPipeline := backends.NewBasePipeline(sessionContext, config, model)
+	var err error
 	pipeline := &TextGenerationPipeline{BasePipeline: defaultPipeline}
 	for _, o := range config.Options {
 		err = o(pipeline)
@@ -122,7 +119,7 @@ func NewTextGenerationPipeline(sessionContext context.Context, config backends.P
 		}
 	}
 	if pipeline.MaxLength == 0 {
-		pipeline.MaxLength = 1028 // Default value if not set as per Python
+		pipeline.MaxLength = 4096 // Default value if not set
 	}
 	err = pipeline.Validate()
 	if err != nil {
@@ -147,29 +144,10 @@ func (p *TextGenerationPipeline) GetModel() *backends.Model {
 
 // GetStatistics returns the runtime statistics for the pipeline.
 func (p *TextGenerationPipeline) GetStatistics() backends.PipelineStatistics {
-	var stats backends.PipelineStatistics
-	if p.Model.ORTModel.GenerativeEngine != nil {
-		engineStats := p.Model.ORTModel.GenerativeEngine.GetStatistics()
-		stats = backends.PipelineStatistics{
-			AvgPrefillSeconds:              engineStats.AvgPrefillSeconds,
-			TokensPerSecond:                engineStats.TokensPerSecond,
-			CumulativePrefillSum:           engineStats.CumulativePrefillSum,
-			CumulativePrefillCount:         engineStats.CumulativePrefillCount,
-			CumulativeTokens:               engineStats.CumulativeTokens,
-			CumulativeTokenDurationSeconds: engineStats.CumulativeTokenDurationSeconds,
-		}
-	} else if p.Model.ORTModel.GenerativeSession != nil {
-		sessionStats := p.Model.ORTModel.GenerativeSession.GetStatistics()
-		stats = backends.PipelineStatistics{
-			AvgPrefillSeconds:              sessionStats.AvgPrefillSeconds,
-			TokensPerSecond:                sessionStats.TokensPerSecond,
-			CumulativePrefillSum:           sessionStats.CumulativePrefillSum,
-			CumulativePrefillCount:         sessionStats.CumulativePrefillCount,
-			CumulativeTokens:               sessionStats.CumulativeTokens,
-			CumulativeTokenDurationSeconds: sessionStats.CumulativeTokenDurationSeconds,
-		}
+	if p.Model.ORTModel.Generative != nil {
+		return p.Model.ORTModel.Generative.Statistics()
 	}
-	return stats
+	return backends.PipelineStatistics{}
 }
 
 func (p *TextGenerationPipeline) Validate() error {

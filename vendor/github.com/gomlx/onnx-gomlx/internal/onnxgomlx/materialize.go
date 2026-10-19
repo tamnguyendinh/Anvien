@@ -4,13 +4,73 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/gomlx/compute/dtypes/bfloat16"
+	"github.com/gomlx/compute/dtypes/float16"
+	"github.com/gomlx/compute-onnx/support/protos"
 	"github.com/gomlx/exceptions"
-	. "github.com/gomlx/gomlx/pkg/core/graph" //nolint
-	"github.com/gomlx/gomlx/pkg/core/tensors"
-	"github.com/gomlx/gomlx/pkg/support/sets"
-	"github.com/gomlx/onnx-gomlx/internal/protos"
+	. "github.com/gomlx/gomlx/core/graph" //nolint
+	"github.com/gomlx/gomlx/core/tensors"
+	"github.com/gomlx/gomlx/support/sets"
 	"github.com/pkg/errors"
 )
+
+// IsConstantExpression returns true if the subgraph producing nodeOutputName
+// has no dependencies on graph inputs or non-constant variables.
+func (m *Model) IsConstantExpression(nodeOutputName string) bool {
+	inputs, vars, ctxNodes := m.nonConstantDependencies(nodeOutputName)
+	return len(inputs) == 0 && len(vars) == 0 && len(ctxNodes) == 0
+}
+
+// MaterializeConstantExpression materializes a node to its constant expression.
+func (m *Model) MaterializeConstantExpression(nodeOutputName string, convertedOutputs map[string]*Node) (*tensors.Tensor, error) {
+	return m.materializeConstantExpression(nodeOutputName, convertedOutputs)
+}
+
+// MaterializeConstantScalar materializes a scalar node to its constant float64 value.
+func (m *Model) MaterializeConstantScalar(nodeOutputName string, convertedOutputs map[string]*Node) (float64, error) {
+	t, err := m.materializeConstantExpression(nodeOutputName, convertedOutputs)
+	if err != nil {
+		return 0, err
+	}
+	return TensorToScalarFloat64(t), nil
+}
+
+// TensorToScalarFloat64 converts a 1-element tensor (scalar or 1D length 1) of any numeric type to float64.
+func TensorToScalarFloat64(t *tensors.Tensor) float64 {
+	if t.Shape().Size() != 1 {
+		return 0
+	}
+	var val float64
+	_ = t.ConstFlatData(func(flat any) {
+		switch f := flat.(type) {
+		case []float32:
+			val = float64(f[0])
+		case []float64:
+			val = f[0]
+		case []int64:
+			val = float64(f[0])
+		case []int32:
+			val = float64(f[0])
+		case []int16:
+			val = float64(f[0])
+		case []int8:
+			val = float64(f[0])
+		case []uint64:
+			val = float64(f[0])
+		case []uint32:
+			val = float64(f[0])
+		case []uint16:
+			val = float64(f[0])
+		case []uint8:
+			val = float64(f[0])
+		case []float16.Float16:
+			val = f[0].Float64()
+		case []bfloat16.BFloat16:
+			val = f[0].Float64()
+		}
+	})
+	return val
+}
 
 // nonConstantDependencies returns the non-constant dependencies: inputs or variables.
 func (m *Model) nonConstantDependencies(nodeOutputName string) (inputs, variables []string, contextNodes []*protos.NodeProto) {
@@ -110,7 +170,9 @@ func (m *Model) materializeConstantExpression(nodeOutputName string, convertedOu
 		return nil, errors.Errorf("node output %q hasn't been converted yet, so we can't materializeConstantExpression!?", nodeOutputName)
 	}
 	if node.Type() == NodeTypeConstant {
-		return node.ConstantValue(), nil
+		if cVal := node.ConstantValue(); cVal != nil {
+			return cVal, nil
+		}
 	}
 
 	// See if it is possible: if the subgraph that generated the node is a constant expression.
@@ -160,9 +222,11 @@ func (m *Model) recursiveMaterializeConstantExpression(nodeOutputName string, g 
 	// in which case we take the constant value and inject it directly in the new constant expression
 	if originalNode, found := originalConvertedOutput[nodeOutputName]; found {
 		if originalNode.Type() == NodeTypeConstant {
-			// Duplicate the constant in the new graph.
-			constConvertedOutputs[nodeOutputName] = Const(g, originalNode.ConstantValue())
-			return
+			if cVal := originalNode.ConstantValue(); cVal != nil {
+				// Duplicate the constant in the new graph.
+				constConvertedOutputs[nodeOutputName] = Const(g, cVal)
+				return
+			}
 		}
 	}
 
