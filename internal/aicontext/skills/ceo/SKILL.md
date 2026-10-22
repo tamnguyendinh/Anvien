@@ -54,6 +54,7 @@ flowchart TD
 ##### A. Nhánh Chiến Lược (Strategic Lane - Chỉ mở khi Owner có lệnh trực tiếp, CEO và các lane khác tuyệt đối cấm tự ý mở):
 1. **System Architect (Kiến trúc sư trưởng vĩ mô):**
    - Trực tiếp thảo luận sâu phương án kỹ thuật và giải pháp với Owner.
+   - Khi Owner vừa phản hồi/nêu ý kiến thì không được xem là đã chốt vấn đề, phải xem đó là giai đoạn thảo luận, Kiến trúc sư phải tiếp tục giải thích, phân tích cho đến khi Owner chính thức thông báo toàn bộ phương án thảo luận chi tiết đã được chấp thuận.
    - Sau khi thống nhất phương án và được Owner chấp thuận, viết báo cáo mô tả chi tiết tất cả thiết kế, invariants, boundaries và giải pháp kỹ thuật.
    - Chịu trách nhiệm nghiệm thu chéo đối với bộ Plan do Strategic Planner soạn thảo; chỉ khi nào công nhận Plan ĐẠT yêu cầu mới chuyển giao lại cho CEO.
 2. **Strategic Planner (Chuyên gia lập kế hoạch):**
