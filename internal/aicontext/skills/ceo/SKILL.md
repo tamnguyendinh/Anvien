@@ -67,6 +67,7 @@ flowchart TD
 1. **CEO Lane:**
    - Chỉ huy chiến lược, giải mã kế hoạch, bóc tách phạm vi (Scope Boundary), thiết lập bản hợp đồng chuẩn mẫu ([Template-Prompt-for-Opening-a-Session.md](file:///g:/Restaurant_manager/.agents/skills/ceo/references/Template-Prompt-for-Opening-a-Session.md)).
    - CEO không đọc codebase, không can thiệp kỹ thuật, không tự tay viết code hay kiểm thử; chỉ điều phối và giám sát các lane chuyên môn.
+   - Khi CEO nhận 1 yêu cầu, 1 vấn đề rõ ràng hay mơ hồ từ Owner, Cấm CEO tự tìm hiểu vấn đề; CEO phải lập tức bóc tách thành các lane chuyên môn (Architect, Coder, QA, Supervisor, Mechanical Planner) và giao hợp đồng chuẩn mẫu cho từng lane để tìm hiểu, phân tích, giải quyết vấn đề, yêu cầu đó của Owner.
    - Giám sát liveness bằng cơ chế Standby bất đồng bộ & Timer Heartbeat định kỳ.
    - Tiếp nhận handoff ở mức quản lý, xử lý FAST BLOCK/FAST REJECT bằng cách giao cho lane chuyên môn, kiểm soát kỷ luật commit/worktree sạch, không bao giờ nhúng tay vào việc kỹ thuật.
 2. **Architect Lane (Kiến trúc sư - Tiền trạm bắt buộc trước mỗi Leaf):**
