@@ -23,17 +23,26 @@ CEO (and only CEO) use this skill.
 
 ### DÀN TRẬN VẬN HÀNH (EXECUTION BATTLE FORMATION)
 
-Hệ thống điều hành chiến dịch được thiết lập thành 6 phân tầng độc lập theo nguyên tắc **Phân tách trách nhiệm (Separation of Concerns)** và **Zero-Trust**:
+Hệ thống điều hành chiến dịch được thiết lập thành 2 phân nhánh vận hành độc lập (Nhánh Chiến Lược và Phân tầng Tác nghiệp) theo nguyên tắc **Phân tách trách nhiệm (Separation of Concerns)** và **Zero-Trust**:
 
 ```mermaid
 flowchart TD
     Owner([Owner / Human Commander]) <-->|Mệnh lệnh tối cao / Phê duyệt| CEO[CEO Lane - Bộ chỉ huy Điều phối]
-    
-    subgraph Execution_Lanes [Phân tầng Tác nghiệp Chuyên môn]
+
+    subgraph Strategic_Lane [Nhánh Chiến Lược - Chỉ mở khi có lệnh trực tiếp từ Owner]
+        direction TB
+        CEO -.->|Kích hoạt khi Owner ra lệnh| StratArch[Kiến trúc sư - System Architect]
+        StratArch <-->|Thảo luận & Chốt phương án| Owner
+        StratArch -->|Báo cáo thiết kế đã chốt| StratPlan[Strategic Planner]
+        StratPlan -->|Gửi Plan nghiệm thu| StratArch
+        StratArch -->|Xác nhận Plan ĐẠT| CEO
+    end
+
+    subgraph Execution_Lanes [Phân tầng Tác nghiệp Chuyên môn - Thi công]
         direction TB
         CEO -->|1. Tiền trạm & Khóa Touch-Map| Arch[Architect Lane]
-        Arch -->|Thiết kế & Bàn giao Touch-Map | Coder[Coder Lane]
-        Coder -->|2. Thi công 100% Touch-Map | QA[QA Lane]
+        Arch -->|Thiết kế & Bàn giao Touch-Map| Coder[Coder Lane]
+        Coder -->|2. Thi công 100% Touch-Map| QA[QA Lane]
         QA -->|3. Kiểm thử Runtime/UX thực tế| Sup[Supervisor Lane]
         Sup -->|4. Thẩm định Zero-Trust & Báo cáo PASS| CEO
         CEO -->|5. Giao hợp đồng cơ học cập nhật ledger| Plan[Mechanical Planner Lane]
@@ -41,6 +50,18 @@ flowchart TD
 ```
 
 #### Trách nhiệm cụ thể của từng Lane:
+
+##### A. Nhánh Chiến Lược (Strategic Lane - Chỉ mở khi Owner có lệnh trực tiếp, CEO và các lane khác tuyệt đối cấm tự ý mở):
+1. **System Architect (Kiến trúc sư trưởng vĩ mô):**
+   - Trực tiếp thảo luận sâu phương án kỹ thuật và giải pháp với Owner.
+   - Sau khi thống nhất phương án và được Owner chấp thuận, viết báo cáo mô tả chi tiết tất cả thiết kế, invariants, boundaries và giải pháp kỹ thuật.
+   - Chịu trách nhiệm nghiệm thu chéo đối với bộ Plan do Strategic Planner soạn thảo; chỉ khi nào công nhận Plan ĐẠT yêu cầu mới chuyển giao lại cho CEO.
+2. **Strategic Planner (Chuyên gia lập kế hoạch):**
+   - Được CEO triệu tập theo lệnh Owner sau khi phương án thiết kế đã được Owner chấp thuận.
+   - Tiếp nhận báo cáo thiết kế từ Kiến trúc sư để bóc tách thành bộ Plan hoàn chỉnh (Milestones, Epics, Atomic Leaf Tasks, Acceptance Criteria).
+   - Gửi dự thảo Plan về CEO để chuyển cho Kiến trúc sư nghiệm thu.
+
+##### B. Phân tầng Tác nghiệp Chuyên môn (Execution Lanes):
 1. **CEO Lane:**
    - Chỉ huy chiến lược, giải mã kế hoạch, bóc tách phạm vi (Scope Boundary), thiết lập bản hợp đồng chuẩn mẫu ([Template-Prompt-for-Opening-a-Session.md](file:///g:/Restaurant_manager/.agents/skills/ceo/references/Template-Prompt-for-Opening-a-Session.md)).
    - Giám sát liveness bằng cơ chế Standby bất đồng bộ & Timer Heartbeat định kỳ.
