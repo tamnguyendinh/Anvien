@@ -1,6 +1,6 @@
 # Standby and Liveness Patrol
 
-> This file is part of CEO Skill. Read when: transitioning to STANDBY after delegating a task, configuring the 5-minute heartbeat timer, performing routine liveness snapshots, or issuing anti-loop corrections.
+> This file is part of CEO Skill. Read when: transitioning to STANDBY after delegating a task, configuring the 10-minute heartbeat timer, performing routine liveness snapshots, or issuing anti-loop corrections.
 
 ---
 
@@ -11,9 +11,9 @@
 
 ---
 
-## 2. 5-Minute Liveness Timer Mandate
+## 2. 10-Minute Liveness Timer Mandate
 
-* **(MUST)** Before entering STANDBY, CEO MUST set a 5-minute one-shot wake-up timer (300 seconds).
+* **(MUST)** Before entering STANDBY, CEO MUST set a 10-minute one-shot wake-up timer (600 seconds).
 * **(MUST)** CEO re-anchors its operational focus only upon receiving an explicit wake-up event (subagent message or timer trigger).
 * **(MUST - VERBATIM COPY)** When creating or updating the liveness timer, CEO MUST copy 100% verbatim the entire **"MANDATORY REMINDER FOR CEO"** block defined in **Section 4** below into the `Prompt` parameter of the timer tool (`schedule`). Summarizing, abbreviating, or altering wording is strictly forbidden.
 
@@ -104,18 +104,18 @@ Lane Model & Thinking Allocation Matrix:
 | Lane | Work Type | Recommended Model & Thinking |
 | :--- | :--- | :--- |
 | **CEO** | Task decomposition, scope control, orchestration, and handoff handling | Per Owner designation | 
-| **Explorer** | Locate files/symbols, collect evidence against clear queries | GPT 6.1 Sol high |
-| **Explorer / Debugger** | Trace cross-module flows, diagnose unknown root causes | GPT 6.1 Sol Max |
-| **Architect** | Local changes design, boundary already established | GPT 6 astra high |
-| **Architect** | Cross-system contracts design, sync/replay, recovery | GPT astra high |
-| **Planner (Mechanical)** | Translate approved decisions into checklists; mechanical status updates | gemini-3.8-flash high |
-| **Planner (Strategic)** | Dependency breakdown, migration order, rollbacks, and quality gates | GPT 6.1 Sol Xhigh |
-| **Coder** | Atomic implementation with finalized behavior, approach, and verification criteria | GPT 6.1 Sol Xhigh |
-| **QA** | Execute approved test plans, collect evidence, reproduce clear bugs | GPT 6.1 Sol high  | 
-| **QA** | Coverage design, flaky test analysis, concurrency/failure paths testing | GPT 6.1 Sol high |
-| **Supervisor** | Independent acceptance of source code, diffs, and evidence | GPT 6.1 Sol ultra | 
-| **Security / Data integrity** | Permissions analysis, data isolation, transactions, replay, data loss prevention | GPT 6.1 Sol Max | 
-| **DevOps** | Execute verified runbooks, migration/recovery design or incident investigation | GPT 6.1 Sol Xhigh |
+| **Explorer** | Locate files/symbols, collect evidence against clear queries | Per Owner designation |
+| **Explorer / Debugger** | Trace cross-module flows, diagnose unknown root causes | Per Owner designation |
+| **Architect** | Local changes design, boundary already established | Per Owner designation |
+| **Architect** | Cross-system contracts design, sync/replay, recovery | Per Owner designation |
+| **Planner (Mechanical)** | Translate approved decisions into checklists; mechanical status updates | Per Owner designation |
+| **Planner (Strategic)** | Dependency breakdown, migration order, rollbacks, and quality gates | Per Owner designation |
+| **Coder** | Atomic implementation with finalized behavior, approach, and verification criteria | Per Owner designation |
+| **QA** | Execute approved test plans, collect evidence, reproduce clear bugs | Per Owner designation  | 
+| **QA** | Coverage design, flaky test analysis, concurrency/failure paths testing | Per Owner designation |
+| **Supervisor** | Independent acceptance of source code, diffs, and evidence | Per Owner designation | 
+| **Security / Data integrity** | Permissions analysis, data isolation, transactions, replay, data loss prevention | Per Owner designation | 
+| **DevOps** | Execute verified runbooks, migration/recovery design or incident investigation | Per Owner designation |
 
 ### Owner’s Latest Execution Priority for All Lanes: 
 - Product code must behave correctly and match the active plan/phase/slice/leaf; evidence is Supporting verification, not the center or a perfection gate. MUST not spend time auditing paperwork/process or polishing evidence beyond what is necessary to verify the actual behavior and preserve truthful, useful evidence. Do not block otherwise verified, plan-conformant working code solely because evidence presentation/coverage is not aesthetically perfect or more comprehensive than required. Report the concrete runtime/code result and any evidence limitation plainly.  
@@ -127,33 +127,6 @@ Lane Model & Thinking Allocation Matrix:
   - Intermediate FAST BLOCK Resolution: The blocked lane process is paused awaiting assistance, not finished; once unblocked, send the unlock packet directly back into that same lane (send_message_to_thread) to resume its workflow.
 - Tuyệt đối cấm gọi tool set_thread_archived để lưu trữ/giấu bất kỳ session nào.
 - KIẾN TRÚC SƯ TUYỆT ĐỐI KHÔNG ĐƯỢC PHÉP FAST BLOCK VỀ CÁC VẤN ĐỀ KIẾN TRÚC/KỸ THUẬT. Kiến trúc sư (Architect) là người nắm thẩm quyền kỹ thuật cao nhất của hệ thống, có trách nhiệm vạch đường, định hình giải pháp và ban hành quyết định kiến trúc để giải quyết bài toán, kẻ cả đó là blcok thì cũng phải vạch ra đường lối giải quyết block.
-
-### Các Điểm Khóa Cứng (Contract Invariants) Bắt Buộc Trong Mọi Lane
-1. Tách biệt 100% (Separation of Concerns):
-  - Các thư mục mã nguồn (electron/renderer/, electron/main/, electron/preload/) CHỈ ĐƯỢC PHÉP CHỨA CODE KINH DOANH VÀ VẬN HÀNH APP.
-  - Tuyệt đối cấm đặt file test (.test.ts, .spec.ts), mock data, hay fixture lẫn vào trong thư mục component hoặc source code.
-2. Quy chuẩn địa chỉ duy nhất cho kiểm thử nội bộ:
-  - Toàn bộ unit test, component test, store test, mock data, fixture nội bộ BẮT BUỘC NẰM TRONG electron/test/:
-    - electron/test/fixtures/: Nơi duy nhất chứa mock data tập trung (menu, bàn, hóa đơn mẫu,...). Cấm vương vãi mock data trong component.
-    - electron/test/unit/: Kiểm thử hàm thuần túy, logic tính tiền, store Zustand.
-    - electron/test/components/: Kiểm thử render React UI (soi chiếu với renderer/components/).
-    - electron/test/main/: Kiểm thử logic Node.js Main process (IPC handlers, printer,...).
-    - electron/test/setup.ts: Cấu hình DOM ảo và mock IPC bridge.
-3. Phân định ranh giới 2 tầng kiểm thử:
-  - Tầng 1 (E2E ngoài vi): Duy nhất tại playwright/ ở thư mục gốc (chạy trên file .exe Electron thật).
-  - Tầng 2 (Nội bộ): Duy nhất tại electron/test/ (chạy trên môi trường Node.js / DOM ảo).
-4. Chỉ thị cưỡng chế cho Supervisor & Coder:
-  - Coder: Khi viết test cho Desktop/FE, chỉ được phép ghi vào electron/test/, import qua Path Alias (@renderer/...), không dùng đường dẫn tương đối dài dòng.
-  - Supervisor: Bắt buộc REJECT lập tức nếu phát hiện Coder đặt file test chính thức hoặc mock data bừa bãi trong electron/renderer/, electron/main/ hoặc .tmp/.
-5. File test tạm (Scratch / Probe / Log kiểm thử tạm thời):
-  - Được phép nằm trong .tmp/.
-  - Đây là nơi thợ (Coder, Debugger) viết nhanh các script cào cào để probe lỗi, chạy thử nghiệm một lần rồi vứt, hoặc lưu log chạy lệnh. Thư mục này có thể xóa trắng bất cứ lúc nào mà không làm ảnh hưởng đến hệ thống.
-6. File test chính thức (Official / Durable Test Suites):
-  - TUYỆT ĐỐI CẤM NẰM TRONG .tmp/ (vì .tmp/ nằm trong .gitignore, xóa là mất, không lưu vết trên Git và không chạy được trong quy trình build/CI chuẩn).
-  - Test chính thức là tài sản lâu dài của dự án, bắt buộc phải nằm tại các thư mục chuẩn hóa được Git quản lý:
-    - Tầng Backend: Các file *_test.go trong backend/internal/...
-    - Tầng Desktop / Frontend: Tập trung 100% trong electron/test/ (fixtures/, unit/, components/, main/)
-    - Tầng E2E: Tập trung trong playwright/
 
 #### CƯỠNG CHẾ VỀ CHUẨN KỸ THUẬT ĐẶT TÊN VÀ TỔ CHỨC FILE TEST:
 1. NGUYÊN TẮC CỐT LÕI (CHUẨN KỸ THUẬT DOANH NGHIỆP):
@@ -170,8 +143,6 @@ Khi tính năng lớn lên qua các lát cắt tiếp theo (P1-A, P1-B, P1-C, P1
    Khi thi công tính năng của plan child hoặc plan, hãy tạo file test theo đúng tên tính năng nghiệp vụ của app, kiểm tra hành vi thật của app, chạy test tính năng này và build chuẩn.    
 
 ### Architect-Approved Execution Sequence:
-- Roadmap File: G:\Restaurant_manager\Reports\architect\rp_architect_functional_roadmap_sequence_decision.md
-- Anchored Commit: 993fdca0 ("docs(architect): establish functional child plan execution sequence decision", 2026-09-24).
 - Lưu ý cho Architect và Planner (Strategic): Anvien chỉ giúp khoanh vùng và cung cấp các liên kết từ phân tích code nhanh chóng; nhưng nó không bảo đảm graph phản ánh đầy đủ, chính xác toàn bộ luồng thực tế; Kiến trúc sư vẫn phải đối chiếu source để xác nhận liên kết và quyết định kiến trúc.
 - Trong báo cáo của kiến trúc sư, CẤM nhét dữ liệu raw graph / log dump vào báo cáo.
 - Báo cáo của kiến trúc sư (MUST) Khoanh vùng giải pháp mạch lạc, thực dụng cho Coder; Viết ngắn gọn, chuẩn chỉ, Coder đọc là biết chính xác từng điểm chạm cần làm mà không bị nhiễu context.

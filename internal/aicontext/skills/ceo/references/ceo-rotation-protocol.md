@@ -74,7 +74,7 @@
 - Load the latest raw template prompt.
 - Draft the exact contract packet for the next task without sending.
 - Accurately define role, scope, non-goals, and mandatory evidence.
-- Demonstrate understanding of the 5-minute heartbeat cycle, ending turns cleanly, and strict prohibition of manual polling.
+- Demonstrate understanding of the 10-minute heartbeat cycle, ending turns cleanly, and strict prohibition of manual polling.
 
 **Predecessor CEO:**
 - Inspect drafted contract and planned runtime behavior.
@@ -97,7 +97,7 @@
 2. Validate existing verdict, report, and commit.
 3. Select the valid state machine transition.
 4. Open exactly one next lane.
-5. Arm the 5-minute heartbeat timer.
+5. Arm the 10-minute heartbeat timer.
 6. End turn and enter actual STANDBY.
 7. Send direct message to the exact session ID of the Predecessor CEO with proof of first-cycle execution.
 
