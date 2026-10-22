@@ -1,20 +1,20 @@
 // Package hftokenizer implements a tokenizer for HuggingFace's tokenizer.json format.
 // This format is used by the HuggingFace Tokenizers library (the "fast" tokenizers)
 // and supports WordPiece (BERT), BPE (GPT-2, RoBERTa), and Unigram models.
+//
+// It is written in pure Go.
 package hftokenizer
 
 import (
 	"encoding/json"
 	"os"
 	"sort"
-	"strings"
 	"unicode"
 	"unicode/utf8"
 
 	"github.com/gomlx/go-huggingface/hub"
 	"github.com/gomlx/go-huggingface/tokenizers/api"
 	"github.com/pkg/errors"
-	"golang.org/x/text/unicode/norm"
 )
 
 // UnmarshalJSON implements custom unmarshaling to handle both vocab and merges formats:
@@ -106,11 +106,11 @@ func New(config *api.Config, repo *hub.Repo) (api.Tokenizer, error) {
 	if !repo.HasFile("tokenizer.json") {
 		return nil, errors.Errorf("\"tokenizer.json\" file not found in repo")
 	}
-	tokenizerFile, err := repo.DownloadFile("tokenizer.json")
+	content, err := repo.ReadFile("tokenizer.json")
 	if err != nil {
-		return nil, errors.Wrapf(err, "can't download tokenizer.json file")
+		return nil, errors.Wrapf(err, "can't read tokenizer.json file")
 	}
-	return NewFromFile(config, tokenizerFile)
+	return NewFromContent(config, content)
 }
 
 // NewFromFile creates a HuggingFace tokenizer from a local tokenizer.json file path.
@@ -259,7 +259,7 @@ func (t *Tokenizer) resolveSpecialTokens() {
 	}
 }
 
-// Normalize returns the normalization used by the tokenizer (e.g.: BERT lower cases the string).
+// Normalize the text using the tokenizer normalization rules (e.g.: BERT lower cases the string).
 func (t *Tokenizer) Normalize(text string) string {
 	if t.tokenizer.Normalizer == nil {
 		return text
@@ -299,9 +299,10 @@ func (t *Tokenizer) EncodeWithAnnotations(text string) api.AnnotatedEncoding {
 
 // wordWithOffset holds a word/token string along with its character offset in the original text.
 type wordWithOffset struct {
-	text  string
-	start int // start position in original text (inclusive)
-	end   int // end position in original text (exclusive)
+	text    string
+	start   int   // start position in original text (inclusive)
+	end     int   // end position in original text (exclusive)
+	offsets []int // byte mapping for each byte of text into original text (len == len(text))
 }
 
 // encodeCore runs the core tokenization pipeline (split added tokens → normalize →
@@ -321,12 +322,12 @@ func (t *Tokenizer) encodeCore(text string) api.AnnotatedEncoding {
 
 		segText := text[seg.start:seg.end]
 
-		normalized, normSpans := t.normalizeWithSpans(segText)
-		for i := range normSpans {
-			normSpans[i] += seg.start
+		normalized, normOffsets := t.normalizeWithOffsets(segText)
+		for i := range normOffsets {
+			normOffsets[i] += seg.start
 		}
 
-		words := t.preTokenizeWithSpans(normalized, normSpans)
+		words := t.preTokenizeWithOffsets(normalized, normOffsets)
 
 		for _, word := range words {
 			wordIDs, wordSpans := t.tokenizeWordWithSpans(word)
@@ -420,257 +421,6 @@ func (t *Tokenizer) splitOnAddedTokens(text string) []textSegment {
 	return segments
 }
 
-// normalizeWithSpans applies normalization and returns the normalized text along with
-// a mapping from normalized byte positions to original byte positions.
-// The returned slice maps normalized position -> original position.
-func (t *Tokenizer) normalizeWithSpans(text string) (string, []int) {
-	if t.tokenizer.Normalizer == nil {
-		// No normalization - create identity mapping
-		offsets := make([]int, len(text))
-		for i := range text {
-			offsets[i] = i
-		}
-		return text, offsets
-	}
-	return t.applyNormalizerWithSpans(text, t.tokenizer.Normalizer)
-}
-
-// applyNormalizerWithSpans applies a normalizer and tracks byte positions.
-func (t *Tokenizer) applyNormalizerWithSpans(text string, n *Normalizer) (string, []int) {
-	// For most normalizers, we need to track how characters map through the transformation.
-	// This is complex because normalizers can:
-	// 1. Remove characters (accents, control chars)
-	// 2. Replace characters (lowercase)
-	// 3. Expand characters (NFD decomposition)
-	// 4. Contract characters (NFC composition)
-	//
-	// For simplicity, we handle the common cases and fall back to approximate mapping for complex cases.
-
-	switch n.Type {
-	case "Lowercase":
-		// Lowercase preserves character positions (1:1 mapping)
-		normalized := strings.ToLower(text)
-		offsets := make([]int, len(normalized))
-		origPos := 0
-		normPos := 0
-		for _, r := range text {
-			lowerRunes := []rune(strings.ToLower(string(r)))
-			for range lowerRunes {
-				if normPos < len(offsets) {
-					offsets[normPos] = origPos
-					normPos++
-				}
-			}
-			origPos += len(string(r))
-		}
-		return normalized, offsets
-
-	case "BertNormalizer":
-		// Clean text and optionally lowercase
-		var result strings.Builder
-		var offsets []int
-		origPos := 0
-		for _, r := range text {
-			runeLen := len(string(r))
-			if r == 0 || r == 0xFFFD || isControl(r) {
-				// Skip this character
-				origPos += runeLen
-				continue
-			}
-
-			if n.HandleChineseChars && isChineseChar(r) {
-				result.WriteRune(' ')
-				offsets = append(offsets, origPos)
-				result.WriteRune(r)
-				offsets = append(offsets, origPos)
-				result.WriteRune(' ')
-				offsets = append(offsets, origPos)
-			} else if isWhitespace(r) {
-				result.WriteRune(' ')
-				offsets = append(offsets, origPos)
-			} else {
-				// Potential accent stripping and lowercasing
-				s := string(r)
-				if (n.StripAccents != nil && *n.StripAccents) || (n.StripAccents == nil && n.Lowercase) {
-					s = removeAccents(norm.NFD.String(s))
-				}
-				if n.Lowercase {
-					s = strings.ToLower(s)
-				}
-				for range s {
-					offsets = append(offsets, origPos)
-				}
-				result.WriteString(s)
-			}
-			origPos += runeLen
-		}
-		return result.String(), offsets
-
-	case "NFD", "NFC", "NFKC", "NFKD":
-		// Unicode normalization - approximate mapping
-		normalized := t.applyNormalizer(text, n)
-		return approximateOffsets(text, normalized)
-
-	case "StripAccents":
-		// NFD then remove combining marks
-		nfd := norm.NFD.String(text)
-		var result strings.Builder
-		var offsets []int
-		origPos := 0
-		for _, r := range nfd {
-			runeLen := len(string(r))
-			if !unicode.Is(unicode.Mn, r) {
-				result.WriteRune(r)
-				offsets = append(offsets, origPos)
-			}
-			origPos += runeLen
-		}
-		// Re-map offsets to original text positions
-		return result.String(), remapOffsetsFromNFD(text, offsets)
-
-	case "Sequence":
-		result := text
-		currentOffsets := make([]int, len(text))
-		for i := range text {
-			currentOffsets[i] = i
-		}
-		for _, child := range n.Normalizers {
-			childCopy := child
-			newResult, newOffsets := t.applyNormalizerWithSpans(result, &childCopy)
-			// Compose the offset mappings
-			composedOffsets := make([]int, len(newOffsets))
-			for i, off := range newOffsets {
-				if off < len(currentOffsets) {
-					composedOffsets[i] = currentOffsets[off]
-				} else if len(currentOffsets) > 0 {
-					composedOffsets[i] = currentOffsets[len(currentOffsets)-1]
-				}
-			}
-			result = newResult
-			currentOffsets = composedOffsets
-		}
-		return result, currentOffsets
-
-	default:
-		// Unknown normalizer - use approximate mapping
-		normalized := t.applyNormalizer(text, n)
-		return approximateOffsets(text, normalized)
-	}
-}
-
-// approximateOffsets creates an approximate offset mapping when exact tracking is too complex.
-// It spreads the original text positions evenly across the normalized text using linear interpolation.
-//
-// WARNING: This function produces APPROXIMATE offsets that may not accurately reflect the true
-// character-to-character mapping between original and normalized text. This is used as a fallback
-// for complex normalizers (like certain Unicode normalizations) where exact tracking would require
-// significantly more complexity. For token classification tasks (NER, chunking) that require precise
-// character offsets, consider using tokenizers with simpler normalizers (e.g., Lowercase, BertNormalizer)
-// that support exact offset tracking.
-func approximateOffsets(original, normalized string) (string, []int) {
-	if len(normalized) == 0 {
-		return normalized, nil
-	}
-	if len(original) == 0 {
-		return normalized, make([]int, len(normalized))
-	}
-
-	offsets := make([]int, len(normalized))
-	ratio := float64(len(original)) / float64(len(normalized))
-
-	for i := range offsets {
-		offsets[i] = int(float64(i) * ratio)
-		if offsets[i] >= len(original) {
-			offsets[i] = len(original) - 1
-		}
-	}
-	return normalized, offsets
-}
-
-// remapOffsetsFromNFD maps offsets from NFD-normalized text back to original text positions.
-func remapOffsetsFromNFD(original string, nfdOffsets []int) []int {
-	// This is an approximation - maps NFD positions to original positions
-	nfd := norm.NFD.String(original)
-	if len(nfd) == len(original) {
-		return nfdOffsets // No change in length, direct mapping
-	}
-
-	// Build mapping from NFD position to original position
-	nfdToOrig := make([]int, len(nfd))
-	origPos := 0
-	nfdPos := 0
-	for _, r := range original {
-		nfdRunes := []rune(norm.NFD.String(string(r)))
-		for range nfdRunes {
-			if nfdPos < len(nfdToOrig) {
-				nfdToOrig[nfdPos] = origPos
-				nfdPos++
-			}
-		}
-		origPos += len(string(r))
-	}
-
-	// Remap the offsets
-	result := make([]int, len(nfdOffsets))
-	for i, off := range nfdOffsets {
-		if off < len(nfdToOrig) {
-			result[i] = nfdToOrig[off]
-		} else if len(nfdToOrig) > 0 {
-			result[i] = nfdToOrig[len(nfdToOrig)-1]
-		}
-	}
-	return result
-}
-
-func (t *Tokenizer) applyNormalizer(text string, n *Normalizer) string {
-	switch n.Type {
-	case "Lowercase":
-		return strings.ToLower(text)
-	case "NFD":
-		return norm.NFD.String(text)
-	case "NFC":
-		return norm.NFC.String(text)
-	case "NFKC":
-		return norm.NFKC.String(text)
-	case "NFKD":
-		return norm.NFKD.String(text)
-	case "StripAccents":
-		// NFD decomposition then remove combining marks (Mn category)
-		return removeAccents(norm.NFD.String(text))
-	case "BertNormalizer":
-		// Clean text, handle Chinese chars, strip accents, lowercase
-		result := text
-		if n.CleanText {
-			result = cleanText(result)
-		}
-		if n.HandleChineseChars {
-			result = tokenizeChineseChars(result)
-		}
-		if (n.StripAccents != nil && *n.StripAccents) || (n.StripAccents == nil && n.Lowercase) {
-			result = removeAccents(norm.NFD.String(result))
-		}
-		if n.Lowercase {
-			result = strings.ToLower(result)
-		}
-		return result
-	case "Sequence":
-		result := text
-		for _, child := range n.Normalizers {
-			childCopy := child
-			result = t.applyNormalizer(result, &childCopy)
-		}
-		return result
-	case "Replace":
-		// Handle replace patterns if needed
-		return text
-	case "Prepend":
-		// Prepend a string (used by some tokenizers)
-		return text
-	default:
-		return text
-	}
-}
-
 // SpecialTokenID returns the ID for a given special token.
 func (t *Tokenizer) SpecialTokenID(token api.SpecialToken) (int, error) {
 	switch token {
@@ -734,71 +484,6 @@ func (t *Tokenizer) Config() *api.Config {
 
 // Helper functions
 
-func isChineseChar(r rune) bool {
-	// CJK Unified Ideographs: 4E00-9FFF
-	// CJK Unified Ideographs Extension A: 3400-4DBF
-	// CJK Unified Ideographs Extension B: 20000-2A6DF
-	// ...
-	if (r >= 0x4E00 && r <= 0x9FFF) ||
-		(r >= 0x3400 && r <= 0x4DBF) ||
-		(r >= 0x20000 && r <= 0x2A6DF) ||
-		(r >= 0x2A700 && r <= 0x2B73F) ||
-		(r >= 0x2B740 && r <= 0x2B81F) ||
-		(r >= 0x2B820 && r <= 0x2CEAF) ||
-		(r >= 0xF900 && r <= 0xFAFF) ||
-		(r >= 0x2F800 && r <= 0x2FA1F) {
-		return true
-	}
-	return false
-}
-
-func tokenizeChineseChars(text string) string {
-	var result strings.Builder
-	for _, r := range text {
-		if isChineseChar(r) {
-			result.WriteRune(' ')
-			result.WriteRune(r)
-			result.WriteRune(' ')
-		} else {
-			result.WriteRune(r)
-		}
-	}
-	return result.String()
-}
-
-func cleanText(text string) string {
-	var result strings.Builder
-	for _, r := range text {
-		if r == 0 || r == 0xFFFD || isControl(r) {
-			continue
-		}
-		if isChineseChar(r) {
-			result.WriteRune(' ')
-			result.WriteRune(r)
-			result.WriteRune(' ')
-		} else if isWhitespace(r) {
-			result.WriteRune(' ')
-		} else {
-			result.WriteRune(r)
-		}
-	}
-	return result.String()
-}
-
-func isWhitespace(r rune) bool {
-	if r == ' ' || r == '\t' || r == '\n' || r == '\r' {
-		return true
-	}
-	return unicode.Is(unicode.Zs, r)
-}
-
-func isControl(r rune) bool {
-	if r == '\t' || r == '\n' || r == '\r' {
-		return false
-	}
-	return unicode.IsControl(r)
-}
-
 func isPunctuation(r rune) bool {
 	// ASCII punctuation
 	if (r >= 33 && r <= 47) || (r >= 58 && r <= 64) ||
@@ -806,17 +491,6 @@ func isPunctuation(r rune) bool {
 		return true
 	}
 	return unicode.IsPunct(r)
-}
-
-func removeAccents(text string) string {
-	// Simplified accent removal
-	var result strings.Builder
-	for _, r := range text {
-		if !unicode.Is(unicode.Mn, r) { // Mn = Mark, Nonspacing
-			result.WriteRune(r)
-		}
-	}
-	return result.String()
 }
 
 // Byte-level BPE encoding/decoding
