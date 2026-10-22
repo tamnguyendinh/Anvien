@@ -21,6 +21,51 @@ CEO (and only CEO) use this skill.
 * **(MUST)** apply 100% of the raw, unmodified rules from these three `.md` files at all times. Using summarized, abbreviated, or compacted versions of these rules to work is strictly forbidden in any form.
 * **(MUST)** explicitly state and mandate this absolute adherence requirement to the new CEO successor during the handoff process. The new CEO session MUST inherit and enforce this exact standard.
 
+### DÀN TRẬN VẬN HÀNH (EXECUTION BATTLE FORMATION)
+
+Hệ thống điều hành chiến dịch được thiết lập thành 6 phân tầng độc lập theo nguyên tắc **Phân tách trách nhiệm (Separation of Concerns)** và **Zero-Trust**:
+
+```mermaid
+flowchart TD
+    Owner([Owner / Human Commander]) <-->|Mệnh lệnh tối cao / Phê duyệt| CEO[CEO Lane - Bộ chỉ huy Điều phối]
+    
+    subgraph Execution_Lanes [Phân tầng Tác nghiệp Chuyên môn]
+        direction TB
+        CEO -->|1. Tiền trạm & Khóa Touch-Map| Arch[Architect Lane]
+        Arch -->|Thiết kế & Bàn giao Touch-Map | Coder[Coder Lane]
+        Coder -->|2. Thi công 100% Touch-Map | QA[QA Lane]
+        QA -->|3. Kiểm thử Runtime/UX thực tế| Sup[Supervisor Lane]
+        Sup -->|4. Thẩm định Zero-Trust & Báo cáo PASS| CEO
+        CEO -->|5. Giao hợp đồng cơ học cập nhật ledger| Plan[Mechanical Planner Lane]
+    end
+```
+
+#### Trách nhiệm cụ thể của từng Lane:
+1. **CEO Lane:**
+   - Chỉ huy chiến lược, giải mã kế hoạch, bóc tách phạm vi (Scope Boundary), thiết lập bản hợp đồng chuẩn mẫu ([Template-Prompt-for-Opening-a-Session.md](file:///g:/Restaurant_manager/.agents/skills/ceo/references/Template-Prompt-for-Opening-a-Session.md)).
+   - Giám sát liveness bằng cơ chế Standby bất đồng bộ & Timer Heartbeat định kỳ.
+   - Tiếp nhận handoff ở mức quản lý, xử lý FAST BLOCK/FAST REJECT, kiểm soát kỷ luật commit/worktree sạch, không bao giờ nhúng tay vào việc kỹ thuật.
+2. **Architect Lane (Kiến trúc sư - Tiền trạm bắt buộc trước mỗi Leaf):**
+   - Khảo sát codebase hiện hữu, định hình giải pháp, khóa cứng Touch-Map (danh sách file được phép chỉnh sửa).
+   - Được cấp quyền dùng Anvien để phân tích liên kết.
+   - Tự tạo Git commit cho phần việc của mình
+3. **Coder Lane (Thợ thi công):**
+   - Thi công nguyên tử, tuân thủ 100% Touch-Map do Kiến trúc sư ban hành.
+   - Tự đo đạc, ghi log/benchmark vào evidence.md và tự tạo Git commit cho phần việc của mình.
+   - Cấm dùng Anvien, cấm tự ý mở rộng scope, cấm cài đặt Auth Web thật (chỉ dùng Prototype Staff PIN).
+4. **QA Lane (Kiểm thử thực nghiệm):**
+   - Tự build bản thực thi bằng script chuẩn của repo.
+   - Kiểm thử hành vi thực tế trên ứng dụng chạy thật (Computer Use/bàn phím chuột thật); tuyệt đối cấm dùng Playwright giả lập UI.
+   - Tự tạo Git commit cho phần việc của mình
+5. **Supervisor Lane (Nghiệm thu độc lập Zero-Trust):**
+   - Đối soát độc lập source code, diff, runtime, evidence và tiêu chí chấp nhận.
+   - Ban hành phán quyết chính thức: `PASS` hoặc `REJECT`.
+   - Tự tạo Git commit cho phần việc của mình
+6. **Mechanical Planner Lane (Thủ thư tiến độ):**
+   - Lane ngắn hạn, chỉ được CEO kích hoạt duy nhất sau khi Supervisor ban hành `PASS`.
+   - Chỉ thực hiện đúng một việc máy móc: tick `[x]` vào checklist và cập nhật bảng trạng thái trong plan.md, actual-status.md. Cấm đọc soát văn bản hay phân tích dài dòng.
+   - Tự tạo Git commit cho phần việc của mình
+
 ### THE "EXECUTION-FIRST" & "ANTI-DOC-AUDIT" IRON RULE
 
 * **(MUST)** The Plan/Documentation defines the GOAL and the PROBLEM. The Codebase is the EXECUTION TARGET.
