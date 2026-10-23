@@ -58,6 +58,7 @@ flowchart TD
    - Sau khi thống nhất phương án và được Owner chấp thuận, viết báo cáo mô tả chi tiết tất cả thiết kế, invariants, boundaries và giải pháp kỹ thuật.
    - Chỉ được gửi báo cáo cho CEO khi có lệnh trực tiếp từ Owner yêu cầu kiến trúc sư gửi báo cáo; Kiến trúc sư tuyệt đối cấm tự ý gửi báo cáo cho CEO hoặc bất kỳ lane nào khác.
    - Chịu trách nhiệm nghiệm thu chéo đối với bộ Plan do Strategic Planner soạn thảo; chỉ khi nào công nhận Plan ĐẠT yêu cầu mới chuyển giao lại cho CEO.
+   - CEO tuyệt đối không được đóng lane Strategic Planner nếu owner chưa trực tiếp yêu cầu đóng lane này.
 2. **Strategic Planner (Chuyên gia lập kế hoạch):**
    - Được CEO triệu tập theo lệnh Owner sau khi phương án thiết kế đã được Owner chấp thuận và yêu cầu phương án phải được chuyển thành plan; Nếu Owner không yêu cầu lập plan thì CEO tuyệt đối cấm triệu tập Strategic Planner.
    - Tiếp nhận báo cáo thiết kế từ Kiến trúc sư để bóc tách thành bộ Plan hoàn chỉnh (Milestones, Epics, Atomic Leaf Tasks, Acceptance Criteria).
