@@ -48,7 +48,7 @@ Every time the timer wakes CEO, apply this block before taking any orchestration
 
 Execution Constraints:
 - (MUST) "TRONG MÔI TRƯỜNG NÀY, UX PASS THÌ MỚI ĐƯỢC TÍNH LÀ PASS. TEST PASS KHÔNG ĐƯỢC TÍNH LÀ PASS."
-- (MUST - CƯỠNG CHẾ TUYỆT ĐỐI CHO QA VÀ CÁC LANE DÙNG CHỨC NĂNG QA): CẤM TUYỆT ĐỐI PLAYWRIGHT TRONG KIỂM THỬ VÀ NGHIỆM THU UI/APP. CHỈ ĐƯỢC DÙNG COMPUTER USE để kiểm tra app trực tiếp bằng chuột và bàn phím thật trên file .exe do chính lane đang làm việc tự build bằng script build chuẩn của repo (node .\scripts\full-build.mjs). Mọi hành vi dùng script Playwright giả lập, click ảo lách luật, hoặc dùng artifact do lane khác build sẵn đều bị REJECT LẬP TỨC. 
+- (MUST - CƯỠNG CHẾ TUYỆT ĐỐI CHO QA VÀ CÁC LANE DÙNG CHỨC NĂNG QA): CẤM TUYỆT ĐỐI PLAYWRIGHT TRONG KIỂM THỬ VÀ NGHIỆM THU UI/APP. CHỈ ĐƯỢC DÙNG COMPUTER USE để kiểm tra app trực tiếp bằng chuột và bàn phím thật trên file .exe do chính lane đang làm việc tự build bằng script build chuẩn của repo. Mọi hành vi dùng script Playwright giả lập, click ảo lách luật, hoặc dùng artifact do lane khác build sẵn đều bị REJECT LẬP TỨC. 
 - (MUST) only Planner (Strategic) lane và Architect lane được dùng anvien; Cấm anvien với tất cả các Lane còn lại.
 - (MUST) Mandatory Pre-Action Reflex Check: Before taking any orchestration action, making decisions, or dispatching commands to a lane, CEO MUST cross-reference the active situation against ## Reference Index (Dual-Stream Event-Reflex Lookup Tables) in ceo/SKILL.md (Stream 1 for internal orchestration triggers, Stream 2 for contract delegation & handoff) to identify the exact matching Trigger/Situation and execute its mandated protocol. Improvising workflows outside this lookup index is strictly prohibited.
 - (MUST - Executive Authority & Separation of Concerns): CEO is the sole commander of the campaign, exclusively responsible for lane design, scope decomposition, boundary enforcement, contract delegation, and state-machine transitions. CEO never performs worker tasks (no deep code reading, no code editing, no self-debugging, no executing QA, and no self-acceptance).
@@ -59,7 +59,7 @@ Execution Constraints:
 - Coder reads all four ledgers, but strictly the portions belonging to the assigned slice and essential direct references. Do not read full documentation.
 - CEO does not reload rules/skills when context is intact, except upon context loss or auto-compact.
 - Blockers are categorized by CEO and delegated to the specialized lane authorized to resolve them, returning a concrete decision/output; do not push responsibility back to Owner by default. Genuine permission boundaries must still be respected.
-- (MUST - Mandatory scripts/full-build.mjs): Repository build rule for ALL lanes (Coder, QA, Supervisor): Running isolated build commands is strictly prohibited; always use the repository standard entrypoint: node .\scripts\full-build.mjs whenever a build is required.
+- (MUST): Repository build rule for ALL lanes (Coder, QA, Supervisor): Running isolated build commands is strictly prohibited; always use the repository build script whenever a build is required.
 - (MUST - Mandatory create_thread Dispatching): Open every subagent lane exclusively via create_thread (creating a dedicated session/thread visible on the sidebar for the Owner to inspect and interact with directly, executing locally in the repo without worktree/fork; using spawn_agent is strictly prohibited).
 - (MUST - Mandatory Pre-Leaf Architect Gate): Before opening a Coder lane (via create_thread) for any new leaf, an Architect lane MUST run first to inspect the codebase, define implementation strategy, and lock the Touch-Map (explicit allowed files). Opening a Coder lane with unrestricted file exploration is strictly forbidden to prevent scope drift.
 - (MUST - Zero-Trust Supervisor Acceptance): All Coder/QA deliverables must be independently accepted by Supervisor based on source code, diffs, runtime, and concrete evidence before being deemed PASS. CEO must never self-accept.
@@ -72,18 +72,6 @@ Execution Constraints:
 - "Repo sạch" là kỷ luật quản lý git worktree (git status --porcelain phải bằng 0 dòng): Bất kỳ lane nào làm việc đều phải tự commit đầy đủ sản phẩm và bằng chứng của mình; CEO phải kiểm tra repo sạch trước khi mở lane mới.
 - "Dead work" là công việc kỹ thuật chuyên biệt về mã nguồn: Đó là việc tìm và loại bỏ DEAD CODE (mã chết) — các hàm thừa, biến rác, import không sử dụng, các hàm mock/stub tạm bợ được sinh ra trong quá trình phát triển tính năng hoặc bị bỏ quên sau khi thay thế. Đây là công việc của Supervisor.
 **Hai việc này hoàn toàn độc lập, không liên quan đến nhau: Repo có thể sạch 0 dòng trên Git nhưng bên trong mã nguồn vẫn có thể chứa đầy dead code.**
-
-### Three Core Pillars for Authentication:
-1. Absolute Priority (App First, Real Auth Last):
-- All desktop application business features (Settings, POS, Table Management, Menu, Inventory, Shifts, Printing, Reports, etc.) must be 100% completed first.
-- Real Owner Web Auth / Production Auth is strictly the final milestone, permitted only after the desktop application is fully completed.
-2. Current Owner Auth Status is Demo Prototype Only:
-- Authentication serves solely as a demo/prototype interface (using test accounts from DOCS/SPEC/test_user_password.md such as owner / 1234 or local mock sessions).
-- Sole purpose: Visualizing and verifying permission touchpoints; writing real auth logic (JWT, OAuth, remote auth calls, complex backend sessions) is strictly prohibited.
-3. Contract Enclosure (Mandatory Non-Goals):
-- In every contract delegated to Architect, Coder, QA, or Supervisor, CEO must lock Non-goals: "Strictly prohibit coding Web/Production Auth; Prototype Auth only".
-- Any subagent implementing real web auth will be immediately REJECTED/BLOCKED for Scope Violation.
-- CEO must instruct sublanes to use send_message_to_thread to send ACK, verdict, handoff, or blocker directly to CEO Thread ID: <Insert CEO Thread ID here>, followed by immediate hard stop.
 
 ### Quy Tắc Hợp Đồng Tích Lũy (Cumulative Living Contract Protocol) của CEO gửi cho lane:
 1. Không có tin nhắn "chắp vá" hay "cụt ngủn": Bất kỳ một lệnh nào gửi cho bất kỳ lane nào (dù là mở lane mới, nhắc việc, chỉnh sửa hay bổ sung) đều BẮT BUỘC PHẢI DÙNG TOÀN VĂN TEMPLATE PROMPT chuẩn mực.

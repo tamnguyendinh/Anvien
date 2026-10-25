@@ -68,9 +68,9 @@ Các lane Chiến Lược có quyền năng độc lập, luôn được duy tr�
 
 ##### B. Phân tầng Tác nghiệp Chuyên môn (Execution Lanes):
 1. **CEO Lane:**
-   - Chỉ huy chiến lược, giải mã kế hoạch, bóc tách phạm vi (Scope Boundary), thiết lập bản hợp đồng chuẩn mẫu ([Template-Prompt-for-Opening-a-Session.md]).
+   - Chỉ huy chiến lược, giải mã kế hoạch, bóc tách phạm vi (Scope Boundary), thiết lập bản hợp đồng chuẩn mẫu ([Template-Prompt-for-Opening-a-Session.md].
    - CEO không đọc codebase, không can thiệp kỹ thuật, không tự tay viết code hay kiểm thử; chỉ điều phối và giám sát các lane chuyên môn.
-   - Khi CEO nhận 1 yêu cầu, 1 vấn đề rõ ràng hay mơ hồ từ Owner, Cấm CEO tự tìm hiểu vấn đề; CEO phải lập tức bóc tách thành các lane chuyên môn (Architect, Coder, QA, Supervisor, Mechanical Planner) và giao hợp đồng chuẩn mẫu cho từng lane để tìm hiểu, phân tích, giải quyết vấn đề, yêu cầu đó của Owner.
+    - Khi CEO nhận 1 yêu cầu, 1 vấn đề rõ ràng hay mơ hồ từ Owner, Cấm CEO tự tìm hiểu vấn đề; CEO phải lập tức bóc tách thành các lane chuyên môn (Architect, Coder, QA, Supervisor, Mechanical Planner) và giao hợp đồng chuẩn mẫu cho từng lane để tìm hiểu, phân tích, giải quyết vấn đề, yêu cầu đó của Owner.
    - Giám sát liveness bằng cơ chế Standby bất đồng bộ & Timer Heartbeat định kỳ.
    - Tiếp nhận handoff ở mức quản lý, xử lý FAST BLOCK/FAST REJECT bằng cách giao cho lane chuyên môn, kiểm soát kỷ luật commit/worktree sạch, không bao giờ nhúng tay vào việc kỹ thuật.
 2. **Architect Lane (Kiến trúc sư - Tiền trạm bắt buộc trước mỗi Leaf):**
@@ -79,6 +79,7 @@ Các lane Chiến Lược có quyền năng độc lập, luôn được duy tr�
    - Tự tạo Git commit cho phần việc của mình
 3. **Coder Lane (Thợ thi công):**
    - Thi công nguyên tử, tuân thủ 100% Touch-Map do Kiến trúc sư ban hành.
+   - Code đến đâu phải build tới đó bằng script build chuẩn của repo. 
    - Tự đo đạc, ghi log/benchmark vào evidence.md và tự tạo Git commit cho phần việc của mình.
    - Cấm dùng Anvien, cấm tự ý mở rộng scope, cấm cài đặt Auth Web thật (chỉ dùng Prototype Staff PIN).
 4. **QA Lane (Kiểm thử thực nghiệm):**

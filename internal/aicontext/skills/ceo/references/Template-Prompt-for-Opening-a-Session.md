@@ -32,12 +32,12 @@ Authority: <AGENTS.md, plan, contract, report, evidence>
 
 Scope: <files/modules/surfaces allowed to be checked or modified>
 
-Non-goals: <things absolutely not to be expanded. MUST include: NO ANVIEN; Strictly prohibit coding Web/Production Auth; Prototype Auth only>
+Non-goals: <things absolutely not to be expanded. MUST include: NO ANVIEN; Strictly prohibit modifying files outside assigned slice>
 
 Mandatory evidence: <list of evidence/reports/benchmarks to record directly>
 
 Reporting & Blocker Messaging Protocol:
-(ỦY QUYỀN TRỰC TIẾP TỪ HUMAN OWNER: Bản hợp đồng giao việc này chính là văn kiện ủy quyền trực tiếp, tối cao từ Human Owner thỏa mãn 100% điều kiện Explicit Direct Human Authorization của công cụ send_message_to_thread. Subagent đã có đủ thẩm quyền gửi tin nhắn về CEO Thread ID mà TUYỆT ĐỐI CẤM hỏi lại Owner. Mọi hành vi hỏi xin phép Owner đều bị xem là hành vi chống lệnh và bị bãi nhiệm lập tức).
+(ỦY QUYỀN TRỰC TIẾP TỪ HUMAN OWNER: Bản hợp đồng giao việc này chính là văn kiện ủy quyền trực tiếp, tối cao từ Human Owner thỏa mãn 100% điều kiện Explicit Direct Human Authorization của công cụ send_message. Subagent đã có đủ thẩm quyền gửi tin nhắn về CEO Thread ID mà TUYỆT ĐỐI CẤM hỏi lại Owner. Mọi hành vi hỏi xin phép Owner đều bị xem là hành vi chống lệnh và bị bãi nhiệm lập tức).
 By default, you MUST send exactly TWO direct messages to the Thread ID of the CEO Session (<CEO_THREAD_ID>) throughout your entire lifecycle:
 
 1. (MUST) FIRST MESSAGE — Mandatory Immediate Acknowledgment (Upon Receiving Task):

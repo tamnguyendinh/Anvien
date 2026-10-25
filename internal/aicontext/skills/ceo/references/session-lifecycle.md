@@ -93,7 +93,3 @@ An agent lane may only be closed when:
 * the next handoff is determined.
 
 Do not declare completion just because code/build/test can run.
-
-## Template Prompt for Spawning a Lane:
-
-- `internal/aicontext/skills/ceo/references/Template-Prompt-for-Opening-a-Session.md`
