@@ -1,6 +1,6 @@
-# Subagent Reporting, Handoff & Emergency Blocker
+# Subagent Reporting, Handoff & Verdict Rules
 
-> This file is part of CEO Skill. Read when: receiving completion handoffs (READY_FOR_QA/PASS), performing management-level verification, or handling in-flight emergency blockers (FAST BLOCK / FAST REJECT).
+> This file is part of CEO Skill. Read when: receiving completion handoffs (READY_FOR_QA/PASS), performing management-level verification, or enforcing gate and verdict rules.
 
 ---
 
@@ -28,47 +28,7 @@
 
 ---
 
-## 3. FAST BLOCK / FAST REJECT Protocol (Emergency Blocker & Reinforcement Request)
-
-* **Nature:** This is **NOT a task completion handoff**, but an **in-flight emergency alert** indicating that a subagent is blocked by unexpected external/precondition defects and requires CEO to **dispatch an emergency reinforcement lane** to resolve the impediment.
-* (MUST KNOW) If a FAIL/UNAVAILABLE/NOT_RUN result does not cripple the subagent lane's ability to execute other rows, it is strictly classified as a "finding". The subagent lane must record this finding, step over it, and continue execution. A FAST BLOCK must ONLY be used when a true blocker prevents the entire lane from continuing safely, or completely invalidates the candidate/evidence.
-
-### Trigger Conditions:
-A specialist lane (such as QA, Supervisor, or other functional lane) activates FAST BLOCK / FAST REJECT immediately upon encountering external defects:
-1. **Precondition Failure:** Missing environment setup commands, unbuilt dependencies, or missing execution prerequisites.
-2. **Stale / Unstable Build Inputs (Artifact Drift):** Discrepancies between logs/manifests and actual disk files (e.g., binding log/manifest records stale hashes `F0D9.../FE74...`, but actual disk files have changed to `F308.../8B7D...`).
-3. **Broken Upstream Deliverables:** Missing required output files, corrupted contract formats, or incomplete checklist items from prior lanes.
-
-### Strict Subagent Mandate Upon Blocker:
-* **(STRICT PROHIBITION):** Subagents are STRICTLY FORBIDDEN from attempting to fix code outside their assigned role authority. Subagents MUST NOT hang, wait silently, or enter retry loops. **ABSOLUTELY FORBIDDEN FROM WRITING FULL REPORT FILES** (since work is not finished, generating lengthy reports wastes critical time and stalls execution).
-* **(MANDATORY - Zero-Lag):** Subagents MUST immediately issue an emergency direct message back to the Thread ID of the CEO Session with this exact 3-field structure:
-
-```text
-[VERDICT: BLOCKED or REJECT] — In-Flight Blocker / Emergency Reinforcement Request
-- Blocker Type: <BLOCK_TYPE> or <REJECT_TYPE>
-- Exact Evidence: <blocker_or_rejection_details_and_evidence>
-- For a FAST BLOCK / FAST REJECT: record the evidence only, do not write a report.
-- Remedy Target & Action: Request CEO to dispatch subagent reinforcement to resolve the issue so execution can resume.
-```
-
----
-
-## 4. CEO Fast Repair Rerouting Protocol
-
-When CEO receives a `FAST BLOCK / FAST REJECT` message from a specialist lane:
-
-1. **Acknowledge & Pause:** CEO acknowledges the blocker and pauses the reporting lane (e.g., QA) with status `BLOCKED` (preserving its working state).
-2. **Package Fast Repair Packet:** CEO extracts the exact *Blocker Evidence* and *Remedy Target & Action* provided by the specialist lane without second-guessing or manual debugging.
-3. **Reroute to Remediation Owner (Strict Separation of Concerns):** CEO immediately delegates the blocker to the specialized lane authorized to resolve it.
-   - **(MUST - FAST BLOCK Technical Delegation Iron Rule):** Khi FAST BLOCK liên quan đến code, kiến trúc, luồng dữ liệu, schema, hoặc mâu thuẫn Touch-Map (ví dụ cần remap file hay thay đổi scope): CEO TUYỆT ĐỐI KHÔNG ĐƯỢC tự ý quyết định kỹ thuật, không tự ý suy luận thiết kế, không tự ý mở rộng Touch-Map. CEO BẮT BUỘC phải mở ngay một Lane Kiến trúc sư (Architect Lane) qua `invoke_subagent` để Kiến trúc sư thẩm định chuyên môn và ban hành quyết định kiến trúc/Addendum Touch-Map chính thức.
-   - Khi FAST BLOCK liên quan đến bug code triển khai/test failure: đẩy về Coder.
-   - Khi FAST BLOCK liên quan đến hạ tầng/build: đẩy về DevOps.
-   - *Command Pattern:* "`<reporting_lane>` reported BLOCKED due to `<blocker_reason_and_evidence>`. `<remediation_owner>` must resolve the root cause, update evidence/artifacts, and re-issue `READY_FOR_<reporting_lane>` upon completion."
-4. **Resume Operational Workflow:** As soon as the recovery lane reports success (PASS), the CEO must immediately reactivate the original specialized lane (the agent lane that issued the FAST BLOCK / FAST REJECT) so the subagent can seamlessly resume its interrupted work.
-
----
-
-## 5. Gate and Verdict Rules
+## 3. Gate and Verdict Rules
 
 * Spawn distinct agents (`spawn agent / create agent`) for lanes requiring user control or intervention; do not open detached top-level sessions.
 * Do not open the next phase when the previous gate has not achieved a full PASS.
