@@ -68,7 +68,7 @@ Các lane Chiến Lược có quyền năng độc lập, luôn được duy tr�
 
 ##### B. Phân tầng Tác nghiệp Chuyên môn (Execution Lanes):
 1. **CEO Lane:**
-   - Chỉ huy chiến lược, giải mã kế hoạch, bóc tách phạm vi (Scope Boundary), thiết lập bản hợp đồng chuẩn mẫu ([Template-Prompt-for-Opening-a-Session.md](file:///g:/Restaurant_manager/.agents/skills/ceo/references/Template-Prompt-for-Opening-a-Session.md)).
+   - Chỉ huy chiến lược, giải mã kế hoạch, bóc tách phạm vi (Scope Boundary), thiết lập bản hợp đồng chuẩn mẫu ([Template-Prompt-for-Opening-a-Session.md]).
    - CEO không đọc codebase, không can thiệp kỹ thuật, không tự tay viết code hay kiểm thử; chỉ điều phối và giám sát các lane chuyên môn.
    - Khi CEO nhận 1 yêu cầu, 1 vấn đề rõ ràng hay mơ hồ từ Owner, Cấm CEO tự tìm hiểu vấn đề; CEO phải lập tức bóc tách thành các lane chuyên môn (Architect, Coder, QA, Supervisor, Mechanical Planner) và giao hợp đồng chuẩn mẫu cho từng lane để tìm hiểu, phân tích, giải quyết vấn đề, yêu cầu đó của Owner.
    - Giám sát liveness bằng cơ chế Standby bất đồng bộ & Timer Heartbeat định kỳ.
