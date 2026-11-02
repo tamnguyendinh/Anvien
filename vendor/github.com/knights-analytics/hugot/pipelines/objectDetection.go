@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"github.com/knights-analytics/hugot/backends"
-	"github.com/knights-analytics/hugot/options"
 	"github.com/knights-analytics/hugot/util/imageutil"
 	"github.com/knights-analytics/hugot/util/safeconv"
 	"github.com/knights-analytics/hugot/util/vectorutil"
@@ -47,7 +46,7 @@ func (p *ObjectDetectionPipeline) setImageFormat(format string) {
 
 func (p *ObjectDetectionPipeline) GetStatistics() backends.PipelineStatistics {
 	statistics := backends.PipelineStatistics{}
-	statistics.ComputeOnnxStatistics(p.PipelineTimings)
+	statistics.ComputeOnnxStatistics(p.ONNXTimings)
 	return statistics
 }
 
@@ -92,11 +91,9 @@ func WithDetectionTopK(k int) backends.PipelineOption[*ObjectDetectionPipeline] 
 }
 
 // NewObjectDetectionPipeline initializes an object detection pipeline.
-func NewObjectDetectionPipeline(sessionContext context.Context, config backends.PipelineConfig[*ObjectDetectionPipeline], s *options.Options, model *backends.Model) (*ObjectDetectionPipeline, error) {
-	base, err := backends.NewBasePipeline(sessionContext, config, s, model)
-	if err != nil {
-		return nil, err
-	}
+func NewObjectDetectionPipeline(sessionContext context.Context, config backends.PipelineConfig[*ObjectDetectionPipeline], model *backends.Model) (*ObjectDetectionPipeline, error) {
+	base := backends.NewBasePipeline(sessionContext, config, model)
+	var err error
 	p := &ObjectDetectionPipeline{BasePipeline: base, ScoreThreshold: 0.25, IouThreshold: 0.45, TopK: 100}
 	for _, o := range config.Options {
 		if err = o(p); err != nil {
@@ -144,9 +141,9 @@ func (p *ObjectDetectionPipeline) GetStats() []string {
 	return []string{
 		fmt.Sprintf("Statistics for pipeline: %s", p.PipelineName),
 		fmt.Sprintf("ONNX: Total time=%s, Execution count=%d, Average query time=%s",
-			safeconv.U64ToDuration(p.PipelineTimings.TotalNS),
-			p.PipelineTimings.NumCalls,
-			time.Duration(float64(p.PipelineTimings.TotalNS)/math.Max(1, float64(p.PipelineTimings.NumCalls)))),
+			safeconv.U64ToDuration(p.ONNXTimings.TotalNS),
+			p.ONNXTimings.NumCalls,
+			time.Duration(float64(p.ONNXTimings.TotalNS)/math.Max(1, float64(p.ONNXTimings.NumCalls)))),
 	}
 }
 
@@ -190,7 +187,7 @@ func (p *ObjectDetectionPipeline) preprocess(batch *backends.PipelineBatch, inpu
 	if err != nil {
 		return err
 	}
-	return backends.CreateImageTensors(batch, p.Model, processed, p.Runtime)
+	return backends.CreateImageTensors(batch, p.Model, processed)
 }
 
 // forward inference.
@@ -199,8 +196,8 @@ func (p *ObjectDetectionPipeline) forward(ctx context.Context, batch *backends.P
 	if err := backends.RunSessionOnBatch(ctx, batch, p.BasePipeline); err != nil {
 		return err
 	}
-	atomic.AddUint64(&p.PipelineTimings.NumCalls, 1)
-	atomic.AddUint64(&p.PipelineTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
+	atomic.AddUint64(&p.ONNXTimings.NumCalls, 1)
+	atomic.AddUint64(&p.ONNXTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
 	return nil
 }
 
@@ -339,39 +336,17 @@ func (p *ObjectDetectionPipeline) Run(ctx context.Context, inputs []string) (bac
 }
 
 func (p *ObjectDetectionPipeline) RunPipeline(ctx context.Context, inputs []string) (*ObjectDetectionOutput, error) {
-	var errs []error
-	batch := backends.NewBatch(len(inputs))
-	defer func(*backends.PipelineBatch) { errs = append(errs, batch.Destroy()) }(batch)
-	imgs, err := imageutil.LoadImagesFromPaths(ctx, inputs)
-	if err != nil {
-		return nil, fmt.Errorf("failed to load images: %w", err)
-	}
-	errs = append(errs, p.preprocess(batch, imgs))
-	if e := errors.Join(errs...); e != nil {
-		return nil, e
-	}
-	errs = append(errs, p.forward(ctx, batch))
-	if e := errors.Join(errs...); e != nil {
-		return nil, e
-	}
-	res, postErr := p.postprocess(batch)
-	errs = append(errs, postErr)
-	return res, errors.Join(errs...)
+	return backends.RunPipeline(ctx, len(inputs), func(batch *backends.PipelineBatch) error {
+		imgs, err := imageutil.LoadImagesFromPaths(p.SessionContext, inputs)
+		if err != nil {
+			return fmt.Errorf("failed to load images: %w", err)
+		}
+		return p.preprocess(batch, imgs)
+	}, p.forward, p.postprocess)
 }
 
 func (p *ObjectDetectionPipeline) RunWithImages(ctx context.Context, inputs []image.Image) (*ObjectDetectionOutput, error) {
-	var errs []error
-	batch := backends.NewBatch(len(inputs))
-	defer func(*backends.PipelineBatch) { errs = append(errs, batch.Destroy()) }(batch)
-	errs = append(errs, p.preprocess(batch, inputs))
-	if e := errors.Join(errs...); e != nil {
-		return nil, e
-	}
-	errs = append(errs, p.forward(ctx, batch))
-	if e := errors.Join(errs...); e != nil {
-		return nil, e
-	}
-	res, postErr := p.postprocess(batch)
-	errs = append(errs, postErr)
-	return res, errors.Join(errs...)
+	return backends.RunPipeline(ctx, len(inputs), func(batch *backends.PipelineBatch) error {
+		return p.preprocess(batch, inputs)
+	}, p.forward, p.postprocess)
 }

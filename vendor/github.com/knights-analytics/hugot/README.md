@@ -10,7 +10,7 @@
 
 ## What
 
-TL;DR: AI use-cases such as embeddings, text generation (generative/LLMs), image classification, entity recognition, fine-tuning, and more, natively running in Go!
+**TL;DR:** Hugot brings Hugging Face-style transformer pipelines to Go, letting you run and fine-tune ONNX models for text, vision, audio, and multimodal workloads directly inside your Go applications, with pluggable pure Go, ONNX Runtime, and OpenXLA backends.
 
 The goal of this library is to provide an easy, scalable, and hassle-free way to run transformer pipelines inference and training in golang applications, such as Hugging Face 🤗 transformers pipelines. It is built on the following principles:
 
@@ -41,37 +41,53 @@ Hugot is brought to you by the friendly folks at [Knights Analytics](https://kni
 
 Currently, we have implementations for the following transformer pipelines:
 
+- [anyToAny](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.AnyToAnyPipeline)
+- [audioClassification](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.AudioClassificationPipeline)
+- [automaticSpeechRecognition](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.AutomaticSpeechRecognitionPipeline)
+- [backgroundRemoval](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.BackgroundRemovalPipeline)
 - [crossEncoder](https://huggingface.co/cross-encoder)
+- [depthEstimation](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.DepthEstimationPipeline)
+- [documentQuestionAnswering](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.DocumentQuestionAnsweringPipeline)
+- [addressParse](https://github.com/GRAAL-Research/deepparse)
+- [fillMask](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.FillMaskPipeline)
 - [featureExtraction](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.FeatureExtractionPipeline)
 - [imageClassification](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.ImageClassificationPipeline)
-- [objectDetection](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.ImageClassificationPipeline)
-- [questionAnswering](https://huggingface.co/docs/transformers/tasks/question_answering)
-- tabular (classic ML models such as decision trees, random forests etc)
+- [imageFeatureExtraction](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.ImageFeatureExtractionPipeline)
+- [imageSegmentation](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.ImageSegmentationPipeline)
+- [imageTextToText](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.ImageTextToTextPipeline)
+- [keypointMatching](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.KeypointMatchingPipeline)
+- [maskGeneration](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.MaskGenerationPipeline)
+- [groundedObjectDetection](https://huggingface.co/docs/transformers/en/model_doc/grounding-dino)
+- [objectDetection](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.ObjectDetectionPipeline)
+- [tableQuestionAnswering](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.TableQuestionAnsweringPipeline)
+- tabular - classic ML models such as decision trees, random forests etc
 - [textClassification](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.TextClassificationPipeline)
-- [textGeneration](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.TextGenerationPipeline) (currently ORT only)
+- [textGeneration](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.TextGenerationPipeline)
+- [textToAudio](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.TextToAudioPipeline)
 - [tokenClassification](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.TokenClassificationPipeline)
+- [videoClassification](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.VideoClassificationPipeline)
+- [zeroShotAudioClassification](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.ZeroShotAudioClassificationPipeline)
 - [zeroShotClassification](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.ZeroShotClassificationPipeline)
+- [zeroShotImageClassification](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.ZeroShotImageClassificationPipeline)
+- [zeroShotObjectDetection](https://huggingface.co/docs/transformers/en/main_classes/pipelines#transformers.ZeroShotObjectDetectionPipeline)
 
-Implementations for additional pipelines will follow. We also very gladly accept PRs to expand the set of pipelines! See [here](https://huggingface.co/docs/transformers/en/main_classes/pipelines) for the missing pipelines that can be implemented, and the contributing section below if you want to lend a hand.
-
-Hugot can be used both as a library and as a command-line application. See below for usage instructions.
+Note: Some backends have incompatibilities with some pipeline/model combinations. Please report (or fix such issues with a PR), ideally on the repo of the backend in question (e.g. GoMLX or Onnx Runtime).
 
 ## Installation and usage
-
-Hugot can be used in two ways: as a library in your go application, or as a command-line binary.
 
 ### Choosing a backend
 
 Hugot supports pluggable backends to perform the tokenization and run the ONNX models. Currently, we support the following backends:
 
-- (default) native go (provided by [GoMLX](https://github.com/gomlx/gomlx))
+- Go
 - [Onnx Runtime](https://onnxruntime.ai/)
 - [OpenXLA](https://openxla.org/)
 
-Onnx Runtime can also be selected as a backend via the build tag "-tags ORT". It does not support training, but it is currently the fastest backend for CPU inference. It supports
-all pipelines, including generative pipelines such as text generation.
+The native Go backend is always available, as it does not require any cgo dependencies. It is provided by the [GoMLX](https://github.com/gomlx/gomlx) project. Note: currently, enabling GOEXPERIMENT=simd gives this backend a significant performance boost.
 
-OpenXLA can be included at compile time via the build tag "-tags XLA". This is required for fine-tuning of e.g. embedding models, and is the only backend that supports TPUs. Note that it does not yet support generative pipelines.
+Onnx Runtime can be included at compile time via the build tag "-tags ORT".  It is currently the fastest backend for inference and supports all pipelines, including generative pipelines such as text generation.
+
+OpenXLA can be included at compile time via the build tag "-tags XLA". This is the only backend that supports TPUs. Note that it does not yet support generative pipelines or dynamic shapes.
 
 CUDA requires a C backend, either OpenXLA or Onnx Runtime.
 
@@ -87,15 +103,14 @@ To use Hugot as a library in your application, you can directly import it and fo
 
 - if using Onnx Runtime, the libonnxruntime.so file should be obtained from the releases section of this page. If you want to use other architectures than `linux/amd64` you will have to download it from [the ONNX Runtime releases page](https://github.com/microsoft/onnxruntime/releases/), see the [dockerfile](./Dockerfile) as an example. Hugot looks for this file at /usr/lib/libonnxruntime.so by default. A different location can be specified by passing the `WithOnnxLibraryPath()` option to `NewORTSession()`, e.g:
 
-```
+```go
 session, err := NewORTSession(
+    ctx,
     options.WithOnnxLibraryPath("/path/to/my/lib/directory"),
 )
 ```
 
 - if using XLA, the easiest way is to run "GOPROXY=direct go run github.com/gomlx/go-xla/cmd/pjrt_installer@latest -plugin=linux -version=v${GOPJRT_VERSION} -path=/usr/local/lib/go-xla", which will install the XLA backend provided by the [goMLX](https://github.com/gomlx/gomlx) project.
-
-- if using XLA or ORT, you will also need to use the rust-based tokenizer. The tokenizers.a file can be obtained from the releases section of this page (if you want to use alternative architecture from `linux/amd64` you will have to build the tokenizers.a yourself, see [here](https://github.com/daulet/tokenizers)). This file should be at /usr/lib/tokenizers.a so that Hugot can load it. Alternatively, you can explicitly specify the path to the folder with the `libtokenizers.a` file using the `CGO_LDFLAGS` env variable, see the [dockerfile](./Dockerfile). The tokenizer is statically linked at build time.
 
 Alternatively, you can also use the [docker image](https://github.com/knights-analytics/hugot/pkgs/container/hugot) which has all the above dependencies already baked in.
 
@@ -108,7 +123,8 @@ package main
 
 import (
     "github.com/knights-analytics/hugot"
-    "encoding/json"
+    "context"
+	"encoding/json"
     "fmt"
 )
 
@@ -119,20 +135,22 @@ func check(err error) {
 }
 
 func main() {
+    // all sessions require context.Context
+    ctx := context.Background()
     // start a new session
-    session, err := hugot.NewGoSession()
+    session, err := hugot.NewGoSession(ctx)
 	// For XLA (requires go build tags "XLA" or "ALL"):
-	// session, err := hugot.NewXLASession()
+	// session, err := hugot.NewXLASession(ctx)
 	// For ORT (requires go build tags "ORT" or "ALL"):
-	// session, err := hugot.NewORTSession()
+	// session, err := hugot.NewORTSession(ctx)
 	// This looks for the libonnxruntime.so library in its default path, e.g. /usr/lib
     // If your libonnxruntime.so is somewhere else, you can explicitly set it by using WithOnnxLibraryPath
-    // session, err := hugot.NewORTSession(WithOnnxLibraryPath("/path/to/my/lib/directory"))
+    // session, err := hugot.NewORTSession(ctx, WithOnnxLibraryPath("/path/to/my/lib/directory"))
 	check(err)
 	
     // A successfully created hugot session needs to be destroyed when you're done
     defer func (session *hugot.Session) {
-    err := session.Destroy()
+    err = session.Destroy()
     check(err)
     }(session)
 
@@ -150,12 +168,12 @@ func main() {
     }
     // then we create out pipeline.
     // Note: the pipeline will also be added to the session object, so all pipelines can be destroyed at once
-    sentimentPipeline, err := hugot.NewPipeline(session, config)
+    sentimentPipeline, err := session.NewPipeline(config)
     check(err)
 
     // we can now use the pipeline for prediction on a batch of strings
     batch := []string{"This movie is disgustingly good !", "The director tried too much"}
-    batchResult, err := sentimentPipeline.RunPipeline(batch)
+    batchResult, err := sentimentPipeline.RunPipeline(ctx, batch)
     check(err)
 
     // and do whatever we want with it :)
@@ -172,9 +190,9 @@ See also hugot_test.go for further examples for all pipelines.
 
 Hugot uses the [Onnx Runtime Generative AI](https://onnxruntime.ai/generative-ai) backend to run generative models.
 
-We currently support generative models only within the text generation pipeline. Please look at the [ORT tests](hugot_ort_test.go) for an example of its usage.
+Generative models are used in a variety of text and multimodal pipelines. Please look at the [ORT text tests](tests/ort/hugot_ort_text_test.go) and [ORT multimodal tests](tests/ort/hugot_ort_multimodal_test.go) for examples of their usage.
 
-To use the experimental Engine support for concurrent requests and inference batching, use the `WithGenerativeEngine()` option when creating a session.
+To use the ORT Engine support for concurrent requests and inference batching (text-only messages), use the `WithGenerativeEngine()` option when creating a session.
 
 ## Hardware acceleration 🚀
 
@@ -193,53 +211,209 @@ To use Hugot with Nvidia gpu acceleration, you need to have the following:
 - The Nvidia driver for your graphics card (if running in Docker and WSL2, starting with --gpus all should inherit the drivers from the host OS)
 - ONNX Runtime:
     - The cuda gpu version of ONNX Runtime on the machine/docker container. You can see how we get that by looking at the [Dockerfile](./Dockerfile). You can also get the ONNX Runtime libraries that we use for testing from the release. Just download the gpu .so libraries and put them in /usr/lib.
-    - The required CUDA libraries installed on your system that are compatible with the ONNX Runtime gpu version you use. See [here](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html). For instance, for onnxruntime-gpu 1.24.4, we need CUDA 12.x (any minor version should be compatible) and cuDNN 9.x.
+    - The required CUDA libraries installed on your system that are compatible with the ONNX Runtime gpu version you use. See [here](https://onnxruntime.ai/docs/execution-providers/CUDA-ExecutionProvider.html). For instance, for onnxruntime 1.28.0, we need CUDA 13.x (any minor version should be compatible) and cuDNN 9.x.
     - Start a session with the following:
-      ```
+      ```go
+      ctx := context.Background()
       opts := []options.WithOption{
         options.WithCuda(map[string]string{
           "device_id": "0",
         }),
       }
-      session, err := NewORTSession(opts...)
+      session, err := NewORTSession(ctx, opts...)
       ```
 - OpenXLA
     - Install CUDA support via the command `GOPROXY=direct go run github.com/gomlx/go-xla/cmd/pjrt_installer@latest -plugin=cuda13 -version=${JAX_CUDA_VERSION} -path=/usr/local/lib/go-xla`
     - Start a session with the following:
-      ```
+      ```go
+      ctx := context.Background()
       opts := []options.WithOption{
         options.WithCuda(map[string]string{
           "device_id": "0",
         }),
       }
-      session, err := NewXLASession(opts...)
+      session, err := NewXLASession(ctx, opts...)
       ```
 
-For the ONNX Runtime Cuda libraries, you can install CUDA 12.x by installing the full cuda toolkit, but that's quite a big package. In our testing on awslinux/fedora, we have been able to limit the libraries needed to run Hugot with Nvidia gpu acceleration to just these:
+For the ONNX Runtime Cuda libraries, you can install CUDA 13.x by installing the full cuda toolkit, but that's quite a big package. In our testing on awslinux/fedora, we have been able to limit the libraries needed to run Hugot with Nvidia gpu acceleration to just these:
 
-- cuda-cudart-12-9 cuda-nvrtc-12-9 libcublas-12-9 libcurand-12-9 libcufft-12-9 libcudnn9-cuda-12
+- cuda-cudart-13-3 libcublas-13-3 libcurand-13-3 libcufft-13-3 libcudnn9-cuda-13
+
+libcufft and libcudnn9 are lazy loaded when needed, so may be skippable depending on the models you load.
 
 On different distros (e.g. Ubuntu), you should be able to install the equivalent packages.
 
 ## Training and fine-tuning pipelines 
 
-Hugot now also supports the training and fine-tuning of transformer pipelines! This functionality requires that you build with XLA enabled as we use gomlx behind the
-scenes for training/fine-tuning: the onnx model will be loaded, converted to xla and trained using [goMLX](https://github.com/gomlx/gomlx), and serialized back to onnx format.
+Hugot now also supports the training and fine-tuning of transformer pipelines! Training always runs through [goMLX](https://github.com/gomlx/gomlx), on any backend:
+the onnx model is loaded into goMLX, fine-tuned, and serialized back to onnx format.
 
-This is currently supported only for the **FeatureExtractionPipeline**. This can be used to fine-tune the vector embeddings for e.g. semantic textual similarity (for applications like RAG and semantic search). In order to fine-tune the feature extraction pipeline for semantic search you will need to collect a training dataset in the following format:
+Go and XLA sessions (`hugot.NewGoSession`, `hugot.NewXLASession`) already run on goMLX, so they can train as they are, with no
+extra options. Only an ORT session needs something more: it has to be created with `options.WithGoMLX()` to train. Note that this
+changes the whole session, not just the trainer: every pipeline in a `WithGoMLX` session runs through goMLX rather than native
+ONNX Runtime. If you also want native ORT inference, use a separate session for training.
 
-```
+A trainer always loads its own copy of the model, so training never changes the weights of a pipeline you are serving, even
+in the same session. To serve the fine-tuned model, save it with `trainer.Save` and load the saved path like any other model.
+
+Training is supported for the **FeatureExtractionPipeline**, the **TextClassificationPipeline** and the **TokenClassificationPipeline** (see [text classifiers](#fine-tuning-a-text-classifier) and [token classifiers](#fine-tuning-a-token-classifier-ner)). The feature extraction pipeline can be used to fine-tune the vector embeddings for e.g. semantic textual similarity (for applications like RAG and semantic search). In order to fine-tune the feature extraction pipeline for semantic search you will need to collect a training dataset in the following format:
+
+```js
 {"sentence1": "The quick brown fox jumps over the lazy dog", "sentence2": "A quick brown fox jumps over a lazy dog", "score": 1}
 {"sentence1": "The quick brown fox jumps over the lazy dog", "sentence2": "A quick brown cow jumps over a lazy caterpillar", "score": 0.5}
 ```
 
 See the [example](testcases/semanticSimilarityTest.jsonl) for a sample dataset.
 
-The score is assumed to be a float between 0 and 1 that encodes the semantic similarity between the sentences, and by default a cosine similarity loss is used (see [sentence transformers](https://sbert.net/docs/package_reference/sentence_transformer/losses.html#cosinesimilarityloss)). However, you can also specify a different loss function from `goMLX` using the `XLATrainingOptions` field in the `TrainingConfig` struct. See [the training tests](./hugot_training_test.go) for examples on how to train or fine-tune feature extraction pipelines.
+The score is assumed to be a float between 0 and 1 that encodes the semantic similarity between the sentences, and by default a cosine similarity loss is used (see [sentence transformers](https://sbert.net/docs/package_reference/sentence_transformer/losses.html#cosinesimilarityloss)). You can specify a different optimizer or loss function from `goMLX` using the `GOMLXOptions` field of `TrainerConfig`.
+
+Scored pairs are rare in practice. More often you have **matching pairs**: a query and the passage that answers it, a question and its duplicate. For those, use a `ContrastiveDataset`, which trains with in-batch negatives (sentence-transformers' `MultipleNegativesRankingLoss`): each anchor must pick out its own positive from all the positives in its batch. No scores are needed, and an optional hard negative per example makes the task harder and the embeddings sharper:
+
+```js
+{"anchor": "how do I reset my password?", "positive": "To reset your password, open Settings and choose Security.", "negative": "Your password must be at least 12 characters long."}
+```
+
+```go
+dataset, err := datasets.NewContrastiveDataset(ctx, "pairs.jsonl", 32, nil, nil)
+```
+
+Larger batches give more negatives and usually better embeddings. Avoid duplicate pairs within a batch, which the loss would push apart. The defaults are AdamW at 2e-5 with weight decay 0.01 and a similarity scale of 20, as in sentence-transformers. With an evaluation dataset, the trainer records the in-batch retrieval accuracy per epoch.
+
+A trainer is created from a session, in the same way as a pipeline:
+
+```go
+// Training runs through goMLX on every backend. A Go or XLA session needs nothing extra;
+// an ORT session must be created with options.WithGoMLX().
+// NewXLASession requires the go build tags "XLA" or "ALL".
+session, err := hugot.NewXLASession(ctx)
+// To train on an Nvidia GPU, enable CUDA on the session:
+// session, err := hugot.NewXLASession(ctx, options.WithCuda(nil))
+check(err)
+defer func() { _ = session.Destroy() }()
+
+dataset, err := datasets.NewSemanticSimilarityDataset(ctx, "dataset.jsonl", 32, nil, nil)
+check(err)
+
+trainer, err := session.NewTrainer(
+    hugot.TrainerConfig[*pipelines.FeatureExtractionPipeline]{
+        ModelPath:    modelPath,
+        TrainDataset: dataset,
+        Verbose:      true,
+    },
+    hugot.WithEpochs(2),
+)
+check(err)
+defer func() { _ = trainer.Close() }()
+
+check(trainer.Train(ctx))
+check(trainer.Save(ctx, outputPath))
+```
+
+Besides `WithEpochs` (default 100), the following trainer options are available:
+
+- `WithEarlyStopping()` / `WithEarlyStoppingParams(patience, tolerance)`: stop when the loss on `TrainerConfig.EvalDataset` stops improving (defaults: patience 3, tolerance 1e-4). Requires `EvalDataset` to be set.
+- `WithFreezeLayers(layers)`: freeze the given transformer layers (0 is the first); `[]int{-1}` freezes every layer except the last.
+- `WithFreezeEmbeddings()`: freeze the embedding layers.
+
+Set `TrainerConfig.TrainEvalDataset` to record a per-epoch training loss, available from `trainer.Statistics()` and written to `statistics.txt` on save.
+
+`trainer.Close()` releases the trainer's copy of the model once you have saved it; a trainer that is never closed is released by `session.Destroy()`, so in a long-lived session that trains repeatedly, close each trainer when you are done with it. The fine-tuned model is written back as onnx, together with the tokenizer files and a `statistics.txt` holding the per-epoch losses, so the output directory can be loaded straight back into a pipeline.
 
 Note that training on GPU is currently much faster and memory efficient than training on CPU, although optimizations are underway. On CPU, we recommend smaller batch sizes.
 
-See [the tests](hugot_training_test.go) for an example on how to fine-tune semantic similarity starting with an open source sentence transformers model and a few examples.
+See [the training tests](tests/training/hugot_training_test.go) for an example on how to fine-tune semantic similarity starting with an open source sentence transformers model and a few examples.
+
+### Fine-tuning a text classifier
+
+A `TextClassificationPipeline` model, such as any Hugging Face `...ForSequenceClassification` export, can be fine-tuned on labelled text. Labels are given by name and must be names in the model's `id2label` map (in its `config.json`). For single-label classification each line has one `label`:
+
+```js
+{"text": "The film was a delight.", "label": "POSITIVE"}
+{"text": "Two hours I will never get back.", "label": "NEGATIVE"}
+```
+
+and for multi-label classification each line has a list of `labels`, which may be empty:
+
+```js
+{"text": "Late, and the wrong size.", "labels": ["delivery", "sizing"]}
+```
+
+```go
+dataset, err := datasets.NewTextClassificationDataset(ctx, "train.jsonl", 16, datasets.SingleLabel, nil, nil)
+trainer, err := session.NewTrainer(hugot.TrainerConfig[*pipelines.TextClassificationPipeline]{
+	ModelPath:        modelPath,
+	TrainDataset:     dataset,
+	TrainEvalDataset: evalDataset, // optional: loss and accuracy per epoch in trainer.Statistics()
+}, hugot.WithEpochs(3))
+err = trainer.Train(ctx)
+err = trainer.Save(ctx, "fine-tuned-model") // load it with a TextClassificationPipeline as usual
+```
+
+Single-label training uses softmax cross-entropy and multi-label training a per-label sigmoid cross-entropy. With an evaluation dataset, the trainer records the accuracy and the **macro-F1** per epoch (`EpochTrainF1`, `EpochEvalF1`). Prefer the macro-F1 on imbalanced data, where accuracy hides a missed minority class. For a full per-class report on any model, use `evaluation.EvaluateTextClassification`, or `evaluation.ScoreClassification` / `ScoreMultiLabel` on labels you already have. The default optimizer is AdamW with a learning rate of 5e-5 and a weight decay of 0.01; set `GOMLXOptions` to change either. When an evaluation dataset is given, the trainer records the loss and accuracy of every epoch. `Save` copies `config.json` with the model, so the saved classifier keeps its labels. Training a classifier from a model that has no classification head is not supported yet.
+
+**Prodigy annotations.** The dataset also reads text classification exports from Prodigy, mixed freely with the format above:
+
+```js
+{"text": "Late, and the wrong size.", "accept": ["delivery", "sizing"], "answer": "accept"}   // choice (textcat.manual)
+{"text": "The film was a delight.", "label": "NEGATIVE", "answer": "reject"}               // binary (textcat.teach)
+```
+
+A choice annotation gives the chosen labels; a single-label dataset needs exactly one (annotate with `--exclusive`). A binary annotation says whether one label applies. Accepting a label makes it the class. Rejecting it only says what the text is not: for a two-class model that is the other class, and with more classes the example is skipped. A multi-label model can train on binary annotations only when it has that one label, because the other labels' values are unknown; otherwise use choice annotations. `ignore` answers and rejected choice annotations are skipped. `evaluation.EvaluateTextClassification` reads these examples the same way.
+
+### Fine-tuning a token classifier (NER)
+
+A `TokenClassificationPipeline` model, such as any `...ForTokenClassification` export, can be fine-tuned on sentences split into words, with one tag per word. Tags are names in the model's `id2label` map, for NER usually IOB tags:
+
+```js
+{"tokens": ["EU", "rejects", "German", "call"], "tags": ["B-ORG", "O", "B-MISC", "O"]}
+```
+
+```go
+dataset, err := datasets.NewTokenClassificationDataset(ctx, "train.jsonl", 16, nil, nil)
+trainer, err := session.NewTrainer(hugot.TrainerConfig[*pipelines.TokenClassificationPipeline]{
+	ModelPath:    modelPath,
+	TrainDataset: dataset,
+}, hugot.WithEpochs(3))
+```
+
+The model labels sub-word tokens, so each word's tag is assigned to its first token. The remaining tokens of a word, the special tokens and the padding are left out of the loss and the accuracy, as in Hugging Face's NER fine-tuning. The defaults are the same as for text classification (AdamW, softmax cross-entropy).
+
+With a `TrainEvalDataset` or `EvalDataset`, the trainer records two metrics per epoch: the accuracy per tagged word, and the **entity-level F1** (`EpochTrainF1`, `EpochEvalF1`). Entity F1 is the usual NER metric: an entity counts only if its type and its full span are both right. Word accuracy is dominated by `O` tags, so prefer the F1. To score any model, including a saved one, use the `evaluation` package:
+
+```go
+report, err := evaluation.EvaluateTokenClassification(ctx, pipeline, examples, 32)
+fmt.Println(report.F1, report.PerType["PER"].Precision, report.PerType["PER"].Recall)
+```
+
+Scoring follows seqeval and conlleval. `evaluation.ScoreEntities` scores any pair of IOB tag sequences.
+
+**Custom word boundaries.** The tags belong to words, so the model only works if inference splits text into the same words as the training data. When the split follows rules of its own (say `Row7` becomes `Row` and `7`, while `14C` stays whole), write it once as a `pipelines.WordSplitter` and give it to both sides with `pipelines.WithWordSplitter`. Training examples can then be raw text, which the dataset splits with the trainer's pipeline:
+
+```js
+{"text": "EU rejects German call", "tags": ["B-ORG", "O", "B-MISC", "O"]}
+```
+
+```go
+splitWords := []hugot.TokenClassificationOption{pipelines.WithWordSplitter(mySplitter)}
+trainer, err := session.NewTrainer(hugot.TrainerConfig[*pipelines.TokenClassificationPipeline]{
+	ModelPath:       modelPath,
+	TrainDataset:    dataset,
+	PipelineOptions: splitWords,
+}, hugot.WithEpochs(3))
+// ... train and save, then load the fine-tuned model with the same option:
+pipeline, err := session.NewPipeline(hugot.TokenClassificationConfig{ModelPath: savePath, Name: "ner", Options: splitWords})
+result, err := pipeline.RunPipeline(ctx, []string{"EU rejects German call"}) // labels the splitter's words
+```
+
+An example with both `text` and `tokens` is checked: the splitter's words must equal the tokens, which catches a pre-split file that no longer matches the rules. The splitter is code, not part of the saved model, so pass it wherever the model is loaded.
+
+**Span annotations (Prodigy).** Examples can also be given as character spans, in the format Prodigy's `ner_manual` recipe exports, and both formats can be mixed in one file:
+
+```js
+{"text": "Anna Weber visited Zürich", "spans": [{"start": 0, "end": 10, "label": "PER"}, {"start": 19, "end": 25, "label": "LOC"}], "answer": "accept"}
+```
+
+Spans are converted to word tags: `B-PER I-PER O B-LOC`. The words come from the pipeline's word splitter when one is set, and every span must then start and end on its word boundaries, so training sees exactly the words inference will. Without a splitter, the example's Prodigy `tokens` are the words, and inference must then be given the same words with `RunWords`. Offsets count characters, as Prodigy does, not bytes. Only examples answered `accept` (or with no answer) are used; `reject` and `ignore` are skipped. Each label needs its `B-` and `I-` forms in the model's `id2label` map.
 
 ## Performance Tuning
 
@@ -252,6 +426,7 @@ For maximum throughput, it is best to call a single shared Hugot pipeline from m
 
 ```go
 session, err := hugot.NewORTSession(
+	context.Background(),
 	hugot.WithInterOpNumThreads(1),
 	hugot.WithIntraOpNumThreads(1),
 	hugot.WithCpuMemArena(false),
@@ -262,10 +437,19 @@ session, err := hugot.NewORTSession(
 InterOpNumThreads and IntraOpNumThreads constricts each goroutine's call to a single core, greatly reducing locking and cache penalties. Disabling CpuMemArena and MemPattern skips pre-allocation of some memory structures, increasing latency, but also throughput efficiency.
 
 ## File Systems
-We use an [abstract file system](https://github.com/viant/afs) within Hugot. It works out of the box with various OS filesystems, to use object stores such as S3 please import the appropriate plugin from the afsc library, e.g.
+Hugot uses the standard operating system filesystem by default. File operations are defined by `fileutil.FileSystem`, which can be replaced with an adapter for an object store or another filesystem. Pass the adapter with `options.WithFileSystem` when creating a session; the adapter is scoped to that session and can be used safely by concurrent sessions:
 ```go
-import _ "github.com/viant/afsc/s3"
+session, err := hugot.NewGoSession(
+    context.Background(),
+    options.WithFileSystem(myFileSystemAdapter),
+)
+if err != nil {
+    return err
+}
+defer session.Destroy()
 ```
+
+The adapter must implement the operations in `util/fileutil/file.go` (`OpenFile`, `CopyFile`, `Walk`, `DeleteFile`, `FileExists`, `FileStats`, and `NewFileWriter`). This keeps Hugot independent of storage providers while allowing integrations such as `afs` or `gocloud` to translate those operations to their own APIs.
 
 ## Limitations
 

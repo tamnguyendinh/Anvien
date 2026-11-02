@@ -1,15 +1,37 @@
 package ortgenai
 
 /*
-#cgo LDFLAGS: -ldl
-#include <dlfcn.h>
+#cgo linux LDFLAGS: -ldl
+#include <stdio.h>
 #include <stdlib.h>
+#ifdef _WIN32
+#include <windows.h>
+#define RTLD_LAZY 0
+static void* dlopen(const char* path, int flags) {
+	(void)flags;
+	return (void*)LoadLibraryExA(path, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
+}
+static void* dlsym(void* handle, const char* name) {
+	return (void*)GetProcAddress((HMODULE)handle, name);
+}
+static int dlclose(void* handle) {
+	return FreeLibrary((HMODULE)handle) ? 0 : (int)GetLastError();
+}
+static const char* dlerror(void) {
+	static char error[64];
+	snprintf(error, sizeof(error), "Windows error %lu", (unsigned long)GetLastError());
+	return error;
+}
+#else
+#include <dlfcn.h>
+#endif
 #include "ort_genai_wrapper.h"
 */
 import "C"
 
 import (
 	"fmt"
+	"runtime"
 	"unsafe"
 )
 
@@ -17,10 +39,11 @@ import (
 var genAiLibraryHandle unsafe.Pointer
 
 func platformCleanup() error {
-	engineAPIAvailable = false
 	if genAiLibraryHandle == nil {
 		return nil
 	}
+	clearLogCallback()
+	C.OgaShutdown()
 	if returnCode := C.dlclose(genAiLibraryHandle); returnCode != 0 {
 		return fmt.Errorf("error closing GenAI shared library: %d", int(returnCode))
 	}
@@ -46,6 +69,9 @@ func InitializeGenAiLibrary() error {
 	libPath := onnxGenaiSharedLibraryPath
 	if libPath == "" {
 		libPath = "libonnxruntime-genai.so"
+		if runtime.GOOS == "windows" {
+			libPath = "onnxruntime-genai.dll"
+		}
 	}
 	cName := C.CString(libPath)
 	defer C.free(unsafe.Pointer(cName))
@@ -288,68 +314,157 @@ func InitializeGenAiLibrary() error {
 		return fmt.Errorf("missing OgaGeneratorParamsSetGuidance")
 	}
 
-	if rc := C.SetGenAiApi(symCreate, symErr, symDestroyRes, symDestroyModel, symCreateTokenizer, symDestroyTokenizer,
+	symShutdown := createSym(handle, "OgaShutdown")
+	if symShutdown == nil {
+		C.dlclose(handle)
+		return fmt.Errorf("missing OgaShutdown")
+	}
+	symSetTelemetry := createSym(handle, "OgaSetTelemetryEnabled")
+	if symSetTelemetry == nil {
+		C.dlclose(handle)
+		return fmt.Errorf("missing OgaSetTelemetryEnabled")
+	}
+	symCreateConfigFromEp := createSym(handle, "OgaCreateConfigFromPackageEp")
+	if symCreateConfigFromEp == nil {
+		C.dlclose(handle)
+		return fmt.Errorf("missing OgaCreateConfigFromPackageEp")
+	}
+	symGetPad := createSym(handle, "OgaTokenizerGetPadTokenId")
+	if symGetPad == nil {
+		C.dlclose(handle)
+		return fmt.Errorf("missing OgaTokenizerGetPadTokenId")
+	}
+	symGetBot := createSym(handle, "OgaTokenizerGetBotTokenId")
+	if symGetBot == nil {
+		C.dlclose(handle)
+		return fmt.Errorf("missing OgaTokenizerGetBotTokenId")
+	}
+	symGetEot := createSym(handle, "OgaTokenizerGetEotTokenId")
+	if symGetEot == nil {
+		C.dlclose(handle)
+		return fmt.Errorf("missing OgaTokenizerGetEotTokenId")
+	}
+	symGetBor := createSym(handle, "OgaTokenizerGetBorTokenId")
+	if symGetBor == nil {
+		C.dlclose(handle)
+		return fmt.Errorf("missing OgaTokenizerGetBorTokenId")
+	}
+	symGetEor := createSym(handle, "OgaTokenizerGetEorTokenId")
+	if symGetEor == nil {
+		C.dlclose(handle)
+		return fmt.Errorf("missing OgaTokenizerGetEorTokenId")
+	}
+
+	engineSymbolNames := []string{
+		"OgaCreateEngine", "OgaDestroyEngine", "OgaCreateEngineEventBuffer", "OgaDestroyEngineEventBuffer",
+		"OgaEngineRun", "OgaEngineEventBufferGetCount", "OgaEngineEventBufferGet", "OgaEngineEventGetFlags",
+		"OgaEngineEventGetTurnId", "OgaEngineEventGetToken", "OgaEngineEventGetFinishReason",
+		"OgaEngineEventGetMatchedStopStringIndex", "OgaEngineEventGetErrorCode", "OgaEngineEventGetUsage",
+		"OgaTurnUsageGetPromptTokens", "OgaTurnUsageGetGeneratedTokens", "OgaTurnUsageGetCachedPromptTokens",
+		"OgaEngineHasPendingRequests", "OgaEngineCreateRequest", "OgaCreateRequestOptions", "OgaDestroyRequestOptions",
+		"OgaRequestOptionsSetMaxSessionTokens", "OgaRequestCreateTurnOptions", "OgaDestroyTurnOptions",
+		"OgaTurnOptionsSetMaxGeneratedTokens", "OgaTurnOptionsSetMinGeneratedTokens", "OgaTurnOptionsSetDoSample",
+		"OgaTurnOptionsSetTemperature", "OgaTurnOptionsSetTopP", "OgaTurnOptionsSetTopK",
+		"OgaTurnOptionsSetRepetitionPenalty", "OgaTurnOptionsSetNoRepeatNgramSize", "OgaTurnOptionsSetSeed",
+		"OgaTurnOptionsClearSeed", "OgaTurnOptionsSetStopStrings", "OgaTurnOptionsSetGuidance",
+		"OgaTurnOptionsClearGuidance", "OgaTurnOptionsReset", "OgaRequestBeginTurn", "OgaRequestCancelTurn",
+		"OgaRequestRewindToStartOfTurn", "OgaRequestClose", "OgaRequestSetDraftTokens", "OgaDestroyRequest",
+		"OgaEngineMaxDraftTokensPerProposal", "OgaAppendTokenSequence", "OgaSequencesCount",
+		"OgaSequencesGetSequenceCount", "OgaSequencesGetSequenceData", "OgaTokenizerDecode", "OgaTokenizerToTokenId",
+		"OgaTokenizerEncodeBatch", "OgaTokenizerDecodeBatch", "OgaCreateTensorFromBuffer", "OgaDestroyTensor",
+		"OgaTensorGetType", "OgaTensorGetShapeRank", "OgaTensorGetShape", "OgaTensorGetData",
+		"OgaStringArrayGetCount", "OgaStringArrayGetString",
+		"OgaSetLogBool", "OgaSetLogString", "OgaSetCurrentGpuDeviceId", "OgaGetCurrentGpuDeviceId",
+		"OgaCreateRuntimeSettings", "OgaDestroyRuntimeSettings", "OgaRuntimeSettingsSetHandle", "OgaCreateModelWithRuntimeSettings",
+		"OgaLoadAudio", "OgaLoadAudios", "OgaLoadAudiosFromBuffers", "OgaDestroyAudios",
+		"OgaProcessorProcessAudios", "OgaProcessorProcessAudiosAndPrompts",
+		"OgaProcessorProcessImagesAndAudios", "OgaProcessorProcessImagesAndAudiosAndPrompts",
+		"OgaCreateAdapters", "OgaDestroyAdapters", "OgaLoadAdapter", "OgaUnloadAdapter", "OgaSetActiveAdapter",
+		"OgaCreateMtpGenerator", "OgaMtpGenerator_AppendTokens", "OgaMtpGenerator_GenerateNextToken",
+		"OgaMtpGenerator_Reset", "OgaMtpGenerator_IsDone", "OgaMtpGenerator_GetSequenceCount",
+		"OgaMtpGenerator_GetSequenceData", "OgaMtpGenerator_GetForwardCount",
+		"OgaMtpGenerator_GetAcceptCount", "OgaMtpGenerator_GetTrialCount",
+		"OgaMtpGenerator_GetSpeculativeStats", "OgaDestroyMtpGenerator",
+		"OgaGeneratorParamsSetSearchBool",
+		"OgaGenerator_SetModelInput", "OgaGenerator_AppendTokens", "OgaGenerator_TokenCount",
+		"OgaGenerator_GetNextTokens", "OgaGenerator_SetRuntimeOption", "OgaGenerator_RewindTo",
+		"OgaGenerator_SnapshotState", "OgaGenerator_SetHiddenStates", "OgaGenerator_GetInput",
+		"OgaGenerator_GetOutput", "OgaGenerator_GetLogits", "OgaGenerator_SetLogits",
+		"OgaGenerator_GetSpeculativeStats", "OgaDestroySpeculativeStats", "OgaSpeculativeStatsGetCount",
+		"OgaSpeculativeStatsGetAcceptanceLengthCount", "OgaSpeculativeStatsGetAcceptanceLengthHistogramSize",
+		"OgaSpeculativeStatsGetNumber", "OgaSpeculativeStatsGetBool",
+		"OgaUpdateTokenizerOptions",
+		"OgaSetLogCallback",
+		"OgaEngineEventGetRequest", "OgaEngineGetSpeculativeStats",
+		"OgaEngineGetCapabilities", "OgaEngineCapabilitiesGetConfiguredMaxBatchSize",
+		"OgaEngineCapabilitiesGetMaxScheduledTokens", "OgaEngineCapabilitiesGetMaxRequestLength",
+		"OgaDestroyEngineCapabilities",
+	}
+	engineSymbols := make([]unsafe.Pointer, 0, len(engineSymbolNames))
+	for _, symbolName := range engineSymbolNames {
+		symbol := createSym(handle, symbolName)
+		if symbol == nil {
+			C.dlclose(handle)
+			return fmt.Errorf("missing required ORT GenAI symbol %s", symbolName)
+		}
+		engineSymbols = append(engineSymbols, symbol)
+	}
+	additionalRequiredSymbols := []string{
+		"OgaEngineGetCapabilities", "OgaEngineCapabilitiesGetConfiguredMaxBatchSize",
+		"OgaEngineCapabilitiesGetMaxScheduledTokens", "OgaEngineCapabilitiesGetMaxRequestLength",
+		"OgaDestroyEngineCapabilities", "OgaEngineGetSpeculativeStats",
+		"OgaDestroySpeculativeStats", "OgaSpeculativeStatsGetCount",
+		"OgaSpeculativeStatsGetAcceptanceLengthCount", "OgaSpeculativeStatsGetAcceptanceLengthHistogramSize",
+		"OgaSpeculativeStatsGetNumber", "OgaSpeculativeStatsGetBool",
+		"OgaCreateTokenizerFromConfig", "OgaCreateTokenizerFromPath", "OgaUpdateTokenizerOptions",
+		"OgaTokenizerGetBosTokenId", "OgaCreateTokenizerStreamFromProcessor",
+		"OgaProcessorDecode", "OgaProcessorProcessAudios", "OgaProcessorProcessAudiosAndPrompts",
+		"OgaProcessorProcessImagesAndAudios", "OgaProcessorProcessImagesAndAudiosAndPrompts",
+		"OgaLoadAudio", "OgaLoadAudios", "OgaLoadAudiosFromBuffers", "OgaDestroyAudios",
+		"OgaCreateMtpGenerator", "OgaMtpGenerator_AppendTokens", "OgaMtpGenerator_GenerateNextToken",
+		"OgaMtpGenerator_Reset", "OgaMtpGenerator_IsDone", "OgaMtpGenerator_GetSequenceCount",
+		"OgaMtpGenerator_GetSequenceData", "OgaMtpGenerator_GetForwardCount",
+		"OgaMtpGenerator_GetAcceptCount", "OgaMtpGenerator_GetTrialCount",
+		"OgaMtpGenerator_GetSpeculativeStats", "OgaDestroyMtpGenerator",
+		"OgaGenerator_IsSessionTerminated", "OgaGenerator_SetModelInput", "OgaGenerator_AppendTokens",
+		"OgaGenerator_TokenCount", "OgaGenerator_GetNextTokens", "OgaGenerator_SetRuntimeOption",
+		"OgaGenerator_RewindTo", "OgaGenerator_SnapshotState", "OgaGenerator_SetHiddenStates",
+		"OgaGenerator_GetInput", "OgaGenerator_GetOutput", "OgaGenerator_GetLogits",
+		"OgaGenerator_SetLogits", "OgaGenerator_GetSpeculativeStats", "OgaCreateAdapters", "OgaDestroyAdapters", "OgaLoadAdapter",
+		"OgaUnloadAdapter", "OgaSetActiveAdapter", "OgaSetLogCallback",
+		"OgaConfigAddModelData", "OgaConfigRemoveModelData", "OgaConfigSetDecoderProviderOptionsHardwareDeviceType",
+		"OgaConfigSetDecoderProviderOptionsHardwareDeviceId", "OgaConfigSetDecoderProviderOptionsHardwareVendorId",
+		"OgaConfigClearDecoderProviderOptionsHardwareDeviceType", "OgaConfigClearDecoderProviderOptionsHardwareDeviceId",
+		"OgaConfigClearDecoderProviderOptionsHardwareVendorId", "OgaConfigOverlay",
+		"OgaModelGetType", "OgaModelGetDeviceType", "OgaStreamingProcessorProcess",
+		"OgaStreamingProcessorFlush", "OgaCreateStreamingProcessor", "OgaDestroyStreamingProcessor",
+		"OgaStreamingProcessorSetOption", "OgaStreamingProcessorGetOption",
+	}
+	for _, symbolName := range additionalRequiredSymbols {
+		if createSym(handle, symbolName) == nil {
+			C.dlclose(handle)
+			return fmt.Errorf("missing required ORT GenAI symbol %s", symbolName)
+		}
+	}
+
+	if rc := C.SetGenAiApi(
+		symCreate, symErr, symDestroyRes, symDestroyModel, symCreateTokenizer, symDestroyTokenizer,
 		symCreateTokenizerStream, symDestroyTokenizerStream, symApplyChatTemplate, symDestroyString, symCreateSequence, symDestroySequence,
 		symTokenizerEncode, symCreateGenerator, symDestroyGenerator, symCreateGeneratorParams, symDestroyGeneratorParams,
 		symGeneratorParamsSetSearchNumber, symGeneratorAppendTokenSequences, symGeneratorSetInputs, symGeneratorGenerateNextToken, symGeneratorGetSequenceCount,
 		symGeneratorGetSequenceData, symTokenizerStreamDecode, symIsDone, symTokenizerGetEosTokenIDs, symCreateConfig, symConfigClearProviders, symConfigAppendProvider, symConfigSetProviderOption, symCreateModelFromConfig, symDestroyConfig,
 		symLoadImage, symLoadImages, symLoadImagesFromBuffers, symDestroyImages, symCreateMultiModalProcessor, symDestroyMultiModalProcessor, symProcessorProcessImages, symDestroyNamedTensors, symCreateStringArray, symDestroyStringArray, symStringArrayAddString,
-		symProcessorProcessImagesAndPrompts, symGeneratorParamsSetGuidance); rc != 0 {
+		symProcessorProcessImagesAndPrompts, symGeneratorParamsSetGuidance,
+		symShutdown, symSetTelemetry, symCreateConfigFromEp, symGetPad, symGetBot, symGetEot, symGetBor, symGetEor,
+	); rc != 0 {
 		C.dlclose(handle)
 		return fmt.Errorf("SetGenAiApi failed with code %d", int(rc))
 	}
-
-	// Engine/Request API (optional — available in ORT GenAI >= 0.9.1)
-	initEngineAPI(handle)
+	if rc := C.SetGenAiEngineApi(&engineSymbols[0], C.size_t(len(engineSymbols))); rc != 0 {
+		C.dlclose(handle)
+		return fmt.Errorf("setting required ORT GenAI engine API failed with code %d", int(rc))
+	}
 
 	genAiLibraryHandle = handle
 	return nil
-}
-
-// engineAPIAvailable is true if the OgaEngine continuous batching symbols were found.
-var engineAPIAvailable bool
-
-// IsEngineAPIAvailable reports whether the loaded ORT GenAI library supports the Engine API.
-func IsEngineAPIAvailable() bool {
-	return engineAPIAvailable
-}
-
-func initEngineAPI(handle unsafe.Pointer) {
-	symCreateEngine := createSym(handle, "OgaCreateEngine")
-	symDestroyEngine := createSym(handle, "OgaDestroyEngine")
-	symEngineStep := createSym(handle, "OgaEngineStep")
-	symEngineHasPendingRequests := createSym(handle, "OgaEngineHasPendingRequests")
-	symEngineAddRequest := createSym(handle, "OgaEngineAddRequest")
-	symEngineRemoveRequest := createSym(handle, "OgaEngineRemoveRequest")
-	symCreateRequest := createSym(handle, "OgaCreateRequest")
-	symDestroyRequest := createSym(handle, "OgaDestroyRequest")
-	symRequestAddTokens := createSym(handle, "OgaRequestAddTokens")
-	symRequestSetOpaqueData := createSym(handle, "OgaRequestSetOpaqueData")
-	symRequestGetOpaqueData := createSym(handle, "OgaRequestGetOpaqueData")
-	symRequestHasUnseenTokens := createSym(handle, "OgaRequestHasUnseenTokens")
-	symRequestGetUnseenToken := createSym(handle, "OgaRequestGetUnseenToken")
-	symRequestIsDone := createSym(handle, "OgaRequestIsDone")
-
-	if symCreateEngine == nil || symDestroyEngine == nil ||
-		symEngineStep == nil || symEngineHasPendingRequests == nil ||
-		symEngineAddRequest == nil || symEngineRemoveRequest == nil ||
-		symCreateRequest == nil || symDestroyRequest == nil ||
-		symRequestAddTokens == nil || symRequestSetOpaqueData == nil ||
-		symRequestGetOpaqueData == nil || symRequestHasUnseenTokens == nil ||
-		symRequestGetUnseenToken == nil || symRequestIsDone == nil {
-		return
-	}
-
-	rc := C.SetGenAiEngineApi(
-		symCreateEngine, symDestroyEngine,
-		symEngineStep, symEngineHasPendingRequests,
-		symEngineAddRequest, symEngineRemoveRequest,
-		symCreateRequest, symDestroyRequest,
-		symRequestAddTokens, symRequestSetOpaqueData,
-		symRequestGetOpaqueData, symRequestHasUnseenTokens,
-		symRequestGetUnseenToken, symRequestIsDone)
-	if rc != 0 {
-		return
-	}
-	engineAPIAvailable = true
 }

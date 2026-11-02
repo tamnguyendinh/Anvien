@@ -4,6 +4,173 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/)
 and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [0.8.5]
+
+### Changed
+- The Go backend now attempts to use dynamic axes to reduce graph compilations, falling back to bucketed compilations.
+
+## [0.8.4]
+
+- This release brings the list of supported pipelines to parity with Huggingface transformers, adding the remaining pipelines and removing others that have been deprecated.
+
+### Added
+
+- Added `AnyToAnyPipeline` for supported multimodal models, tested with Phi-4 multimodal, Janus, and LFM bundles.
+- Added `VideoClassificationPipeline` for VideoMAE ONNX models.
+- Added `KeypointMatchingPipeline` for SuperGlue exports.
+- Added `DownloadOptions.CacheDir` and `DownloadGraphBundle` to configure the Hugging Face cache and download complete ONNX graph bundles, including related weights and child graphs.
+- Added `TextGenerationPipeline.GetContextLength()` to report the model's configured context length.
+- Fine-tuning for `TextClassificationPipeline`, single-label and multi-label, with `datasets.TextClassificationDataset` (JSONL or in memory). The defaults are AdamW (learning rate 5e-5, weight decay 0.01) with softmax or sigmoid cross-entropy.
+- Fine-tuning for `TokenClassificationPipeline` (e.g. NER) with `datasets.TokenClassificationDataset`. Each word's tag goes on its first sub-word token; other sub-word, special and padding tokens are masked out of the loss.
+- `TrainingStatistics.EpochTrainAccuracies` and `EpochEvalAccuracies`, recorded for classifiers.
+- Contrastive fine-tuning of embeddings with in-batch negatives (sentence-transformers' `MultipleNegativesRankingLoss`): `datasets.ContrastiveDataset` takes anchor/positive pairs with optional hard negatives, and needs no similarity scores.
+- The new `evaluation` package: entity-level precision, recall and F1 for token classification (`ScoreEntities`, `EvaluateTokenClassification`), and per-class precision, recall and F1 with macro, weighted and micro averages for text classification (`ScoreClassification`, `ScoreMultiLabel`, `EvaluateTextClassification`).
+- `TrainingStatistics.EpochTrainF1` / `EpochEvalF1`: entity-level F1 for token classification and macro-F1 for text classification, per epoch.
+- `pipelines.WithWordSplitter` for token classification: one function splits raw text into the words the model labels, at inference (`Run` labels the splitter's words, as `RunWords` would) and in training, where `TokenClassificationDataset` examples may be given as raw `text` and are split by the trainer's pipeline. New `TrainerConfig.PipelineOptions` passes pipeline options such as the splitter to the trainer.
+- Span-annotated training data for token classification, in the format Prodigy's `ner_manual` exports: `TokenClassificationExample.Spans` holds entities as character offsets, converted to IOB word tags with the pipeline's word splitter or the annotation tool's tokens as the words. Word-level and span lines can share a file, and examples not answered `accept` are skipped. `EvaluateTokenClassification` scores span examples the same way.
+- Prodigy text classification exports for `TextClassificationDataset`: choice annotations (`accept` lists) for single- and multi-label datasets, and binary annotations (`label` + `answer`). A binary rejection becomes the other class of a two-class model and is skipped otherwise; binary annotations train a multi-label model only when it has that single label. `ignore` answers are skipped. `EvaluateTextClassification` resolves them the same way.
+
+### Breaking changes
+
+- Removed `QuestionAnsweringPipeline`.
+- Removed `VisualQuestionAnsweringPipeline`.
+- Removed `ImageToTextPipeline` and its configuration types. Use `AnyToAnyPipeline` with a supported multimodal model for image understanding and captioning.
+
+### Changed
+
+- `WithGenerativeEngine` now admits requests fairly. Free batch slots go round-robin across jobs, with new jobs served first in arrival order. Before, slots went to whichever job Go's randomized map iteration picked first, so a request could be passed over repeatedly under load.
+- Embedding training reads the number of model inputs and the attention mask's position from the model, instead of assuming three inputs with the mask second.
+- `Trainer.Save` also copies the model's `config.json`, so a saved model keeps its labels and configuration.
+- The last epoch is now evaluated too. Before, the epoch statistics and early stopping skipped it.
+- `TrainerConfig.EvalDataset` is evaluated every epoch whenever it is set. Before, it was evaluated only with early stopping and otherwise silently ignored.
+
+### Fixed
+
+- On backends that embed variables as constants (the Go backend), every evaluation during training reused the weights of the first one, so the epoch statistics and early stopping never saw training progress. Evaluation graphs are now rebuilt before each evaluation on those backends.
+
+## [0.8.3] - 2026-10-14
+
+### Added
+
+- `GroundedObjectDetectionPipeline` implements support for Grounding DINO models, which allow for object detection using a set of textual labels (zero shot)
+- Support for SAM2 models in `maskGeneration` with both box and point based segmentation prompts
+
+### Changed
+
+- Do not pad batches when using the Go backend (performance improvement).
+- Fixed #149 Hugot/GoMLX panics with index out of range when the batch size is padded.
+- Upgraded to ONNX Runtime v1.31.0.
+
+## [0.8.2] - 2026-10-06
+
+### Changed
+
+- Python parity tests: embedded Python ONNX reference vectors with pinned tolerances to verify numeric parity across ORT, GoMLX, and XLA backends.
+- Raw feature access and dimensions for text and image feature-extraction pipelines.
+
+## [0.8.1] - 2026-10-02
+
+### Added
+
+- **New pipelines**:
+  - **Image**: `FillMaskPipeline`, `MaskGenerationPipeline`, `ImageSegmentationPipeline`, `DepthEstimationPipeline`, `BackgroundRemovalPipeline`, `ZeroShotImageClassificationPipeline`.
+  - **Audio**: `AudioClassificationPipeline`, `ZeroShotAudioClassificationPipeline`, `AutomaticSpeechRecognitionPipeline`, `TextToAudioPipeline`, `TextToSpeechPipeline`.
+  - **Multimodal**: `VisualQuestionAnsweringPipeline`, `DocumentQuestionAnsweringPipeline`, `TableQuestionAnsweringPipeline`, `ImageToTextPipeline`, `ImageTextToTextPipeline`.
+- Image pipelines expose `RunWithImages(ctx, []image.Image)` so callers can feed in-memory `image.Image` values without a disk round-trip, in addition to `Run(ctx, []string)` which loads from paths or data URIs.
+- Audio input plumbing: `backends.AudioWaveform`, `backends.AudioURLs`, `Message.AudioURLs`, and `ConversationHasAudio` / `FlattenAudioURLs` helpers used by the ORT session pipeline.
+- **Per-conversation system turns** are expressed as `History[0] = {Role: "system", ...}` on all five input types. The pipeline-level `SystemPrompt` on `multimodalGeneration` continues to be applied globally by the ORT backend via `createORTMessages`.
+- Upgraded to ONNX Runtime GenAI 0.17.0.
+
+### Changed
+
+- Improved several new pipelines to better match the Hugging Face reference behavior and numerics: pre/post-processing, output naming, and result shapes for feature extraction, image captioning, mask generation, table/document question answering, and zero-shot audio.
+- Pipeline operations are now methods on `*hugot.Session` (`session.NewPipeline`, `session.GetPipeline`, `session.GetPipelines`, `session.ClosePipeline`); the old free-function variants are deprecated thin wrappers kept for compatibility.
+- BREAKING: Training is now configured with `session.NewTrainer(TrainerConfig, ...TrainerOption)` and run with `trainer.Train(ctx)`.
+
+### Removed
+
+- Removed the Rust tokenizer dependency; the Go tokenizer is fast enough, supports all of our test pipelines, and avoids the extra cgo dependency/project complexity.
+
+## [0.8.0] - 2026-09-22
+
+### Fixed
+
+- Fix compilation on non-linux platforms.
+
+## [0.7.9] - 2026-09-22
+
+### Added
+
+- Upgraded to ONNX Runtime v1.30.0.
+- Migrated to Go bindings from the official repository.
+- Fixed a missing filesystem error if using downloader before starting a session.
+- Made file copies atomic to avoid partial model downloads on abort.
+- Check for a valid download destination before downloading.
+
+## [0.7.8] - 2026-09-02
+
+### Added
+
+- Added `NewORTTrainingSession` for training with the ORT backend.
+- Added `options.WithGoMLX` to use GoMLX for model execution with an ORT session.
+- Added pluggable, session-scoped filesystem adapters through `options.WithFileSystem`, see README.MD for details.
+- Added concurrency protection for model and pipeline registries and made model closing idempotent.
+
+### Changed
+
+- Upgraded to Go 1.27.0.
+- Upgraded GoMLX dependencies, ONNX Runtime to 1.29.0, and ORT GenAI to 0.15.2.
+- Refactored backend and pipeline handling around typed backend and model abstractions.
+
+### Breaking changes
+
+- Filesystem integrations must implement `fileutil.FileSystem` and be supplied with `options.WithFileSystem`; the previous global `viant/afs` integration is no longer used.
+- `fileutil.WalkDir` now takes a context and handler directly, and `fileutil.FileStats` returns `os.FileInfo`; update callers and adapters accordingly.
+- Exported pipeline constructors no longer accept `*options.Options`; backend configuration is now supplied when creating the session.
+
+## [0.7.7] - 2026-08-03
+
+###  Changed
+
+- Upgraded to CUDA 13
+- Upgraded to ORT v1.28.0
+- Upgraded to ORT GenAI v0.15.0
+- Upgraded to GoMLX v0.28.2
+- Fixes go tokenizer FIRST/MAX/AVERAGE aggregation (thanks @luanlorenzo)
+
+## [0.7.6] - 2026-07-24
+
+###  Changed
+
+- Upgraded to GoMLX [v0.28.0](https://github.com/gomlx/gomlx/releases/tag/v0.28.0)
+  - Includes experimental SIMD for significant performance improvements for the Go backend
+- Refactor/simplification of pipeline management and lifecycle
+- Token Classification pipeline correctly handles unknown tokens (thanks @ohhmkar)
+- Fixes tokenizer timings reporting per pipeline
+
+## [0.7.5] - 2026-06-05
+
+###  Changed
+
+- Upgraded to ORT v1.26.0
+- Upgraded to ORT GenAI v0.14.0
+
+## [0.7.4] - 2026-05-24
+
+###  Changed
+
+- Do not specify go patch version in go.mod
+- Fixes for release docker image build and push
+
+## [0.7.3] - 2026-05-20
+
+###  Changed
+
+- Fix panic on double-close (thanks @sananguliyev) 
+- Upgraded to ORT v1.25.1
+- Test structure improvements
+- Documentation and examples improvements (thanks @kepae)
+
 ## [0.7.2] - 2026-04-22
 
 ###  Changed
