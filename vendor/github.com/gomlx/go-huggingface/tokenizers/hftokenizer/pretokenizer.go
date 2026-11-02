@@ -1,74 +1,52 @@
 package hftokenizer
 
 import (
+	"regexp"
 	"strings"
 	"unicode"
 )
 
-// preTokenizeWithSpans splits text into words with their byte spans.
-func (t *Tokenizer) preTokenizeWithSpans(text string, normOffsets []int) []wordWithOffset {
+// preTokenizeWithOffsets splits text into words with their byte offsets.
+func (t *Tokenizer) preTokenizeWithOffsets(text string, normOffsets []int) []wordWithOffset {
 	if t.tokenizer.PreTokenizer == nil {
 		// Default: split on whitespace
 		return fieldsWithOffsets(text, normOffsets)
 	}
-	return t.applyPreTokenizerWithSpans(text, normOffsets, t.tokenizer.PreTokenizer)
+	return t.applyPreTokenizerWithOffsets(text, normOffsets, t.tokenizer.PreTokenizer)
+}
+
+// preTokenizeWithSpans is an alias for preTokenizeWithOffsets for backward compatibility.
+func (t *Tokenizer) preTokenizeWithSpans(text string, normOffsets []int) []wordWithOffset {
+	return t.preTokenizeWithOffsets(text, normOffsets)
 }
 
 // fieldsWithOffsets splits text on whitespace and returns words with their offsets.
 func fieldsWithOffsets(text string, normOffsets []int) []wordWithOffset {
 	var words []wordWithOffset
-	var current strings.Builder
 	currentStart := -1
 
 	for i, r := range text {
 		if unicode.IsSpace(r) {
-			if current.Len() > 0 {
-				end := i
-				origStart := 0
-				origEnd := len(text)
-				if currentStart < len(normOffsets) {
-					origStart = normOffsets[currentStart]
-				}
-				if end <= len(normOffsets) && end > 0 {
-					origEnd = normOffsets[end-1] + 1
-				}
-				words = append(words, wordWithOffset{
-					text:  current.String(),
-					start: origStart,
-					end:   origEnd,
-				})
-				current.Reset()
+			if currentStart != -1 {
+				words = append(words, makeWord(text, normOffsets, currentStart, i))
 				currentStart = -1
 			}
 		} else {
 			if currentStart == -1 {
 				currentStart = i
 			}
-			current.WriteRune(r)
 		}
 	}
 
-	if current.Len() > 0 {
-		origStart := 0
-		origEnd := len(text)
-		if currentStart < len(normOffsets) {
-			origStart = normOffsets[currentStart]
-		}
-		if len(normOffsets) > 0 {
-			origEnd = normOffsets[len(normOffsets)-1] + 1
-		}
-		words = append(words, wordWithOffset{
-			text:  current.String(),
-			start: origStart,
-			end:   origEnd,
-		})
+	if currentStart != -1 {
+		words = append(words, makeWord(text, normOffsets, currentStart, len(text)))
 	}
 
 	return words
 }
 
-// applyPreTokenizerWithSpans applies pre-tokenization with offset tracking.
-func (t *Tokenizer) applyPreTokenizerWithSpans(text string, normOffsets []int, pt *PreTokenizer) []wordWithOffset {
+// applyPreTokenizerWithOffsets applies pre-tokenization with offset tracking.
+func (t *Tokenizer) applyPreTokenizerWithOffsets(text string, normOffsets []int, pt *PreTokenizer) []wordWithOffset {
 	switch pt.Type {
 	case "BertPreTokenizer":
 		return bertPreTokenizeWithOffsets(text, normOffsets)
@@ -91,8 +69,10 @@ func (t *Tokenizer) applyPreTokenizerWithSpans(text string, normOffsets []int, p
 			split = *pt.Split
 		}
 		return metaspacePreTokenizeWithOffsets(text, normOffsets, pt.AddPrefixSpace, pt.Replacement, pt.PrependScheme, split)
+	case "Split":
+		return splitPreTokenizeWithOffsets(text, normOffsets, pt)
 	case "Sequence":
-		result := []wordWithOffset{{text: text, start: 0, end: len(text)}}
+		result := []wordWithOffset{{text: text, start: 0, end: len(text), offsets: normOffsets}}
 		if len(normOffsets) > 0 {
 			result[0].end = normOffsets[len(normOffsets)-1] + 1
 		}
@@ -101,11 +81,14 @@ func (t *Tokenizer) applyPreTokenizerWithSpans(text string, normOffsets []int, p
 			childCopy := child
 			for _, w := range result {
 				// Create sub-offsets for this word
-				subOffsets := make([]int, len(w.text))
-				for i := range subOffsets {
-					subOffsets[i] = w.start + i
+				subOffsets := w.offsets
+				if len(subOffsets) != len(w.text) {
+					subOffsets = make([]int, len(w.text))
+					for i := range subOffsets {
+						subOffsets[i] = w.start + i
+					}
 				}
-				subWords := t.applyPreTokenizerWithSpans(w.text, subOffsets, &childCopy)
+				subWords := t.applyPreTokenizerWithOffsets(w.text, subOffsets, &childCopy)
 				newResult = append(newResult, subWords...)
 			}
 			result = newResult
@@ -118,10 +101,14 @@ func (t *Tokenizer) applyPreTokenizerWithSpans(text string, normOffsets []int, p
 	}
 }
 
+// applyPreTokenizerWithSpans is an alias for applyPreTokenizerWithOffsets for backward compatibility.
+func (t *Tokenizer) applyPreTokenizerWithSpans(text string, normOffsets []int, pt *PreTokenizer) []wordWithOffset {
+	return t.applyPreTokenizerWithOffsets(text, normOffsets, pt)
+}
+
 // bertPreTokenizeWithOffsets splits on whitespace and punctuation with offset tracking.
 func bertPreTokenizeWithOffsets(text string, normOffsets []int) []wordWithOffset {
 	var words []wordWithOffset
-	var current strings.Builder
 	currentStart := -1
 
 	runes := []rune(text)
@@ -129,78 +116,27 @@ func bertPreTokenizeWithOffsets(text string, normOffsets []int) []wordWithOffset
 		bytePos := len(string(runes[:i]))
 
 		if isWhitespace(r) {
-			if current.Len() > 0 {
-				origStart := 0
-				origEnd := bytePos
-				if currentStart < len(normOffsets) {
-					origStart = normOffsets[currentStart]
-				}
-				if bytePos > 0 && bytePos <= len(normOffsets) {
-					origEnd = normOffsets[bytePos-1] + 1
-				}
-				words = append(words, wordWithOffset{
-					text:  current.String(),
-					start: origStart,
-					end:   origEnd,
-				})
-				current.Reset()
+			if currentStart != -1 {
+				words = append(words, makeWord(text, normOffsets, currentStart, bytePos))
 				currentStart = -1
 			}
 		} else if isPunctuation(r) {
-			if current.Len() > 0 {
-				origStart := 0
-				origEnd := bytePos
-				if currentStart < len(normOffsets) {
-					origStart = normOffsets[currentStart]
-				}
-				if bytePos > 0 && bytePos <= len(normOffsets) {
-					origEnd = normOffsets[bytePos-1] + 1
-				}
-				words = append(words, wordWithOffset{
-					text:  current.String(),
-					start: origStart,
-					end:   origEnd,
-				})
-				current.Reset()
+			if currentStart != -1 {
+				words = append(words, makeWord(text, normOffsets, currentStart, bytePos))
 				currentStart = -1
 			}
 			// Add punctuation as its own token
-			origStart := bytePos
-			origEnd := bytePos + len(string(r))
-			if bytePos < len(normOffsets) {
-				origStart = normOffsets[bytePos]
-			}
-			endBytePos := bytePos + len(string(r))
-			if endBytePos <= len(normOffsets) && endBytePos > 0 {
-				origEnd = normOffsets[endBytePos-1] + 1
-			}
-			words = append(words, wordWithOffset{
-				text:  string(r),
-				start: origStart,
-				end:   origEnd,
-			})
+			runeLen := len(string(r))
+			words = append(words, makeWord(text, normOffsets, bytePos, bytePos+runeLen))
 		} else {
 			if currentStart == -1 {
 				currentStart = bytePos
 			}
-			current.WriteRune(r)
 		}
 	}
 
-	if current.Len() > 0 {
-		origStart := 0
-		origEnd := len(text)
-		if currentStart < len(normOffsets) {
-			origStart = normOffsets[currentStart]
-		}
-		if len(normOffsets) > 0 {
-			origEnd = normOffsets[len(normOffsets)-1] + 1
-		}
-		words = append(words, wordWithOffset{
-			text:  current.String(),
-			start: origStart,
-			end:   origEnd,
-		})
+	if currentStart != -1 {
+		words = append(words, makeWord(text, normOffsets, currentStart, len(text)))
 	}
 
 	return words
@@ -209,7 +145,6 @@ func bertPreTokenizeWithOffsets(text string, normOffsets []int) []wordWithOffset
 // punctuationPreTokenizeWithOffsets splits on punctuation with offset tracking.
 func punctuationPreTokenizeWithOffsets(text string, normOffsets []int) []wordWithOffset {
 	var words []wordWithOffset
-	var current strings.Builder
 	currentStart := -1
 
 	runes := []rune(text)
@@ -217,60 +152,22 @@ func punctuationPreTokenizeWithOffsets(text string, normOffsets []int) []wordWit
 		bytePos := len(string(runes[:i]))
 
 		if isPunctuation(r) {
-			if current.Len() > 0 {
-				origStart := 0
-				origEnd := bytePos
-				if currentStart < len(normOffsets) {
-					origStart = normOffsets[currentStart]
-				}
-				if bytePos > 0 && bytePos <= len(normOffsets) {
-					origEnd = normOffsets[bytePos-1] + 1
-				}
-				words = append(words, wordWithOffset{
-					text:  current.String(),
-					start: origStart,
-					end:   origEnd,
-				})
-				current.Reset()
+			if currentStart != -1 {
+				words = append(words, makeWord(text, normOffsets, currentStart, bytePos))
 				currentStart = -1
 			}
 			// Add punctuation as its own token
-			origStart := bytePos
-			origEnd := bytePos + len(string(r))
-			if bytePos < len(normOffsets) {
-				origStart = normOffsets[bytePos]
-			}
-			endBytePos := bytePos + len(string(r))
-			if endBytePos <= len(normOffsets) && endBytePos > 0 {
-				origEnd = normOffsets[endBytePos-1] + 1
-			}
-			words = append(words, wordWithOffset{
-				text:  string(r),
-				start: origStart,
-				end:   origEnd,
-			})
+			runeLen := len(string(r))
+			words = append(words, makeWord(text, normOffsets, bytePos, bytePos+runeLen))
 		} else {
 			if currentStart == -1 {
 				currentStart = bytePos
 			}
-			current.WriteRune(r)
 		}
 	}
 
-	if current.Len() > 0 {
-		origStart := 0
-		origEnd := len(text)
-		if currentStart < len(normOffsets) {
-			origStart = normOffsets[currentStart]
-		}
-		if len(normOffsets) > 0 {
-			origEnd = normOffsets[len(normOffsets)-1] + 1
-		}
-		words = append(words, wordWithOffset{
-			text:  current.String(),
-			start: origStart,
-			end:   origEnd,
-		})
+	if currentStart != -1 {
+		words = append(words, makeWord(text, normOffsets, currentStart, len(text)))
 	}
 
 	return words
@@ -292,9 +189,10 @@ func byteLevelPreTokenizeWithOffsets(text string, normOffsets []int) []wordWithO
 					origEnd = currentOffsets[len(currentOffsets)-1] + 1
 				}
 				words = append(words, wordWithOffset{
-					text:  current.String(),
-					start: origStart,
-					end:   origEnd,
+					text:    current.String(),
+					start:   origStart,
+					end:     origEnd,
+					offsets: currentOffsets,
 				})
 				current.Reset()
 				currentOffsets = nil
@@ -322,9 +220,10 @@ func byteLevelPreTokenizeWithOffsets(text string, normOffsets []int) []wordWithO
 			origEnd = currentOffsets[len(currentOffsets)-1] + 1
 		}
 		words = append(words, wordWithOffset{
-			text:  current.String(),
-			start: origStart,
-			end:   origEnd,
+			text:    current.String(),
+			start:   origStart,
+			end:     origEnd,
+			offsets: currentOffsets,
 		})
 	}
 
@@ -360,10 +259,15 @@ func metaspacePreTokenizeWithOffsets(text string, normOffsets []int, addPrefixSp
 				if i > 0 && i <= len(normOffsets) {
 					origEnd = normOffsets[i-1] + 1
 				}
+				var subOffsets []int
+				if len(normOffsets) >= i && currentStart >= 0 && currentStart <= i {
+					subOffsets = normOffsets[currentStart:i]
+				}
 				words = append(words, wordWithOffset{
-					text:  current.String(),
-					start: origStart,
-					end:   origEnd,
+					text:    current.String(),
+					start:   origStart,
+					end:     origEnd,
+					offsets: subOffsets,
 				})
 				current.Reset()
 				currentStart = i
@@ -389,12 +293,184 @@ func metaspacePreTokenizeWithOffsets(text string, normOffsets []int, addPrefixSp
 		if len(normOffsets) > 0 {
 			origEnd = normOffsets[len(normOffsets)-1] + 1
 		}
+		var subOffsets []int
+		if len(normOffsets) >= len(text) && currentStart >= 0 && currentStart <= len(text) {
+			subOffsets = normOffsets[currentStart:]
+		}
 		words = append(words, wordWithOffset{
-			text:  current.String(),
-			start: origStart,
-			end:   origEnd,
+			text:    current.String(),
+			start:   origStart,
+			end:     origEnd,
+			offsets: subOffsets,
 		})
 	}
 
 	return words
+}
+
+// splitPreTokenizeWithOffsets splits text based on pattern and behavior.
+func splitPreTokenizeWithOffsets(text string, normOffsets []int, pt *PreTokenizer) []wordWithOffset {
+	if len(text) == 0 {
+		return nil
+	}
+
+	var re *regexp.Regexp
+	var err error
+	if pt.Pattern != nil {
+		if pt.Pattern.Regex != "" {
+			re, err = regexp.Compile(pt.Pattern.Regex)
+		} else if pt.Pattern.String != "" {
+			re, err = regexp.Compile(regexp.QuoteMeta(pt.Pattern.String))
+		} else {
+			re, err = regexp.Compile(`(?s:.)`)
+		}
+	}
+
+	if re == nil || err != nil {
+		// Fallback: return whole text as a single word
+		return []wordWithOffset{makeWord(text, normOffsets, 0, len(text))}
+	}
+
+	matches := re.FindAllStringIndex(text, -1)
+
+	type segment struct {
+		start       int
+		end         int
+		isDelimiter bool
+	}
+
+	var segments []segment
+	cur := 0
+	for _, m := range matches {
+		sStart, sEnd := m[0], m[1]
+		if sStart > cur {
+			segments = append(segments, segment{
+				start:       cur,
+				end:         sStart,
+				isDelimiter: pt.Invert,
+			})
+		}
+		segments = append(segments, segment{
+			start:       sStart,
+			end:         sEnd,
+			isDelimiter: !pt.Invert,
+		})
+		cur = sEnd
+	}
+	if cur < len(text) {
+		segments = append(segments, segment{
+			start:       cur,
+			end:         len(text),
+			isDelimiter: pt.Invert,
+		})
+	}
+
+	behavior := strings.ToLower(pt.Behavior)
+	var words []wordWithOffset
+
+	switch behavior {
+	case "removed":
+		for _, seg := range segments {
+			if !seg.isDelimiter {
+				words = append(words, makeWord(text, normOffsets, seg.start, seg.end))
+			}
+		}
+
+	case "isolated":
+		for _, seg := range segments {
+			words = append(words, makeWord(text, normOffsets, seg.start, seg.end))
+		}
+
+	case "contiguous":
+		for i := 0; i < len(segments); {
+			seg := segments[i]
+			if !seg.isDelimiter {
+				words = append(words, makeWord(text, normOffsets, seg.start, seg.end))
+				i++
+			} else {
+				start := seg.start
+				end := seg.end
+				j := i + 1
+				for j < len(segments) && segments[j].isDelimiter {
+					end = segments[j].end
+					j++
+				}
+				words = append(words, makeWord(text, normOffsets, start, end))
+				i = j
+			}
+		}
+
+	case "merged_with_previous":
+		for i := 0; i < len(segments); {
+			seg := segments[i]
+			if !seg.isDelimiter {
+				start := seg.start
+				end := seg.end
+				i++
+				if i < len(segments) && segments[i].isDelimiter {
+					end = segments[i].end
+					i++
+				}
+				words = append(words, makeWord(text, normOffsets, start, end))
+			} else {
+				words = append(words, makeWord(text, normOffsets, seg.start, seg.end))
+				i++
+			}
+		}
+
+	case "merged_with_next":
+		for i := 0; i < len(segments); {
+			seg := segments[i]
+			if seg.isDelimiter {
+				start := seg.start
+				end := seg.end
+				i++
+				if i < len(segments) && !segments[i].isDelimiter {
+					end = segments[i].end
+					i++
+				}
+				words = append(words, makeWord(text, normOffsets, start, end))
+			} else {
+				words = append(words, makeWord(text, normOffsets, seg.start, seg.end))
+				i++
+			}
+		}
+
+	default:
+		// Default to removed behavior if unrecognized
+		for _, seg := range segments {
+			if !seg.isDelimiter {
+				words = append(words, makeWord(text, normOffsets, seg.start, seg.end))
+			}
+		}
+	}
+
+	return words
+}
+
+func makeWord(text string, normOffsets []int, start, end int) wordWithOffset {
+	origStart := start
+	origEnd := end
+	if len(normOffsets) > 0 {
+		if start < len(normOffsets) {
+			origStart = normOffsets[start]
+		} else {
+			origStart = normOffsets[len(normOffsets)-1] + 1
+		}
+		if end <= len(normOffsets) && end > 0 {
+			origEnd = normOffsets[end-1] + 1
+		} else {
+			origEnd = normOffsets[len(normOffsets)-1] + 1
+		}
+	}
+	var offsets []int
+	if len(normOffsets) >= end && start <= end {
+		offsets = normOffsets[start:end]
+	}
+	return wordWithOffset{
+		text:    text[start:end],
+		start:   origStart,
+		end:     origEnd,
+		offsets: offsets,
+	}
 }
