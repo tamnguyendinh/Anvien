@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strconv"
 	"strings"
 	"sync/atomic"
 	"time"
 
 	"github.com/knights-analytics/hugot/backends"
-	"github.com/knights-analytics/hugot/options"
 	"github.com/knights-analytics/hugot/util/safeconv"
 	"github.com/knights-analytics/hugot/util/vectorutil"
 )
@@ -20,9 +20,9 @@ import (
 // or regression values.
 type TabularPipeline struct {
 	*backends.BasePipeline
+	IDLabelMap              map[int]string // optional mapping from class IDs to labels
 	AggregationFunctionName string         // for classification: SOFTMAX or SIGMOID
 	ProblemType             string         // "classification" or "regression"
-	IDLabelMap              map[int]string // optional mapping from class IDs to labels
 }
 
 type TabularClassificationOutput struct {
@@ -95,11 +95,9 @@ func WithIDLabelMap(labels map[int]string) backends.PipelineOption[*TabularPipel
 }
 
 // NewTabularPipeline initializes the pipeline.
-func NewTabularPipeline(sessionContext context.Context, config backends.PipelineConfig[*TabularPipeline], s *options.Options, model *backends.Model) (*TabularPipeline, error) {
-	base, err := backends.NewBasePipeline(sessionContext, config, s, model)
-	if err != nil {
-		return nil, err
-	}
+func NewTabularPipeline(sessionContext context.Context, config backends.PipelineConfig[*TabularPipeline], model *backends.Model) (*TabularPipeline, error) {
+	base := backends.NewBasePipeline(sessionContext, config, model)
+	var err error
 	p := &TabularPipeline{BasePipeline: base}
 	for _, o := range config.Options {
 		if err = o(p); err != nil {
@@ -148,7 +146,7 @@ func (p *TabularPipeline) GetMetadata() backends.PipelineMetadata {
 
 func (p *TabularPipeline) GetStatistics() backends.PipelineStatistics {
 	stats := backends.PipelineStatistics{}
-	stats.ComputeOnnxStatistics(p.PipelineTimings)
+	stats.ComputeOnnxStatistics(p.ONNXTimings)
 	return stats
 }
 
@@ -216,7 +214,7 @@ func (p *TabularPipeline) Validate() error {
 func (p *TabularPipeline) preprocess(batch *backends.PipelineBatch, inputs [][]float32) error {
 	start := time.Now()
 	// Build tensors
-	if err := backends.CreateTabularTensors(batch, p.Model, inputs, p.Runtime); err != nil {
+	if err := backends.CreateTabularTensors(batch, p.Model, inputs); err != nil {
 		return err
 	}
 	_ = start // measured but not recorded; tokenizer not used
@@ -228,8 +226,8 @@ func (p *TabularPipeline) forward(ctx context.Context, batch *backends.PipelineB
 	if err := backends.RunSessionOnBatch(ctx, batch, p.BasePipeline); err != nil {
 		return err
 	}
-	atomic.AddUint64(&p.PipelineTimings.NumCalls, 1)
-	atomic.AddUint64(&p.PipelineTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
+	atomic.AddUint64(&p.ONNXTimings.NumCalls, 1)
+	atomic.AddUint64(&p.ONNXTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
 	return nil
 }
 
@@ -250,16 +248,27 @@ func (p *TabularPipeline) postprocess(batch *backends.PipelineBatch) (*TabularOu
 			outClassesAny := batch.OutputValues[0]
 			outLogitsAny := batch.OutputValues[1]
 
-			outClasses, ok := outClassesAny.([]int64)
-			if !ok {
-				return nil, fmt.Errorf("expected [][]any class labels, got %T", outClassesAny)
+			// Class labels are int64, or strings for classifiers trained on string classes.
+			var predictedClasses []string
+			switch outClasses := outClassesAny.(type) {
+			case []int64:
+				predictedClasses = make([]string, len(outClasses))
+				for i, class := range outClasses {
+					predictedClasses[i] = p.classLabel(class)
+				}
+			case []string:
+				predictedClasses = outClasses
+			default:
+				return nil, fmt.Errorf("expected []int64 or []string class labels, got %T", outClassesAny)
+			}
+			if len(predictedClasses) != batch.Size {
+				return nil, fmt.Errorf("expected %d class labels, got %d", batch.Size, len(predictedClasses))
 			}
 			outLogits, ok := outLogitsAny.([][]float32)
 			if !ok {
 				return nil, fmt.Errorf("expected [][]float32 logits, got %T", outLogitsAny)
 			}
 			for i := 0; i < batch.Size; i++ {
-				predictedClassLabel := outClasses[i]
 				predictedLogits := outLogits[i]
 				if agg != nil {
 					predictedLogits = agg(predictedLogits)
@@ -272,7 +281,7 @@ func (p *TabularPipeline) postprocess(batch *backends.PipelineBatch) (*TabularOu
 					}
 				}
 				output := TabularClassificationOutput{
-					PredictedClass: p.IDLabelMap[int(predictedClassLabel)],
+					PredictedClass: predictedClasses[i],
 					Probabilities:  classOutputs,
 				}
 				results[i] = output
@@ -323,6 +332,16 @@ func (p *TabularPipeline) postprocess(batch *backends.PipelineBatch) (*TabularOu
 	return &TabularOutput{RegressionResults: results}, nil
 }
 
+// classLabel names an int64 class label from the model's label output: its
+// IDLabelMap entry when there is one, the number itself otherwise. Classes need
+// not be 0..n-1 (e.g. [1, 2, 5]), so a missing entry must not become "".
+func (p *TabularPipeline) classLabel(class int64) string {
+	if label, ok := p.IDLabelMap[int(class)]; ok {
+		return label
+	}
+	return strconv.FormatInt(class, 10)
+}
+
 // Run executes the pipeline over inputs.
 func (p *TabularPipeline) Run(ctx context.Context, inputs []string) (backends.PipelineBatchOutput, error) {
 	features, err := parseFeatures(inputs)
@@ -333,25 +352,9 @@ func (p *TabularPipeline) Run(ctx context.Context, inputs []string) (backends.Pi
 }
 
 func (p *TabularPipeline) RunPipeline(ctx context.Context, inputs [][]float32) (*TabularOutput, error) {
-	var runErrors []error
-	batch := backends.NewBatch(len(inputs))
-	defer func(*backends.PipelineBatch) {
-		runErrors = append(runErrors, batch.Destroy())
-	}(batch)
-
-	runErrors = append(runErrors, p.preprocess(batch, inputs))
-	if e := errors.Join(runErrors...); e != nil {
-		return nil, e
-	}
-
-	runErrors = append(runErrors, p.forward(ctx, batch))
-	if e := errors.Join(runErrors...); e != nil {
-		return nil, e
-	}
-
-	result, postErr := p.postprocess(batch)
-	runErrors = append(runErrors, postErr)
-	return result, errors.Join(runErrors...)
+	return backends.RunPipeline(ctx, len(inputs), func(batch *backends.PipelineBatch) error {
+		return p.preprocess(batch, inputs)
+	}, p.forward, p.postprocess)
 }
 
 // parseFeatures accepts each input only as a JSON array ("[1,2,3]").

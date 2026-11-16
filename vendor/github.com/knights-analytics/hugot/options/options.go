@@ -1,19 +1,41 @@
 package options
 
 import (
-	"context"
+	"errors"
 	"fmt"
+	"os"
 	"runtime"
 
 	"github.com/knights-analytics/hugot/util/fileutil"
 )
 
 type Options struct {
-	BackendOptions any
+	BackendOptions BackendOptions
 	ORTOptions     *OrtOptions
 	GoMLXOptions   *GoMLXOptions
 	Destroy        func() error
-	Backend        string
+	Backend        Backend
+	UseGoMLX       bool
+	FileSystem     fileutil.FileSystem
+}
+
+// BackendOptions contains backend-owned session state that can be released by
+// the session without exposing a concrete runtime type to the options package.
+type BackendOptions interface {
+	Destroy() error
+}
+
+// Backend identifies the execution backend selected for a session.
+type Backend string
+
+const (
+	BackendORT Backend = "ORT"
+	BackendGo  Backend = "GO"
+	BackendXLA Backend = "XLA"
+)
+
+func (b Backend) Valid() bool {
+	return b == BackendORT || b == BackendGo || b == BackendXLA
 }
 
 func Defaults() *Options {
@@ -24,6 +46,7 @@ func Defaults() *Options {
 			LibraryPath: &libraryPathDefault,
 		},
 		GoMLXOptions: &GoMLXOptions{},
+		FileSystem:   nil,
 		Destroy: func() error {
 			return nil
 		},
@@ -31,12 +54,22 @@ func Defaults() *Options {
 }
 
 func getDefaultLibraryPaths() (string, string, string) {
+	basePath := os.Getenv("ONNXRUNTIME_DIR")
 	switch runtime.GOOS {
 	case "windows":
-		return `onnxruntime.dll`, `.\`, `.\onnxuntime.dll`
+		if basePath != "" {
+			return `onnxruntime.dll`, basePath, basePath + `\onnxruntime.dll`
+		}
+		return `onnxruntime.dll`, `.\`, `.\onnxruntime.dll`
 	case "darwin":
+		if basePath != "" {
+			return "libonnxruntime.dylib", basePath, basePath + "/libonnxruntime.dylib"
+		}
 		return "libonnxruntime.dylib", "/usr/local/lib", "/usr/local/lib/libonnxruntime.dylib"
 	default:
+		if basePath != "" {
+			return "libonnxruntime.so", basePath, basePath + "/libonnxruntime.so"
+		}
 		return "libonnxruntime.so", "/usr/lib", "/usr/lib/libonnxruntime.so"
 	}
 }
@@ -60,6 +93,14 @@ const (
 	LoggingLevelFatal   LoggingLevel = 4
 )
 
+// GenAIAdapterConfig names a single LoRA / adapter file to load into the
+// session. Path is the file on disk; Name is the in-session identifier used
+// by SetActiveAdapter.
+type GenAIAdapterConfig struct {
+	Path string
+	Name string
+}
+
 type OrtOptions struct {
 	LibraryPath             *string
 	LibraryDir              *string
@@ -72,7 +113,6 @@ type OrtOptions struct {
 	IntraOpSpinning         *bool
 	InterOpSpinning         *bool
 	LogSeverityLevel        *LoggingLevel
-	EnvLoggingLevel         *LoggingLevel
 	GraphOptimizationLevel  *GraphOptimizationLevel
 	CudaOptions             map[string]string
 	CoreMLOptions           map[string]string
@@ -80,16 +120,37 @@ type OrtOptions struct {
 	OpenVINOOptions         map[string]string
 	TensorRTOptions         map[string]string
 	NvTensorRTRTXOptions    map[string]string
-	ExtraExecutionProviders []ExtraExecutionProvider
 	OptimizedModelFilePath  *string
 	ProfilingEnabled        *bool
 	ProfilingFilePrefix     *string
+	ExtraExecutionProviders []ExtraExecutionProvider
 	UseEngine               bool
+
+	// ── ORT GenAI process-wide controls (session path) ────────────────────
+	// SetGPUDeviceID sets the process-wide GPU device for ORT GenAI.
+	GenAIGPUDeviceID *int
+	// SetLogString("filename", …) — nil disables; empty string resets.
+	GenAILogFile *string
+	// SetLogString("stream", …) — "stdout", "stderr", or file path.
+	GenAILogStream *string
+
+	// ── ORT GenAI adapters (session path only) ─────────────────────────────
+	// Adapters to load after session creation.
+	GenAIAdapters []GenAIAdapterConfig
+	// ActiveAdapter selects which loaded adapter is used for inference.
+	GenAIActiveAdapter *string
+
+	// ── ORT GenAI MTP speculative generation (session path only) ───────────
+	// UseMTP enables MTP (multi-token prediction) speculative generation for
+	// text-only batches (requires an MTP model under <modelPath>/MTP in the
+	// ORT GenAI session directory). The native MTP path is greedy:
+	// Temperature, TopP, Seed, and Guidance are ignored.
+	UseMTP *bool
 }
 
 type ExtraExecutionProvider struct {
-	Name    string
 	Options map[string]string
+	Name    string
 }
 type GoMLXOptions struct {
 	// BatchBuckets defines the bucket sizes for batch dimension padding.
@@ -108,12 +169,38 @@ type GoMLXOptions struct {
 // WithOption is the interface for all option functions.
 type WithOption func(o *Options) error
 
+// WithFileSystem scopes storage operations to the session being created.
+// It avoids changing package-global state and is safe for concurrent sessions.
+func WithFileSystem(system fileutil.FileSystem) WithOption {
+	return func(o *Options) error {
+		if system == nil {
+			return fmt.Errorf("filesystem must not be nil")
+		}
+		o.FileSystem = system
+		return nil
+	}
+}
+
+// WithGoMLX (ORT only) uses GoMLX with ONNX Runtime as the execution backend.
+func WithGoMLX() WithOption {
+	return func(o *Options) error {
+		if o.Backend == BackendORT {
+			o.UseGoMLX = true
+			return nil
+		}
+		return fmt.Errorf("WithGoMLX is only supported for ORT backend")
+	}
+}
+
 // WithOnnxLibraryPath (ORT only) Use this function to set the path to the "libonnxuntime.so", "libonnxuntime.dylib" or "onnxruntime.dll" files.
 func WithOnnxLibraryPath(ortLibraryPath string) WithOption {
 	return func(o *Options) error {
-		if o.Backend == "ORT" {
-			ctx := context.Background()
-			object, err := fileutil.FileStats(ctx, ortLibraryPath)
+		if o.Backend == BackendORT {
+			// use os fs here, library cannot be on pluggable storage
+			object, err := os.Stat(ortLibraryPath)
+			if errors.Is(err, os.ErrNotExist) {
+				return fmt.Errorf("cannot find the ort library path at:  %q: %w", ortLibraryPath, err)
+			}
 			if err != nil {
 				return fmt.Errorf("failed to access ONNX Runtime library path %q: %w", ortLibraryPath, err)
 			}
@@ -122,12 +209,12 @@ func WithOnnxLibraryPath(ortLibraryPath string) WithOption {
 			}
 
 			libraryName, _, _ := getDefaultLibraryPaths()
-			exists, err := fileutil.FileExists(ctx, ortLibraryPath)
+			_, err = os.Stat(fileutil.PathJoinSafe(ortLibraryPath, libraryName))
+			if errors.Is(err, os.ErrNotExist) {
+				return fmt.Errorf("ONNX Runtime library %s does not exist at %q", libraryName, ortLibraryPath)
+			}
 			if err != nil {
 				return fmt.Errorf("error checking for existence of ONNX Runtime library file: %w", err)
-			}
-			if !exists {
-				return fmt.Errorf("ONNX Runtime library %s does not exist at %q", libraryName, ortLibraryPath)
 			}
 			o.ORTOptions.LibraryPath = new(fileutil.PathJoinSafe(ortLibraryPath, libraryName))
 			o.ORTOptions.LibraryDir = &ortLibraryPath
@@ -140,7 +227,7 @@ func WithOnnxLibraryPath(ortLibraryPath string) WithOption {
 // WithTelemetry (ORT only) Enables telemetry events for the onnxbackend environment. Default is off.
 func WithTelemetry() WithOption {
 	return func(o *Options) error {
-		if o.Backend == "ORT" {
+		if o.Backend == BackendORT {
 			o.ORTOptions.Telemetry = new(true)
 			return nil
 		}
@@ -152,7 +239,7 @@ func WithTelemetry() WithOption {
 // graph nodes. If unspecified, onnxbackend uses the number of physical CPU cores.
 func WithIntraOpNumThreads(numThreads int) WithOption {
 	return func(o *Options) error {
-		if o.Backend == "ORT" {
+		if o.Backend == BackendORT {
 			o.ORTOptions.IntraOpNumThreads = &numThreads
 			return nil
 		}
@@ -164,7 +251,7 @@ func WithIntraOpNumThreads(numThreads int) WithOption {
 // onnxbackend graph nodes. If unspecified, onnxbackend uses the number of physical CPU cores.
 func WithInterOpNumThreads(numThreads int) WithOption {
 	return func(o *Options) error {
-		if o.Backend == "ORT" {
+		if o.Backend == BackendORT {
 			o.ORTOptions.InterOpNumThreads = &numThreads
 			return nil
 		}
@@ -176,7 +263,7 @@ func WithInterOpNumThreads(numThreads int) WithOption {
 // Arena may pre-allocate memory for future usage. Default is true.
 func WithCPUMemArena(enable bool) WithOption {
 	return func(o *Options) error {
-		if o.Backend == "ORT" {
+		if o.Backend == BackendORT {
 			o.ORTOptions.CPUMemArena = &enable
 			return nil
 		}
@@ -188,7 +275,7 @@ func WithCPUMemArena(enable bool) WithOption {
 // If this is enabled memory is preallocated if all shapes are known. Default is true.
 func WithMemPattern(enable bool) WithOption {
 	return func(o *Options) error {
-		if o.Backend == "ORT" {
+		if o.Backend == BackendORT {
 			o.ORTOptions.MemPattern = &enable
 			return nil
 		}
@@ -199,7 +286,7 @@ func WithMemPattern(enable bool) WithOption {
 // WithExecutionMode sets the parallel execution mode for the ORT backend. Returns an error if the backend is not ORT.
 func WithExecutionMode(parallel bool) WithOption {
 	return func(o *Options) error {
-		if o.Backend == "ORT" {
+		if o.Backend == BackendORT {
 			o.ORTOptions.ParallelExecutionMode = &parallel
 			return nil
 		}
@@ -211,7 +298,7 @@ func WithExecutionMode(parallel bool) WithOption {
 // It returns an error if used with a backend other than ORT.
 func WithIntraOpSpinning(spinning bool) WithOption {
 	return func(o *Options) error {
-		if o.Backend == "ORT" {
+		if o.Backend == BackendORT {
 			o.ORTOptions.IntraOpSpinning = &spinning
 			return nil
 		}
@@ -223,11 +310,22 @@ func WithIntraOpSpinning(spinning bool) WithOption {
 // It returns an error if used with a backend other than ORT.
 func WithInterOpSpinning(spinning bool) WithOption {
 	return func(o *Options) error {
-		if o.Backend == "ORT" {
+		if o.Backend == BackendORT {
 			o.ORTOptions.InterOpSpinning = &spinning
 			return nil
 		}
 		return fmt.Errorf("WithInterOpSpinning is only supported for ORT backend")
+	}
+}
+
+// WithLogSeverityLevel (ORT only) Sets the log severity level for the session.
+func WithLogSeverityLevel(level LoggingLevel) WithOption {
+	return func(o *Options) error {
+		if o.Backend == BackendORT {
+			o.ORTOptions.LogSeverityLevel = &level
+			return nil
+		}
+		return fmt.Errorf("WithLogSeverityLevel is only supported for ORT backend")
 	}
 }
 
@@ -237,10 +335,10 @@ func WithInterOpSpinning(spinning bool) WithOption {
 func WithCuda(options map[string]string) WithOption {
 	return func(o *Options) error {
 		switch o.Backend {
-		case "ORT":
+		case BackendORT:
 			o.ORTOptions.CudaOptions = options
 			return nil
-		case "XLA":
+		case BackendXLA:
 			o.GoMLXOptions.Cuda = true
 			return nil
 		default:
@@ -254,7 +352,7 @@ func WithCuda(options map[string]string) WithOption {
 // Set PJRT_PLUGIN_LIBRARY_PATH to the directory containing pjrt_plugin_tpu.so or libtpu.so.
 func WithTPU() WithOption {
 	return func(o *Options) error {
-		if o.Backend == "XLA" {
+		if o.Backend == BackendXLA {
 			o.GoMLXOptions.TPU = true
 			return nil
 		}
@@ -269,7 +367,7 @@ func WithTPU() WithOption {
 // IMPORTANT: Ensure MaxCache >= len(BatchBuckets) * len(SequenceBuckets).
 func WithGoMLXBatchBuckets(buckets []int) WithOption {
 	return func(o *Options) error {
-		if o.Backend == "XLA" || o.Backend == "GO" {
+		if o.Backend == BackendXLA || o.Backend == BackendGo {
 			o.GoMLXOptions.BatchBuckets = buckets
 			return nil
 		}
@@ -284,7 +382,7 @@ func WithGoMLXBatchBuckets(buckets []int) WithOption {
 // IMPORTANT: Ensure MaxCache >= len(BatchBuckets) * len(SequenceBuckets).
 func WithGoMLXSequenceBuckets(buckets []int) WithOption {
 	return func(o *Options) error {
-		if o.Backend == "XLA" || o.Backend == "GO" {
+		if o.Backend == BackendXLA || o.Backend == BackendGo {
 			o.GoMLXOptions.SequenceBuckets = buckets
 			return nil
 		}
@@ -297,7 +395,7 @@ func WithGoMLXSequenceBuckets(buckets []int) WithOption {
 // The `o.CoreMLOptions` field in `OrtOptions` struct will be set to the provided flags parameter.
 func WithCoreML(flags map[string]string) WithOption {
 	return func(o *Options) error {
-		if o.Backend == "ORT" {
+		if o.Backend == BackendORT {
 			o.ORTOptions.CoreMLOptions = flags
 			return nil
 		}
@@ -368,28 +466,6 @@ func WithNvTensorRTRTX(options map[string]string) WithOption {
 	}
 }
 
-// WithLogSeverityLevel (ORT only) Sets the log severity level for the session.
-func WithLogSeverityLevel(level LoggingLevel) WithOption {
-	return func(o *Options) error {
-		if o.Backend == "ORT" {
-			o.ORTOptions.LogSeverityLevel = &level
-			return nil
-		}
-		return fmt.Errorf("WithLogSeverityLevel is only supported for ORT backend")
-	}
-}
-
-// WithEnvLoggingLevel (ORT only) Sets the log severity level for the environment.
-func WithEnvLoggingLevel(level LoggingLevel) WithOption {
-	return func(o *Options) error {
-		if o.Backend == "ORT" {
-			o.ORTOptions.EnvLoggingLevel = &level
-			return nil
-		}
-		return fmt.Errorf("WithEnvLoggingLevel is only supported for ORT backend")
-	}
-}
-
 // WithGraphOptimizationLevel (ORT only) Sets the graph optimization level for the session.
 func WithGraphOptimizationLevel(level GraphOptimizationLevel) WithOption {
 	return func(o *Options) error {
@@ -438,8 +514,8 @@ func WithProfiling(enabled bool, filePrefix string) WithOption {
 	}
 }
 
-// WithGenerativeEngine for generative models, uses an ORT Gen AI Engine for dynamic batching and concurrent request support.
-// Note: currently does not support image tensors in the upstream project.
+// WithGenerativeEngine uses the ORT GenAI request engine for concurrent text generation.
+// Engine mode does not support image inputs or session-specific execution-provider options.
 func WithGenerativeEngine() WithOption {
 	return func(o *Options) error {
 		if o.Backend == "ORT" {
@@ -447,5 +523,93 @@ func WithGenerativeEngine() WithOption {
 			return nil
 		}
 		return fmt.Errorf("WithUseEngine is only supported for ORT backend")
+	}
+}
+
+// WithGenAIGPUDeviceID (ORT only, session path) sets the process-wide GPU device
+// for ORT GenAI. Must be called before the first session is created.
+func WithGenAIGPUDeviceID(deviceID int) WithOption {
+	return func(o *Options) error {
+		if o.Backend == "ORT" {
+			o.ORTOptions.GenAIGPUDeviceID = &deviceID
+			return nil
+		}
+		return fmt.Errorf("WithGenAIGPUDeviceID is only supported for ORT backend")
+	}
+}
+
+// WithGenAILogFile (ORT only, session path) sets the ORT GenAI log file path
+// (process-wide). Pass an empty string to reset to the default log file.
+func WithGenAILogFile(path string) WithOption {
+	return func(o *Options) error {
+		if o.Backend == "ORT" {
+			o.ORTOptions.GenAILogFile = &path
+			return nil
+		}
+		return fmt.Errorf("WithGenAILogFile is only supported for ORT backend")
+	}
+}
+
+// WithGenAILogStream (ORT only, session path) sets the ORT GenAI log output
+// stream (process-wide). Accepts "stdout", "stderr", or a file path.
+func WithGenAILogStream(stream string) WithOption {
+	return func(o *Options) error {
+		if o.Backend == "ORT" {
+			o.ORTOptions.GenAILogStream = &stream
+			return nil
+		}
+		return fmt.Errorf("WithGenAILogStream is only supported for ORT backend")
+	}
+}
+
+// WithGenAIAdapters (ORT only, session path) names LoRA / adapter files to load
+// after session creation. ActiveAdapter selects which loaded adapter is used
+// for inference.
+func WithGenAIAdapters(adapters ...GenAIAdapterConfig) WithOption {
+	return func(o *Options) error {
+		if o.Backend == "ORT" {
+			for _, a := range adapters {
+				if a.Path == "" {
+					return fmt.Errorf("GenAIAdapterConfig.Path must not be empty")
+				}
+				if a.Name == "" {
+					return fmt.Errorf("GenAIAdapterConfig.Name must not be empty for adapter at %q", a.Path)
+				}
+			}
+			o.ORTOptions.GenAIAdapters = append(o.ORTOptions.GenAIAdapters, adapters...)
+			return nil
+		}
+		return fmt.Errorf("WithGenAIAdapters is only supported for ORT backend")
+	}
+}
+
+// WithGenAIActiveAdapter (ORT only, session path) selects which loaded adapter
+// is used for inference. Must match the Name field of one of the adapters
+// configured via WithGenAIAdapters.
+func WithGenAIActiveAdapter(name string) WithOption {
+	return func(o *Options) error {
+		if o.Backend == "ORT" {
+			if name == "" {
+				return fmt.Errorf("WithGenAIActiveAdapter name must not be empty")
+			}
+			o.ORTOptions.GenAIActiveAdapter = &name
+			return nil
+		}
+		return fmt.Errorf("WithGenAIActiveAdapter is only supported for ORT backend")
+	}
+}
+
+// WithGenAIMTP (ORT only, session path) enables opt-in MTP (multi-token
+// prediction) speculative generation for text-only batches. The session must
+// ship an MTP model under <modelPath>/MTP; the native path is greedy, so
+// Temperature, TopP, Seed, and Guidance are ignored. MTP is dispatched at
+// generation time and is not supported by the generative engine path.
+func WithGenAIMTP(enabled bool) WithOption {
+	return func(o *Options) error {
+		if o.Backend == "ORT" {
+			o.ORTOptions.UseMTP = &enabled
+			return nil
+		}
+		return fmt.Errorf("WithGenAIMTP is only supported for ORT backend")
 	}
 }

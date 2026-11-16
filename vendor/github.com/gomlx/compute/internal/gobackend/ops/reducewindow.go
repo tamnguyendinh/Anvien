@@ -1,0 +1,524 @@
+package ops
+
+import (
+	"slices"
+
+	"github.com/gomlx/compute"
+	"github.com/gomlx/compute/dtypes"
+	"github.com/gomlx/compute/dtypes/gotype"
+	"github.com/gomlx/compute/internal/gobackend"
+	"github.com/gomlx/compute/shapeinference"
+	"github.com/gomlx/compute/shapes"
+	"github.com/gomlx/compute/support/xslices"
+	"github.com/pkg/errors"
+)
+
+func init() {
+	gobackend.RegisterReduceWindow.Register(ReduceWindow, gobackend.PriorityGeneric)
+	gobackend.SetNodeExecutor(compute.OpTypeReduceWindow, gobackend.PriorityGeneric, execReduceWindow)
+	reduceWindowMinDTypeMap.Register(dtypes.Bool, gobackend.PriorityGeneric, reduceWindowMinBuildUpdateFnBool)
+	reduceWindowMaxDTypeMap.Register(dtypes.Bool, gobackend.PriorityGeneric, reduceWindowMaxBuildUpdateFnBool)
+}
+
+type reduceWindowNode struct {
+	reductionType                                              compute.ReduceOpType
+	windowDimensions, strides, inputDilations, windowDilations []int
+	paddings                                                   [][2]int
+}
+
+// EqualNodeData implements nodeDataComparable for reduceWindowNode.
+func (r *reduceWindowNode) EqualNodeData(other gobackend.NodeDataComparable) bool {
+	o := other.(*reduceWindowNode)
+	if r.reductionType != o.reductionType {
+		return false
+	}
+	return slices.Equal(r.windowDimensions, o.windowDimensions) &&
+		slices.Equal(r.strides, o.strides) &&
+		slices.Equal(r.inputDilations, o.inputDilations) &&
+		slices.Equal(r.windowDilations, o.windowDilations) &&
+		slices.Equal(r.paddings, o.paddings)
+}
+
+// ReduceWindow runs a reduction function of the type given by reductionType,
+// it can be either ReduceMaxNode, ReduceSumNode, or ReduceMultiplyNode.
+//
+//   - reductionType: the type of reduction to perform. E.g.: [ReduceOpMax], [ReduceOpSum],...
+//   - windowDimensions: the dimensions of the window, must be defined for each axis.
+//   - strides: stride over elements in each axis for each window reduction. If nil, it's assume to be the
+//     same as the windowDimensions -- that is, the strides jump a window at a time.
+//   - inputDilations: "virtually" expand the input by introducing "holes" between elements. I.e. if
+//     inputDilations are 2, then the input is expanded by inserting `2-1` copies of `0` (or whatever
+//     is the reduciton "zero" value) between the elements in each dimension.
+//     If nil, it's assumed to be 1 (no dilation) for each axis. Values must be >= 1.
+//   - windowDilations: "virtually" expand the window by inserting `2-1` copies of `0` between the
+//     elements in each dimension.
+//     If nil, it's assumed to be 1 (no dilation) for each axis. Values must be >= 1.
+//   - paddings: virtual padding to be added to the input at the edges (start and end) of each axis.
+//     If nil, it's assumed to be 0 for each axis.
+func ReduceWindow(f *gobackend.Function,
+	operandOp compute.Value,
+	reductionType compute.ReduceOpType,
+	windowDimensions, strides, inputDilations, windowDilations []int,
+	paddings [][2]int,
+) (compute.Value, error) {
+	opType := compute.OpTypeReduceWindow
+	inputs, err := f.VerifyAndCastValues(opType.String(), operandOp)
+	if err != nil {
+		return nil, err
+	}
+	operand := inputs[0]
+	outputShape, err := shapeinference.ReduceWindow(
+		operand.Shape,
+		windowDimensions,
+		strides,
+		inputDilations,
+		windowDilations,
+		paddings,
+	)
+	if err != nil {
+		return nil, err
+	}
+	data := &reduceWindowNode{
+		reductionType:    reductionType,
+		windowDimensions: windowDimensions,
+		strides:          strides,
+		inputDilations:   inputDilations,
+		windowDilations:  windowDilations,
+		paddings:         paddings,
+	}
+	node, _ := f.GetOrCreateNode(opType, outputShape, []*gobackend.Node{operand}, data)
+	return node, nil
+}
+
+func execReduceWindow(backend *gobackend.Backend, node *gobackend.Node, inputs []*gobackend.Buffer, _ []bool) (*gobackend.Buffer, error) {
+	operand := inputs[0]
+	operandShape := operand.RawShape
+	rank := operandShape.Rank()
+	dtype := operandShape.DType
+	outputShape := node.Shape
+	output, err := backend.GetBuffer(outputShape)
+	if err != nil {
+		return nil, err
+	}
+	opData := node.Data.(*reduceWindowNode)
+
+	// resolve the effective parameters, assuming shapeinference.ReduceWindowOp handled nils by defaulting them:
+	// - windowDimensions is guaranteed non-nil by the builder.
+	// - strides, paddings, inputDilations, windowDilations default if their opData fields are nil.
+	effWindowDimensions := opData.windowDimensions
+	if effWindowDimensions == nil {
+		effWindowDimensions = xslices.SliceWithValue(rank, 1)
+	}
+	windowShape := shapes.Make(dtype, effWindowDimensions...) // the dtype here is not used.
+	effStrides := opData.strides
+	if effStrides == nil {
+		effStrides = effWindowDimensions
+	}
+	effPaddings := opData.paddings
+	if effPaddings == nil {
+		effPaddings = xslices.SliceWithValue(rank, [2]int{0, 0})
+	}
+	effBaseDilations := opData.inputDilations
+	if opData.inputDilations == nil {
+		effBaseDilations = xslices.SliceWithValue(rank, 1)
+	}
+	effWindowDilations := opData.windowDilations
+	if effWindowDilations == nil {
+		effWindowDilations = xslices.SliceWithValue(rank, 1)
+	}
+
+	// Fast path for 1D/2D ChannelsLast Float32 pooling (Max, Min, Sum) with unit batch/channel windows and no dilation.
+	if dtype == dtypes.Float32 && (rank == 3 || rank == 4) &&
+		(opData.reductionType == compute.ReduceOpMax || opData.reductionType == compute.ReduceOpMin || opData.reductionType == compute.ReduceOpSum) &&
+		effWindowDimensions[0] == 1 && effWindowDimensions[rank-1] == 1 &&
+		effStrides[0] == 1 && effStrides[rank-1] == 1 &&
+		effPaddings[0][0] == 0 && effPaddings[0][1] == 0 &&
+		effPaddings[rank-1][0] == 0 && effPaddings[rank-1][1] == 0 {
+		noDilation := true
+		for axis := range rank {
+			if effBaseDilations[axis] != 1 || effWindowDilations[axis] != 1 {
+				noDilation = false
+				break
+			}
+		}
+		if noDilation {
+			execReduceWindowChannelsLastFloat32(
+				backend, operand, output, opData.reductionType,
+				effWindowDimensions, effStrides, effPaddings,
+			)
+			return output, nil
+		}
+	}
+
+	// Initialize output and updateFn according to the reduction type
+	var buildUpdateFnMap *gobackend.DTypeMap
+	switch opData.reductionType { //nolint:exhaustive
+	case compute.ReduceOpMax:
+		err := output.Fill(dtype.LowestValue())
+		if err != nil {
+			return nil, err
+		}
+		buildUpdateFnMap = reduceWindowMaxDTypeMap
+	case compute.ReduceOpMin:
+		err := output.Fill(dtype.HighestValue())
+		if err != nil {
+			return nil, err
+		}
+		buildUpdateFnMap = reduceWindowMinDTypeMap
+	case compute.ReduceOpProduct:
+		output.Ones()
+		buildUpdateFnMap = reduceWindowProductDTypeMap
+	case compute.ReduceOpSum:
+		output.Zeros()
+		buildUpdateFnMap = reduceWindowSumDTypeMap
+	default:
+		return nil, errors.Errorf("ReduceWindow: invalid reduction type: %s", opData.reductionType)
+	}
+	// updateFn will aggregate the operand value into the corresponding output value.
+	updateFnAny, tmpErr := buildUpdateFnMap.Get(dtype)
+	if tmpErr != nil {
+		return nil, tmpErr
+	}
+	updateFn := updateFnAny.(func(operand, output *gobackend.Buffer) reduceWindowUpdateFn)(operand, output)
+
+	// Find the window effective sizes, accounting for the diffusion.
+	windowSizes := make([]int, rank)
+	for axis := range rank {
+		windowSizes[axis] = (effWindowDimensions[axis]-1)*effWindowDilations[axis] + 1
+	}
+	// fmt.Printf("windowSizes=%v\n", windowSizes)
+
+	// Find the shift from an output position to the corresponding window start in the operand.
+	operandShifts := make([]int, rank)
+	for axis := range rank {
+		operandShifts[axis] = -effPaddings[axis][0]
+	}
+	// fmt.Printf("operandShifts=%v\n", operandShifts)
+
+	// Find operand strides to convert operand indices to a flat index.
+	operandStrides := make([]int, rank)
+	stride := 1
+	for axis := rank - 1; axis >= 0; axis-- {
+		operandStrides[axis] = stride
+		stride *= operandShape.Dimensions[axis]
+	}
+
+	// Main loop: loop over outputs, then over window, then calculate the corresponding operand position
+	// that needs to be aggregated, and update the output correspondingly.
+	//
+	// TODO(optimizations):
+	// - If the window will break the cache (outer dimensions of the window), probably that part of the window
+	//   can be moved to the outer loop, so instead of having O(N*W) cache misses (random accesses),
+	//   we will have O(W) cache misses and the O(N) part will be sequential or in local cache.
+	//   More specifically we would split windowShape into "nonCachedWindowShape" and "cachedWindowShape", and
+	//   iterate over the nonCachedWindowShape first.
+	// - Can we refactor the check of baseDilation to outside of the loop ?
+	outputStrides := outputShape.Strides()
+	outputDimensions := outputShape.Dimensions
+
+	windowSize := windowShape.Size()
+
+	runChunk := func(startFlatIdx, endFlatIdx int) {
+		windowIndices := make([]int, rank)
+		operandIndices := make([]int, rank)
+		outputIndices := make([]int, rank)
+
+		remainder := startFlatIdx
+		for i := 0; i < rank; i++ {
+			outputIndices[i] = remainder / outputStrides[i]
+			remainder %= outputStrides[i]
+		}
+
+		for outputFlatIdx := startFlatIdx; outputFlatIdx < endFlatIdx; outputFlatIdx++ {
+			clear(windowIndices)
+			for wStep := 0; wStep < windowSize; wStep++ {
+				valid := true
+				operandFlatIdx := 0
+				for axis := range rank {
+					operandIdx := outputIndices[axis]*effStrides[axis] + operandShifts[axis]
+					operandIdx += windowIndices[axis] * effWindowDilations[axis]
+					if operandIdx < 0 {
+						valid = false
+						break
+					}
+					if effBaseDilations[axis] > 1 {
+						if operandIdx%effBaseDilations[axis] != 0 {
+							valid = false
+							break
+						}
+						operandIdx /= effBaseDilations[axis]
+					}
+					if operandIdx >= operandShape.Dimensions[axis] {
+						valid = false
+						break
+					}
+					operandFlatIdx += operandIdx * operandStrides[axis]
+				}
+				if valid {
+					updateFn(operandFlatIdx, outputFlatIdx)
+				}
+				for axis := rank - 1; axis >= 0; axis-- {
+					windowIndices[axis]++
+					if windowIndices[axis] < effWindowDimensions[axis] {
+						break
+					}
+					windowIndices[axis] = 0
+				}
+			}
+			_ = operandIndices
+
+			for i := rank - 1; i >= 0; i-- {
+				outputIndices[i]++
+				if outputIndices[i] < outputDimensions[i] {
+					break
+				}
+				outputIndices[i] = 0
+			}
+		}
+	}
+
+	lenOutputs := outputShape.Size()
+	if backend != nil && backend.Scheduler != nil && backend.Scheduler.IsEnabled() && lenOutputs >= 512 {
+		backend.Scheduler.ParallelizeChunks(lenOutputs, 256, runChunk)
+		return output, nil
+	}
+
+	runChunk(0, lenOutputs)
+	return output, nil
+}
+
+type reduceWindowUpdateFn func(operandFlatIdx, outputFlatIdx int)
+
+var (
+	//gobackend:dtypemap reduceWindowMaxBuildUpdateFn ints,uints,floats
+	//gobackend:dtypemap reduceWindowMaxBuildUpdateFnHalf half
+	reduceWindowMaxDTypeMap = gobackend.NewDTypeMap("reduceWindowMaxDTypeMap")
+
+	//gobackend:dtypemap reduceWindowMinBuildUpdateFn ints,uints,floats
+	//gobackend:dtypemap reduceWindowMinBuildUpdateFnHalf half
+	reduceWindowMinDTypeMap = gobackend.NewDTypeMap("reduceWindowMinDTypeMap")
+
+	//gobackend:dtypemap reduceWindowSumBuildUpdateFn ints,uints,floats
+	//gobackend:dtypemap reduceWindowSumBuildUpdateFnHalf half
+	reduceWindowSumDTypeMap = gobackend.NewDTypeMap("reduceWindowSumDTypeMap")
+
+	//gobackend:dtypemap reduceWindowProductBuildUpdateFn ints,uints,floats
+	//gobackend:dtypemap reduceWindowProductBuildUpdateFnHalf half
+	reduceWindowProductDTypeMap = gobackend.NewDTypeMap("reduceWindowProductDTypeMap")
+)
+
+// Generic functions that build a function that will update the output at outputFlatIdx from the operand at operandFlatIdx.
+
+func reduceWindowMaxBuildUpdateFn[T gobackend.PODNumericConstraints](operand, output *gobackend.Buffer) reduceWindowUpdateFn {
+	operandFlat := operand.Flat.([]T)
+	outputFlat := output.Flat.([]T)
+	return func(operandFlatIdx, outputFlatIdx int) {
+		outputFlat[outputFlatIdx] = max(outputFlat[outputFlatIdx], operandFlat[operandFlatIdx])
+	}
+}
+
+func reduceWindowMaxBuildUpdateFnHalf[T gotype.HalfPrecision[T], P gotype.HalfPrecisionPtr[T]](operand, output *gobackend.Buffer) reduceWindowUpdateFn {
+	operandFlat := operand.Flat.([]T)
+	outputFlat := output.Flat.([]T)
+	return func(operandFlatIdx, outputFlatIdx int) {
+		P(&outputFlat[outputFlatIdx]).SetFloat32(
+			max(outputFlat[outputFlatIdx].Float32(), operandFlat[operandFlatIdx].Float32()))
+	}
+}
+
+func reduceWindowMinBuildUpdateFn[T gobackend.PODNumericConstraints](operand, output *gobackend.Buffer) reduceWindowUpdateFn {
+	operandFlat := operand.Flat.([]T)
+	outputFlat := output.Flat.([]T)
+	return func(operandFlatIdx, outputFlatIdx int) {
+		outputFlat[outputFlatIdx] = min(outputFlat[outputFlatIdx], operandFlat[operandFlatIdx])
+	}
+}
+
+func reduceWindowMinBuildUpdateFnHalf[T gotype.HalfPrecision[T], P gotype.HalfPrecisionPtr[T]](operand, output *gobackend.Buffer) reduceWindowUpdateFn {
+	operandFlat := operand.Flat.([]T)
+	outputFlat := output.Flat.([]T)
+	return func(operandFlatIdx, outputFlatIdx int) {
+		P(&outputFlat[outputFlatIdx]).SetFloat32(
+			min(outputFlat[outputFlatIdx].Float32(), operandFlat[operandFlatIdx].Float32()))
+	}
+}
+
+func reduceWindowSumBuildUpdateFn[T gobackend.PODNumericConstraints](operand, output *gobackend.Buffer) reduceWindowUpdateFn {
+	operandFlat := operand.Flat.([]T)
+	outputFlat := output.Flat.([]T)
+	return func(operandFlatIdx, outputFlatIdx int) {
+		outputFlat[outputFlatIdx] += operandFlat[operandFlatIdx]
+	}
+}
+
+func reduceWindowSumBuildUpdateFnHalf[T gotype.HalfPrecision[T], P gotype.HalfPrecisionPtr[T]](operand, output *gobackend.Buffer) reduceWindowUpdateFn {
+	operandFlat := operand.Flat.([]T)
+	outputFlat := output.Flat.([]T)
+	return func(operandFlatIdx, outputFlatIdx int) {
+		P(&outputFlat[outputFlatIdx]).SetFloat32(
+			outputFlat[outputFlatIdx].Float32() + operandFlat[operandFlatIdx].Float32())
+	}
+}
+
+func reduceWindowProductBuildUpdateFn[T gobackend.PODNumericConstraints](operand, output *gobackend.Buffer) reduceWindowUpdateFn {
+	operandFlat := operand.Flat.([]T)
+	outputFlat := output.Flat.([]T)
+	return func(operandFlatIdx, outputFlatIdx int) {
+		outputFlat[outputFlatIdx] *= operandFlat[operandFlatIdx]
+	}
+}
+
+func reduceWindowProductBuildUpdateFnHalf[T gotype.HalfPrecision[T], P gotype.HalfPrecisionPtr[T]](operand, output *gobackend.Buffer) reduceWindowUpdateFn {
+	operandFlat := operand.Flat.([]T)
+	outputFlat := output.Flat.([]T)
+	return func(operandFlatIdx, outputFlatIdx int) {
+		P(&outputFlat[outputFlatIdx]).SetFloat32(
+			outputFlat[outputFlatIdx].Float32() * operandFlat[operandFlatIdx].Float32())
+	}
+}
+
+func reduceWindowMinBuildUpdateFnBool(operand, output *gobackend.Buffer) reduceWindowUpdateFn {
+	operandFlat := operand.Flat.([]bool)
+	outputFlat := output.Flat.([]bool)
+	return func(operandFlatIdx, outputFlatIdx int) {
+		outputFlat[outputFlatIdx] = outputFlat[outputFlatIdx] && operandFlat[operandFlatIdx]
+	}
+}
+
+func reduceWindowMaxBuildUpdateFnBool(operand, output *gobackend.Buffer) reduceWindowUpdateFn {
+	operandFlat := operand.Flat.([]bool)
+	outputFlat := output.Flat.([]bool)
+	return func(operandFlatIdx, outputFlatIdx int) {
+		outputFlat[outputFlatIdx] = outputFlat[outputFlatIdx] || operandFlat[operandFlatIdx]
+	}
+}
+
+func execReduceWindowChannelsLastFloat32(
+	backend *gobackend.Backend,
+	operand, output *gobackend.Buffer,
+	reductionType compute.ReduceOpType,
+	effWindowDimensions, effStrides []int,
+	effPaddings [][2]int,
+) {
+	inDims := operand.RawShape.Dimensions
+	outDims := output.RawShape.Dimensions
+	rank := len(inDims)
+
+	batchSize := inDims[0]
+	channels := inDims[rank-1]
+	var inH, inW, outH, outW, winH, winW, strideH, strideW, padTop, padLeft int
+	if rank == 3 {
+		inH, inW = 1, inDims[1]
+		outH, outW = 1, outDims[1]
+		winH, winW = 1, effWindowDimensions[1]
+		strideH, strideW = 1, effStrides[1]
+		padTop, padLeft = 0, effPaddings[1][0]
+	} else {
+		inH, inW = inDims[1], inDims[2]
+		outH, outW = outDims[1], outDims[2]
+		winH, winW = effWindowDimensions[1], effWindowDimensions[2]
+		strideH, strideW = effStrides[1], effStrides[2]
+		padTop, padLeft = effPaddings[1][0], effPaddings[2][0]
+	}
+
+	inFlat := operand.Flat.([]float32)
+	outFlat := output.Flat.([]float32)
+	inRowStride := inW * channels
+	inBatchStride := inH * inRowStride
+	outHW := outH * outW
+	totalPixels := batchSize * outHW
+	if totalPixels == 0 || channels == 0 {
+		return
+	}
+
+	var initVal float32
+	switch reductionType { //nolint:exhaustive
+	case compute.ReduceOpMax:
+		initVal = dtypes.Float32.LowestValue().(float32)
+	case compute.ReduceOpMin:
+		initVal = dtypes.Float32.HighestValue().(float32)
+	default:
+		initVal = 0
+	}
+
+	runPixels := func(startPixel, endPixel int) {
+		for pixelIdx := startPixel; pixelIdx < endPixel; pixelIdx++ {
+			b := pixelIdx / outHW
+			rem := pixelIdx % outHW
+			outY := rem / outW
+			outX := rem % outW
+
+			inY0 := outY*strideH - padTop
+			inX0 := outX*strideW - padLeft
+			wyStart := max(0, -inY0)
+			wyEnd := min(winH, inH-inY0)
+			wxStart := max(0, -inX0)
+			wxEnd := min(winW, inW-inX0)
+
+			dst := outFlat[pixelIdx*channels : (pixelIdx+1)*channels]
+			if wyStart >= wyEnd || wxStart >= wxEnd {
+				for c := range channels {
+					dst[c] = initVal
+				}
+				continue
+			}
+
+			first := true
+			inBatchBase := b * inBatchStride
+			switch reductionType { //nolint:exhaustive
+			case compute.ReduceOpMax:
+				for wy := wyStart; wy < wyEnd; wy++ {
+					rowBase := inBatchBase + (inY0+wy)*inRowStride
+					for wx := wxStart; wx < wxEnd; wx++ {
+						src := inFlat[rowBase+(inX0+wx)*channels : rowBase+(inX0+wx+1)*channels]
+						if first {
+							copy(dst, src)
+							first = false
+						} else {
+							for c := range channels {
+								if src[c] > dst[c] || src[c] != src[c] {
+									dst[c] = src[c]
+								}
+							}
+						}
+					}
+				}
+			case compute.ReduceOpMin:
+				for wy := wyStart; wy < wyEnd; wy++ {
+					rowBase := inBatchBase + (inY0+wy)*inRowStride
+					for wx := wxStart; wx < wxEnd; wx++ {
+						src := inFlat[rowBase+(inX0+wx)*channels : rowBase+(inX0+wx+1)*channels]
+						if first {
+							copy(dst, src)
+							first = false
+						} else {
+							for c := range channels {
+								if src[c] < dst[c] || src[c] != src[c] {
+									dst[c] = src[c]
+								}
+							}
+						}
+					}
+				}
+			case compute.ReduceOpSum:
+				clear(dst)
+				for wy := wyStart; wy < wyEnd; wy++ {
+					rowBase := inBatchBase + (inY0+wy)*inRowStride
+					for wx := wxStart; wx < wxEnd; wx++ {
+						src := inFlat[rowBase+(inX0+wx)*channels : rowBase+(inX0+wx+1)*channels]
+						for c := range channels {
+							dst[c] += src[c]
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if backend != nil && backend.Scheduler != nil && backend.Scheduler.IsEnabled() && totalPixels*channels >= 1024 {
+		chunkPixels := max(1, 256/max(1, channels))
+		backend.Scheduler.ParallelizeChunks(totalPixels, chunkPixels, runPixels)
+		return
+	}
+	runPixels(0, totalPixels)
+}

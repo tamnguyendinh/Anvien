@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/knights-analytics/hugot/backends"
-	"github.com/knights-analytics/hugot/options"
 	"github.com/knights-analytics/hugot/util/safeconv"
 	"github.com/knights-analytics/hugot/util/vectorutil"
 )
@@ -21,9 +20,19 @@ type TokenClassificationPipeline struct {
 	*backends.BasePipeline
 	IDLabelMap          map[int]string
 	AggregationStrategy string
+	UnknownToken        string
 	IgnoreLabels        []string
 	SplitWords          bool
+	// WordSplitter, when set, splits each Run input into the words the model labels. See
+	// [WithWordSplitter].
+	WordSplitter WordSplitter
 }
+
+// WordSplitter splits a raw input into the words a token classification model labels, one tag per
+// word. Models fine-tuned on custom word boundaries (for example "Row7" split into "Row" and "7") need
+// the same split at inference, or the model sees inputs it was not trained on and labels words
+// that do not line up with the training tags.
+type WordSplitter func(text string) []string
 type Entity struct {
 	Entity    string
 	Word      string
@@ -108,12 +117,37 @@ func WithSplitWords() backends.PipelineOption[*TokenClassificationPipeline] {
 	}
 }
 
-// NewTokenClassificationPipeline Initializes a feature extraction pipeline.
-func NewTokenClassificationPipeline(sessionContext context.Context, config backends.PipelineConfig[*TokenClassificationPipeline], s *options.Options, model *backends.Model) (*TokenClassificationPipeline, error) {
-	defaultPipeline, err := backends.NewBasePipeline(sessionContext, config, s, model)
-	if err != nil {
-		return nil, err
+// WithWordSplitter splits every input with splitter before labelling it, and implies
+// [WithSplitWords]: Run labels the words the splitter returns, exactly as RunWords would label the
+// same words.
+//
+// Give the trainer the same option (TrainerConfig.PipelineOptions) and write the training examples
+// as raw text: the token classification dataset then splits them with this splitter too, so
+// training and inference cannot split differently. A splitter is code, not part of the saved
+// model, so it must be passed again wherever the fine-tuned model is loaded.
+func WithWordSplitter(splitter WordSplitter) backends.PipelineOption[*TokenClassificationPipeline] {
+	return func(pipeline *TokenClassificationPipeline) error {
+		if splitter == nil {
+			return errors.New("word splitter must not be nil")
+		}
+		pipeline.WordSplitter = splitter
+		pipeline.SplitWords = true
+		return nil
 	}
+}
+
+// SplitText splits text into words with the pipeline's word splitter.
+func (p *TokenClassificationPipeline) SplitText(text string) ([]string, error) {
+	if p.WordSplitter == nil {
+		return nil, errors.New("the pipeline has no word splitter; set one with WithWordSplitter")
+	}
+	return p.WordSplitter(text), nil
+}
+
+// NewTokenClassificationPipeline Initializes a feature extraction pipeline.
+func NewTokenClassificationPipeline(sessionContext context.Context, config backends.PipelineConfig[*TokenClassificationPipeline], model *backends.Model) (*TokenClassificationPipeline, error) {
+	defaultPipeline := backends.NewBasePipeline(sessionContext, config, model)
+	var err error
 	pipeline := &TokenClassificationPipeline{BasePipeline: defaultPipeline}
 	for _, o := range config.Options {
 		err = o(pipeline)
@@ -123,6 +157,7 @@ func NewTokenClassificationPipeline(sessionContext context.Context, config backe
 	}
 	// Id label map
 	pipeline.IDLabelMap = model.IDLabelMap
+	pipeline.UnknownToken = model.UnknownToken
 	// default strategies if not set
 	if pipeline.AggregationStrategy == "" {
 		pipeline.AggregationStrategy = "SIMPLE"
@@ -168,8 +203,10 @@ func (p *TokenClassificationPipeline) GetMetadata() backends.PipelineMetadata {
 // GetStatistics returns the runtime statistics for the pipeline.
 func (p *TokenClassificationPipeline) GetStatistics() backends.PipelineStatistics {
 	statistics := backends.PipelineStatistics{}
-	statistics.ComputeTokenizerStatistics(p.Model.Tokenizer.TokenizerTimings)
-	statistics.ComputeOnnxStatistics(p.PipelineTimings)
+	if p.TokenizerTimings != nil {
+		statistics.ComputeTokenizerStatistics(p.TokenizerTimings)
+	}
+	statistics.ComputeOnnxStatistics(p.ONNXTimings)
 	return statistics
 }
 
@@ -197,13 +234,20 @@ func (p *TokenClassificationPipeline) Validate() error {
 // preprocess tokenizes the input strings.
 func (p *TokenClassificationPipeline) preprocess(batch *backends.PipelineBatch, inputs []string) error {
 	if p.SplitWords {
-		return fmt.Errorf("split-words enabled: use RunWords/PreprocessWords for [][]string inputs")
+		if p.WordSplitter == nil {
+			return fmt.Errorf("split-words enabled: use RunWords/PreprocessWords for [][]string inputs, or set a word splitter with WithWordSplitter")
+		}
+		words := make([][]string, len(inputs))
+		for i, input := range inputs {
+			words[i] = p.WordSplitter(input)
+		}
+		return p.preprocessWords(batch, words)
 	}
 	start := time.Now()
 	backends.TokenizeInputs(batch, p.Model.Tokenizer, inputs)
-	atomic.AddUint64(&p.Model.Tokenizer.TokenizerTimings.NumCalls, 1)
-	atomic.AddUint64(&p.Model.Tokenizer.TokenizerTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
-	err := backends.CreateInputTensors(batch, p.Model, p.Runtime)
+	atomic.AddUint64(&p.TokenizerTimings.NumCalls, 1)
+	atomic.AddUint64(&p.TokenizerTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
+	err := backends.CreateInputTensors(batch, p.Model)
 	return err
 }
 
@@ -247,14 +291,14 @@ func (p *TokenClassificationPipeline) preprocessWords(batch *backends.PipelineBa
 		wordBoundaries[i] = boundaries
 	}
 	backends.TokenizeInputs(batch, p.Model.Tokenizer, joined)
-	atomic.AddUint64(&p.Model.Tokenizer.TokenizerTimings.NumCalls, 1)
-	atomic.AddUint64(&p.Model.Tokenizer.TokenizerTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
+	atomic.AddUint64(&p.TokenizerTimings.NumCalls, 1)
+	atomic.AddUint64(&p.TokenizerTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
 
 	for i := range batch.Input {
 		// set raw to joined string for offsets consistency
 		batch.Input[i].Raw = joined[i]
 	}
-	return backends.CreateInputTensors(batch, p.Model, p.Runtime)
+	return backends.CreateInputTensors(batch, p.Model)
 }
 
 // forward performs the forward inference of the pipeline.
@@ -264,8 +308,8 @@ func (p *TokenClassificationPipeline) forward(ctx context.Context, batch *backen
 	if err != nil {
 		return err
 	}
-	atomic.AddUint64(&p.PipelineTimings.NumCalls, 1)
-	atomic.AddUint64(&p.PipelineTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
+	atomic.AddUint64(&p.ONNXTimings.NumCalls, 1)
+	atomic.AddUint64(&p.ONNXTimings.TotalNS, safeconv.DurationToU64(time.Since(start)))
 	return nil
 }
 
@@ -319,17 +363,13 @@ func (p *TokenClassificationPipeline) gatherPreEntities(input backends.Tokenized
 		if input.SpecialTokensMask[j] > 0.0 {
 			continue
 		}
-		// TODO: the python code uses id_to_token to get the token here which is a method on the rust tokenizer, check if it's better
 		word := input.Tokens[j]
 		tokenID := input.TokenIDs[j]
-		// TODO: the determination of subword can probably be better done by exporting the words field from the tokenizer directly
 		startInd := input.Offsets[j][0]
 		endInd := input.Offsets[j][1]
 		wordRef := sentence[startInd:endInd]
-		isSubword := len(word) != len(wordRef)
+		isSubword := len(word) != len(wordRef) || word == p.UnknownToken
 		// In split-words mode, grouping will use offsets between tokens rather than IsSubword.
-		// TODO: check for unknown token here, it's in the config and can be loaded and compared with the token
-		// in that case set the subword as in the python code
 		preEntities = append(preEntities, Entity{
 			Word:      word,
 			TokenIDs:  []uint32{tokenID},
@@ -584,22 +624,9 @@ func (p *TokenClassificationPipeline) Run(ctx context.Context, inputs []string) 
 
 // RunPipeline is like Run but returns the concrete type rather than the interface.
 func (p *TokenClassificationPipeline) RunPipeline(ctx context.Context, inputs []string) (*TokenClassificationOutput, error) {
-	var runErrors []error
-	batch := backends.NewBatch(len(inputs))
-	defer func(*backends.PipelineBatch) {
-		runErrors = append(runErrors, batch.Destroy())
-	}(batch)
-	runErrors = append(runErrors, p.preprocess(batch, inputs))
-	if e := errors.Join(runErrors...); e != nil {
-		return nil, e
-	}
-	runErrors = append(runErrors, p.forward(ctx, batch))
-	if e := errors.Join(runErrors...); e != nil {
-		return nil, e
-	}
-	result, postErr := p.postprocess(batch)
-	runErrors = append(runErrors, postErr)
-	return result, errors.Join(runErrors...)
+	return backends.RunPipeline(ctx, len(inputs), func(batch *backends.PipelineBatch) error {
+		return p.preprocess(batch, inputs)
+	}, p.forward, p.postprocess)
 }
 
 // RunWords runs the pipeline for pre-split word inputs.
@@ -607,20 +634,7 @@ func (p *TokenClassificationPipeline) RunPipeline(ctx context.Context, inputs []
 // This is particularly useful when the user wants to control tokenization because of special tokens,
 // hashtags, or other domain-specific tokenization needs.
 func (p *TokenClassificationPipeline) RunWords(ctx context.Context, inputs [][]string) (*TokenClassificationOutput, error) {
-	var runErrors []error
-	batch := backends.NewBatch(len(inputs))
-	defer func(*backends.PipelineBatch) {
-		runErrors = append(runErrors, batch.Destroy())
-	}(batch)
-	runErrors = append(runErrors, p.preprocessWords(batch, inputs))
-	if e := errors.Join(runErrors...); e != nil {
-		return nil, e
-	}
-	runErrors = append(runErrors, p.forward(ctx, batch))
-	if e := errors.Join(runErrors...); e != nil {
-		return nil, e
-	}
-	result, postErr := p.postprocess(batch)
-	runErrors = append(runErrors, postErr)
-	return result, errors.Join(runErrors...)
+	return backends.RunPipeline(ctx, len(inputs), func(batch *backends.PipelineBatch) error {
+		return p.preprocessWords(batch, inputs)
+	}, p.forward, p.postprocess)
 }

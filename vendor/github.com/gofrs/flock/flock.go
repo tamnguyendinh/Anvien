@@ -1,5 +1,5 @@
 // Copyright 2015 Tim Heckman. All rights reserved.
-// Copyright 2018-2025 The Gofrs. All rights reserved.
+// Copyright 2018-2026 The Gofrs. All rights reserved.
 // Use of this source code is governed by the BSD 3-Clause
 // license that can be found in the LICENSE file.
 
@@ -100,7 +100,7 @@ func (f *Flock) Close() error {
 	return f.Unlock()
 }
 
-// Path returns the path as provided in NewFlock().
+// Path returns the path as provided in New().
 func (f *Flock) Path() string {
 	return f.path
 }
@@ -162,11 +162,11 @@ func (f *Flock) TryRLockContext(ctx context.Context, retryDelay time.Duration) (
 }
 
 func tryCtx(ctx context.Context, fn func() (bool, error), retryDelay time.Duration) (bool, error) {
-	if ctx.Err() != nil {
-		return false, ctx.Err()
-	}
-
 	for {
+		if ctx.Err() != nil {
+			return false, ctx.Err()
+		}
+
 		if ok, err := fn(); ok || err != nil {
 			return ok, err
 		}

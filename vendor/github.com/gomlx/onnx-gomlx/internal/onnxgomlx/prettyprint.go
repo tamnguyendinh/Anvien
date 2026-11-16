@@ -8,9 +8,9 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/gomlx/gomlx/pkg/core/shapes"
-	"github.com/gomlx/gomlx/pkg/support/sets"
-	"github.com/gomlx/onnx-gomlx/internal/protos"
+	"github.com/gomlx/compute/shapes"
+	"github.com/gomlx/gomlx/support/sets"
+	"github.com/gomlx/compute-onnx/support/protos"
 	"github.com/pkg/errors"
 )
 
@@ -118,7 +118,7 @@ func ppSeqType(seq *protos.TypeProto_Sequence) string {
 }
 
 func ppTensorType(t *protos.TypeProto_Tensor) string {
-	dshape, err := makeDynamicShapeFromProto(t)
+	dshape, err := makeShapeFromProto(t)
 	if err != nil {
 		return "(invalid dtype)"
 	}
