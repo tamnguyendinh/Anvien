@@ -1,0 +1,200 @@
+// Copyright 2026 The GoMLX Authors. SPDX-License-Identifier: Apache-2.0
+
+package graph
+
+import (
+	"github.com/gomlx/compute"
+	onnx "github.com/gomlx/compute-onnx/support/protos"
+	"github.com/gomlx/compute/dtypes"
+	"github.com/gomlx/compute/shapeinference"
+	"github.com/pkg/errors"
+)
+
+func (f *Function) Add(lhs, rhs compute.Value) (compute.Value, error) {
+	return f.addBinaryOp(compute.OpTypeAdd, "Add", lhs, rhs)
+}
+
+func (f *Function) Sub(lhs, rhs compute.Value) (compute.Value, error) {
+	return f.addBinaryOp(compute.OpTypeSub, "Sub", lhs, rhs)
+}
+
+func (f *Function) Mul(lhs, rhs compute.Value) (compute.Value, error) {
+	return f.addBinaryOp(compute.OpTypeMul, "Mul", lhs, rhs)
+}
+
+func (f *Function) Div(lhs, rhs compute.Value) (compute.Value, error) {
+	return f.addBinaryOp(compute.OpTypeDiv, "Div", lhs, rhs)
+}
+
+func (f *Function) Rem(lhs, rhs compute.Value) (compute.Value, error) {
+	lhsNode, ok1 := lhs.(*Node)
+	rhsNode, ok2 := rhs.(*Node)
+	if !ok1 || !ok2 {
+		return nil, errors.New("inputs must be valid onnxruntime nodes")
+	}
+	outShape, err := shapeinference.BinaryOp(compute.OpTypeRem, lhsNode.shape, rhsNode.shape)
+	if err != nil {
+		return nil, err
+	}
+	attrs := []*onnx.AttributeProto{
+		{
+			Name: "fmod",
+			Type: onnx.AttributeProto_INT,
+			I:    1,
+		},
+	}
+	node := &Node{
+		opType:     "Mod",
+		inputs:     []*Node{lhsNode, rhsNode},
+		shape:      outShape,
+		attributes: attrs,
+	}
+	return f.addNode(node), nil
+}
+
+func (f *Function) Max(lhs, rhs compute.Value) (compute.Value, error) {
+	return f.addBinaryOp(compute.OpTypeMax, "Max", lhs, rhs)
+}
+
+func (f *Function) Min(lhs, rhs compute.Value) (compute.Value, error) {
+	return f.addBinaryOp(compute.OpTypeMin, "Min", lhs, rhs)
+}
+
+func (f *Function) Pow(lhs, rhs compute.Value) (compute.Value, error) {
+	return f.addBinaryOp(compute.OpTypePow, "Pow", lhs, rhs)
+}
+
+func (f *Function) BitwiseXor(lhs, rhs compute.Value) (compute.Value, error) {
+	return f.addBinaryOp(compute.OpTypeBitwiseXor, "BitwiseXor", lhs, rhs)
+}
+
+func (f *Function) BitwiseAnd(lhs, rhs compute.Value) (compute.Value, error) {
+	return f.addBinaryOp(compute.OpTypeBitwiseAnd, "BitwiseAnd", lhs, rhs)
+}
+
+func (f *Function) BitwiseOr(lhs, rhs compute.Value) (compute.Value, error) {
+	return f.addBinaryOp(compute.OpTypeBitwiseOr, "BitwiseOr", lhs, rhs)
+}
+
+func unsignedDTypeForBitShift(dt dtypes.DType) (dtypes.DType, error) {
+	switch dt {
+	case dtypes.Uint8, dtypes.Int8:
+		return dtypes.Uint8, nil
+	case dtypes.Uint16, dtypes.Int16:
+		return dtypes.Uint16, nil
+	case dtypes.Uint32, dtypes.Int32:
+		return dtypes.Uint32, nil
+	case dtypes.Uint64, dtypes.Int64:
+		return dtypes.Uint64, nil
+	default:
+		return dtypes.InvalidDType, errors.Errorf("unsupported DType %s for BitShift", dt)
+	}
+}
+
+func (f *Function) addBitShiftOp(opType compute.OpType, direction string, lhs, rhs compute.Value) (compute.Value, error) {
+	lhsNode, ok1 := lhs.(*Node)
+	rhsNode, ok2 := rhs.(*Node)
+	if !ok1 || !ok2 {
+		return nil, errors.Errorf("%s: inputs must be valid onnxruntime nodes", opType)
+	}
+	outShape, err := shapeinference.BinaryOp(opType, lhsNode.shape, rhsNode.shape)
+	if err != nil {
+		return nil, err
+	}
+
+	origDType := outShape.DType
+	uDType, err := unsignedDTypeForBitShift(origDType)
+	if err != nil {
+		return nil, err
+	}
+
+	lhsUnsigned := compute.Value(lhsNode)
+	rhsUnsigned := compute.Value(rhsNode)
+	if origDType != uDType {
+		lhsUnsigned, err = f.ConvertDType(lhsNode, uDType)
+		if err != nil {
+			return nil, err
+		}
+		rhsUnsigned, err = f.ConvertDType(rhsNode, uDType)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	uOutShape := outShape.Clone()
+	uOutShape.DType = uDType
+	shiftNode := f.addNode(&Node{
+		opType: "BitShift",
+		inputs: []*Node{lhsUnsigned.(*Node), rhsUnsigned.(*Node)},
+		shape:  uOutShape,
+		attributes: []*onnx.AttributeProto{
+			{
+				Name: "direction",
+				Type: onnx.AttributeProto_STRING,
+				S:    []byte(direction),
+			},
+		},
+	})
+
+	if origDType != uDType {
+		return f.ConvertDType(shiftNode, origDType)
+	}
+	return shiftNode, nil
+}
+
+func (f *Function) ShiftLeft(lhs, rhs compute.Value) (compute.Value, error) {
+	return f.addBitShiftOp(compute.OpTypeShiftLeft, "LEFT", lhs, rhs)
+}
+
+func (f *Function) ShiftRightLogical(lhs, rhs compute.Value) (compute.Value, error) {
+	return f.addBitShiftOp(compute.OpTypeShiftRightLogical, "RIGHT", lhs, rhs)
+}
+
+func (f *Function) ShiftRightArithmetic(lhs, rhs compute.Value) (compute.Value, error) {
+	lhsNode, ok1 := lhs.(*Node)
+	rhsNode, ok2 := rhs.(*Node)
+	if !ok1 || !ok2 {
+		return nil, errors.New("ShiftRightArithmetic: inputs must be valid onnxruntime nodes")
+	}
+	outShape, err := shapeinference.BinaryOp(compute.OpTypeShiftRightArithmetic, lhsNode.shape, rhsNode.shape)
+	if err != nil {
+		return nil, err
+	}
+
+	dtype := outShape.DType
+	if dtype.IsUnsigned() {
+		return f.addBitShiftOp(compute.OpTypeShiftRightArithmetic, "RIGHT", lhsNode, rhsNode)
+	}
+
+	// For signed integers in two's complement, ~x = -1 - x:
+	// ShiftRightArithmetic(x, s) = x < 0 ? ~((~x) >>_logical s) : (x >>_logical s)
+	zero, err := MakeScalar(f, 0, dtype)
+	if err != nil {
+		return nil, err
+	}
+	minusOne, err := MakeScalar(f, -1, dtype)
+	if err != nil {
+		return nil, err
+	}
+	isNeg, err := f.LessThan(lhsNode, zero)
+	if err != nil {
+		return nil, err
+	}
+	notLhs, err := f.Sub(minusOne, lhsNode)
+	if err != nil {
+		return nil, err
+	}
+	toShift, err := f.Where(isNeg, notLhs, lhsNode)
+	if err != nil {
+		return nil, err
+	}
+	shifted, err := f.addBitShiftOp(compute.OpTypeShiftRightArithmetic, "RIGHT", toShift, rhsNode)
+	if err != nil {
+		return nil, err
+	}
+	notShifted, err := f.Sub(minusOne, shifted)
+	if err != nil {
+		return nil, err
+	}
+	return f.Where(isNeg, notShifted, shifted)
+}

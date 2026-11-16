@@ -1,0 +1,744 @@
+// Copyright 2023-2026 The GoMLX Authors. SPDX-License-Identifier: Apache-2.0
+
+package gobackend
+
+import (
+	"bytes"
+	stderrors "errors"
+	"fmt"
+	"math/bits"
+	"reflect"
+	"slices"
+	"strings"
+	"sync/atomic"
+	"unsafe"
+
+	"github.com/gomlx/compute"
+	"github.com/gomlx/compute/dtypes"
+	"github.com/gomlx/compute/dtypes/bfloat16"
+	"github.com/gomlx/compute/dtypes/float16"
+	"github.com/gomlx/compute/shapes"
+	"github.com/gomlx/compute/support"
+	"github.com/pkg/errors"
+)
+
+// ErrBackendAlreadyFinalized is returned when attempting to register or initialize a backend that already exists.
+var ErrBackendAlreadyFinalized = stderrors.New("backend already exists")
+
+// Compile-time check.
+var _ compute.DataInterface = (*Backend)(nil)
+
+// Buffer for the Go backend holds a shape and a reference to the flat data.
+//
+// The flat data may be shared -- for temporary buffers from compiled graphs they are
+// taken from larger blobs of bytes allocated in one Go -- or owned by the buffer.
+type Buffer struct {
+	// RawBackend may be nil, for Buffers owning its own memory and not participating of the buffer pool.
+	RawBackend *Backend
+
+	// RawShape holds the concrete runtime shape of the buffer.
+	// It is named RawShape because Buffer implements the compute.Buffer method Shape().
+	// Internal Go backend kernels read RawShape directly (avoiding the Clone() and error return of Shape()),
+	// and in-place operations (e.g., Reshape, Bitcast) update RawShape directly when reusing an owned input buffer.
+	// When a buffer is finalized or returned to the pool, RawShape is reset to shapes.Invalid().
+	RawShape shapes.Shape
+
+	// ShapeDimensionsBuffer provides inline storage for dimensions up to rank 8,
+	// avoiding heap allocation on shape cloning during buffer acquisition.
+	ShapeDimensionsBuffer [8]int
+
+	// InUse is set to false when the buffer is finalized and moved back to the pool.
+	InUse bool
+
+	// isUserFed is set to true when the buffer was created from user-provided data
+	// (e.g., via BufferFromFlatData). These buffers should not be pooled after use
+	// to avoid unbounded pool growth when iterating over large datasets.
+	isUserFed bool
+
+	// poolSlot is the 1-based slot index of this Buffer in its size-bucket's bufferPool
+	// (0 if not yet registered in a bufferPool).
+	poolSlot uint32
+
+	// RawBytes is the underlying storage for the buffer.
+	// Its length is always >= requested size in bytes.
+	RawBytes []byte
+
+	// Flat is always a slice of the underlying data type (shape.DType).
+	// It is a re-casting of RawBytes.
+	Flat      any
+	flatDType dtypes.DType
+	flatLen   int
+}
+
+// EqualNodeData implements nodeDataComparable for Buffer.
+// For Constants, this compares the shape and the actual data values.
+func (b *Buffer) EqualNodeData(other NodeDataComparable) bool {
+	if b == other {
+		return true
+	}
+	o, ok := other.(*Buffer)
+	if !ok || o == nil {
+		return false
+	}
+	if !b.RawShape.Equal(o.RawShape) || b.InUse != o.InUse {
+		return false
+	}
+	byteSize := int(b.RawShape.ByteSize())
+	if byteSize > 0 && len(b.RawBytes) >= byteSize && len(o.RawBytes) >= byteSize {
+		return bytes.Equal(b.RawBytes[:byteSize], o.RawBytes[:byteSize])
+	}
+	// Compare flat data by comparing the underlying slice values
+	return compareFlatData(b.Flat, o.Flat)
+}
+
+// compareFlatData compares two flat data slices element by element.
+func compareFlatData(a, b any) bool {
+	if a == nil && b == nil {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	switch aVal := a.(type) {
+	case []float32:
+		if bVal, ok := b.([]float32); ok {
+			return slices.Equal(aVal, bVal)
+		}
+	case []float64:
+		if bVal, ok := b.([]float64); ok {
+			return slices.Equal(aVal, bVal)
+		}
+	case []int32:
+		if bVal, ok := b.([]int32); ok {
+			return slices.Equal(aVal, bVal)
+		}
+	case []int64:
+		if bVal, ok := b.([]int64); ok {
+			return slices.Equal(aVal, bVal)
+		}
+	case []int:
+		if bVal, ok := b.([]int); ok {
+			return slices.Equal(aVal, bVal)
+		}
+	case []byte:
+		if bVal, ok := b.([]byte); ok {
+			return bytes.Equal(aVal, bVal)
+		}
+	case []bool:
+		if bVal, ok := b.([]bool); ok {
+			return slices.Equal(aVal, bVal)
+		}
+	}
+	// Use reflection to compare slices element by element
+	va := reflect.ValueOf(a)
+	vb := reflect.ValueOf(b)
+	if va.Kind() != reflect.Slice || vb.Kind() != reflect.Slice {
+		return false
+	}
+	if va.Len() != vb.Len() {
+		return false
+	}
+	for i := range va.Len() {
+		if va.Index(i).Interface() != vb.Index(i).Interface() {
+			return false
+		}
+	}
+	return true
+}
+
+// numBufferPoolBuckets is the total number of distinct TwoBitBucketLen sizes
+// across the 64-bit integer range (2 * 64 = 128).
+const numBufferPoolBuckets = 128
+
+const (
+	poolChunkShift = 6
+	poolChunkSize  = 1 << poolChunkShift // 64 buffer slots per chunk
+	poolMaxChunks  = 256                 // Up to 16,384 pooled buffers per size bucket
+)
+
+type bufferSlot struct {
+	buf  atomic.Pointer[Buffer]
+	next atomic.Uint32
+}
+
+// bufferPool is a lock-free LIFO Treiber stack of reusable Buffers for a single bucketed byte size.
+//
+// Unlike sync.Pool, it does not strand buffers in per-P private slots when the executor
+// goroutine migrates across Ps at parallel barriers, and it is not wiped by runtime.GC
+// between inference/training steps (it is released when Backend.Finalize is called).
+//
+// To avoid both mutex contention (when many worker goroutines acquire/release scratch buffers
+// simultaneously) and the ABA problem (when a popped *Buffer is re-pushed while another goroutine
+// is mid-pop), the stack head is a 64-bit atomic value packing a 32-bit monotonic ABA generation
+// tag in the upper 32 bits and a 1-based slot index in the lower 32 bits.
+type bufferPool struct {
+	head     atomic.Uint64
+	nextSlot atomic.Uint32
+	chunks   [poolMaxChunks]atomic.Pointer[[poolChunkSize]bufferSlot]
+}
+
+func (p *bufferPool) slot(idx uint32) *bufferSlot {
+	z := idx - 1
+	chunk := p.chunks[z>>poolChunkShift].Load()
+	return &chunk[z&(poolChunkSize-1)]
+}
+
+func (p *bufferPool) registerSlot(buf *Buffer) uint32 {
+	idx := p.nextSlot.Add(1)
+	z := idx - 1
+	chunkIdx := z >> poolChunkShift
+	if int(chunkIdx) >= len(p.chunks) {
+		return 0
+	}
+	chunk := p.chunks[chunkIdx].Load()
+	if chunk == nil {
+		newChunk := new([poolChunkSize]bufferSlot)
+		if p.chunks[chunkIdx].CompareAndSwap(nil, newChunk) {
+			chunk = newChunk
+		} else {
+			chunk = p.chunks[chunkIdx].Load()
+		}
+	}
+	s := &chunk[z&(poolChunkSize-1)]
+	s.buf.Store(buf)
+	buf.poolSlot = idx
+	return idx
+}
+
+func (p *bufferPool) Get() *Buffer {
+	for {
+		oldHead := p.head.Load()
+		oldIdx := uint32(oldHead)
+		if oldIdx == 0 {
+			return nil
+		}
+		s := p.slot(oldIdx)
+		nextIdx := s.next.Load()
+		newTag := uint32(oldHead>>32) + 1
+		newHead := (uint64(newTag) << 32) | uint64(nextIdx)
+		if p.head.CompareAndSwap(oldHead, newHead) {
+			return s.buf.Load()
+		}
+	}
+}
+
+func (p *bufferPool) Put(buf *Buffer) {
+	slotIdx := buf.poolSlot
+	if slotIdx == 0 {
+		slotIdx = p.registerSlot(buf)
+		if slotIdx == 0 {
+			return
+		}
+	}
+	s := p.slot(slotIdx)
+	for {
+		oldHead := p.head.Load()
+		oldIdx := uint32(oldHead)
+		newTag := uint32(oldHead>>32) + 1
+		s.next.Store(oldIdx)
+		newHead := (uint64(newTag) << 32) | uint64(slotIdx)
+		if p.head.CompareAndSwap(oldHead, newHead) {
+			return
+		}
+	}
+}
+
+// bufferPoolBucketIndex maps a bucketedSize produced by support.TwoBitBucketLen
+// to a compact index in [0, numBufferPoolBuckets).
+func bufferPoolBucketIndex(bucketedSize int) int {
+	if bucketedSize <= 2 {
+		return max(bucketedSize, 0)
+	}
+	msbPos := bits.Len(uint(bucketedSize)) - 1
+	secondBit := (bucketedSize >> (msbPos - 1)) & 1
+	return (msbPos << 1) | secondBit
+}
+
+// getBufferPool for given bucketedSize.
+func (b *Backend) getBufferPool(bucketedSize int) *bufferPool {
+	idx := bufferPoolBucketIndex(bucketedSize)
+	pool := b.bufferPools[idx].Load()
+	if pool == nil {
+		newPool := &bufferPool{}
+		if b.bufferPools[idx].CompareAndSwap(nil, newPool) {
+			pool = newPool
+		} else {
+			pool = b.bufferPools[idx].Load()
+		}
+	}
+	return pool
+}
+
+// recast re-sets the Flat field based on RawBytes, DType and length.
+func (b *Buffer) recast(dtype dtypes.DType, length int) {
+	b.flatDType = dtype
+	b.flatLen = length
+	if length == 0 {
+		b.Flat = dtypes.MakeAnySlice(dtype, 0)
+		return
+	}
+	b.Flat = dtypes.UnsafeAnySliceFromBytes(unsafe.Pointer(unsafe.SliceData(b.RawBytes)), dtype, length)
+}
+
+// GetBuffer with the corresponding shape from the backend pool of buffers if possible, or it allocates a new one.
+//
+// It returns ErrBackendAlreadyFinalized if the backend is already finalized.
+//
+// Important: it's not necessarily initialized with zero, since it can reuse old buffers.
+//
+// See also Buffer.Zeros to initialize it with zeros, if needed.
+func (b *Backend) GetBuffer(shape shapes.Shape) (*Buffer, error) {
+	if b.isFinalized {
+		return nil, errors.WithStack(ErrBackendAlreadyFinalized)
+	}
+	dtype := shape.DType
+	length := shape.Size()
+	requestedSizeInBytes := dtype.SizeForDimensions(length)
+	bucketedSize := support.TwoBitBucketLen(requestedSizeInBytes)
+	var buf *Buffer
+	if bucketedSize > 0 {
+		pool := b.getBufferPool(bucketedSize)
+		buf = pool.Get()
+	}
+	if buf == nil {
+		buf = &Buffer{RawBytes: make([]byte, bucketedSize)}
+		// fmt.Printf("> Creating buffer:\t(%s) %s\n", humanize.Bytes(bucketedSize), shape)
+	}
+	buf.RawBackend = b
+	buf.InUse = true
+	buf.isUserFed = false
+	buf.RawShape = shape
+	rank := len(shape.Dimensions)
+	if rank <= len(buf.ShapeDimensionsBuffer) {
+		buf.RawShape.Dimensions = buf.ShapeDimensionsBuffer[:rank]
+	} else {
+		buf.RawShape.Dimensions = make([]int, rank)
+	}
+	copy(buf.RawShape.Dimensions, shape.Dimensions)
+	if buf.Flat == nil || buf.flatDType != dtype || buf.flatLen != length {
+		buf.recast(dtype, length)
+	}
+	// buf.randomize() // Useful to help finding where zero-initialized is needed but missing.
+	return buf, nil
+}
+
+// // randomize fills the buffer with random bits -- useful for testing.
+// func (b *Buffer) randomize() {
+// 	bBuf := b.mutableBytes()
+// 	_, err := io.ReadFull(rand.Reader, bBuf)
+// 	if err != nil {
+// 		panic(errors.Wrapf(err, "failed to fill buffer with random bits"))
+// 	}
+// }
+
+// PutBuffer back into the backend pool of buffers.
+// After this any references to buffer should be dropped.
+func (b *Backend) PutBuffer(buffer *Buffer) {
+	// fmt.Printf("> Returning buffer:\t(%s) %s\n", humanize.Bytes(len(buffer.RawBytes)), buffer.RawShape)
+	if b.isFinalized {
+		return
+	}
+	if buffer == nil || !buffer.RawShape.Ok() {
+		return
+	}
+	if !buffer.InUse {
+		panic(errors.New("double-freeing Go backend buffer"))
+	}
+	if buffer.isUserFed {
+		// User-fed buffers are not returned to the pool to avoid unbounded growth
+		// when looping through large datasets.
+		_ = buffer.Finalize()
+		return
+	}
+
+	buffer.InUse = false
+	if len(buffer.RawBytes) == 0 {
+		return
+	}
+	buffer.RawShape = shapes.Invalid()
+	pool := b.getBufferPool(len(buffer.RawBytes))
+	pool.Put(buffer)
+}
+
+// shallowClone returns a new Buffer struct pointing to the same data.
+func (buffer *Buffer) shallowClone() *Buffer {
+	newBuf := *buffer
+	newBuf.poolSlot = 0
+	rank := len(newBuf.RawShape.Dimensions)
+	if rank <= len(newBuf.ShapeDimensionsBuffer) {
+		newBuf.RawShape.Dimensions = newBuf.ShapeDimensionsBuffer[:rank]
+		copy(newBuf.RawShape.Dimensions, buffer.RawShape.Dimensions)
+	} else {
+		newBuf.RawShape.Dimensions = slices.Clone(buffer.RawShape.Dimensions)
+	}
+	return &newBuf
+}
+
+// CopyFlat assumes both flat slices are of the same underlying type.
+// Fast paths for common dtypes avoid reflection overhead.
+func CopyFlat(flatDst, flatSrc any) {
+	// Fast paths for common types to avoid reflection overhead.
+	switch dst := flatDst.(type) {
+	case []float32:
+		copy(dst, flatSrc.([]float32)) //nolint:errcheck
+	case []float64:
+		copy(dst, flatSrc.([]float64)) //nolint:errcheck
+	case []float16.Float16:
+		copy(dst, flatSrc.([]float16.Float16)) //nolint:errcheck
+	case []bfloat16.BFloat16:
+		copy(dst, flatSrc.([]bfloat16.BFloat16)) //nolint:errcheck
+	case []int8:
+		copy(dst, flatSrc.([]int8)) //nolint:errcheck
+	case []int16:
+		copy(dst, flatSrc.([]int16)) //nolint:errcheck
+	case []int32:
+		copy(dst, flatSrc.([]int32)) //nolint:errcheck
+	case []int64:
+		copy(dst, flatSrc.([]int64)) //nolint:errcheck
+	case []int:
+		copy(dst, flatSrc.([]int)) //nolint:errcheck
+	case []uint8:
+		copy(dst, flatSrc.([]uint8)) //nolint:errcheck
+	case []uint16:
+		copy(dst, flatSrc.([]uint16)) //nolint:errcheck
+	case []uint32:
+		copy(dst, flatSrc.([]uint32)) //nolint:errcheck
+	case []uint64:
+		copy(dst, flatSrc.([]uint64)) //nolint:errcheck
+	case []bool:
+		copy(dst, flatSrc.([]bool)) //nolint:errcheck
+	case []complex64:
+		copy(dst, flatSrc.([]complex64)) //nolint:errcheck
+	case []complex128:
+		copy(dst, flatSrc.([]complex128)) //nolint:errcheck
+	default:
+		// Fallback to reflection for less common types.
+		reflect.Copy(reflect.ValueOf(flatDst), reflect.ValueOf(flatSrc))
+	}
+}
+
+// MutableBytes returns the slice of the bytes used by the flat given -- it works with any of the supported data types for buffers.
+func (b *Buffer) MutableBytes() ([]byte, error) {
+	if b == nil || !b.RawShape.Ok() {
+		return nil, nil
+	}
+	byteSize := int(b.RawShape.ByteSize())
+	if byteSize == 0 {
+		return nil, nil
+	}
+	if len(b.RawBytes) >= byteSize {
+		return b.RawBytes[:byteSize], nil
+	}
+	switch b.RawShape.DType {
+	case dtypes.Complex64:
+		if flat, ok := b.Flat.([]complex64); ok && len(flat) > 0 {
+			return unsafe.Slice((*byte)(unsafe.Pointer(unsafe.SliceData(flat))), len(flat)*8), nil
+		}
+	case dtypes.Complex128:
+		if flat, ok := b.Flat.([]complex128); ok && len(flat) > 0 {
+			return unsafe.Slice((*byte)(unsafe.Pointer(unsafe.SliceData(flat))), len(flat)*16), nil
+		}
+	}
+	tmpAny, tmpErr := mutableBytesDTypeMap.Get(b.RawShape.DType)
+	if tmpErr != nil {
+		return nil, tmpErr
+	}
+	fn := tmpAny.(func(b *Buffer) ([]byte, error)) //nolint:errcheck
+	return fn(b)
+}
+
+// gobackend:dtypemap MutableBytesGeneric ints,uints,floats,half,bool,packed
+var mutableBytesDTypeMap = NewDTypeMap("MutableBytes")
+
+// MutableBytesGeneric is the generic implementation of mutableBytes.
+func MutableBytesGeneric[T SupportedTypesConstraints](b *Buffer) ([]byte, error) {
+	flat, ok := b.Flat.([]T)
+	if !ok || len(flat) == 0 {
+		return nil, nil // Handle nil or incorrect types (or return an error)
+	}
+	ptr := (*byte)(unsafe.Pointer(unsafe.SliceData(flat)))
+	size := len(flat) * int(unsafe.Sizeof(*new(T)))
+	return unsafe.Slice(ptr, size), nil
+}
+
+// UnsafePointer returns an unsafe.Pointer to the underlying data of this buffer.
+func (b *Buffer) UnsafePointer() unsafe.Pointer {
+	if b == nil || b.RawBytes == nil || b.Flat == nil {
+		return nil
+	}
+	return unsafe.Pointer(unsafe.SliceData(b.RawBytes))
+}
+
+// Fill the buffer with the given value.
+// It returns an error if the value type doesn't correspond to the buffer dtype.
+//
+// As a special case, if value is nil, it will fill the buffer with zeroes for the corresponding DType.
+func (b *Buffer) Fill(value any) error {
+	dtype := b.RawShape.DType
+	if value != nil && dtypes.FromAny(value) != dtype {
+		return errors.Errorf("fillBuffer: invalid value type %T for buffer of dtype %s", value, dtype)
+	}
+	tmpAny, tmpErr := fillBufferDTypeMap.Get(dtype)
+	if tmpErr != nil {
+		panic(tmpErr)
+	}
+	fillFn := tmpAny.(func(*Buffer, any)) //nolint:errcheck
+	fillFn(b, value)
+	return nil
+}
+
+//gobackend:dtypemap fillBufferGeneric ints,uints,floats,half,bool
+var fillBufferDTypeMap = NewDTypeMap("fillBuffer")
+
+// fillBufferGeneric is the generic implementation of Buffer.Fill.
+func fillBufferGeneric[T SupportedTypesConstraints](b *Buffer, valueAny any) {
+	var value T
+	if valueAny != nil {
+		value = valueAny.(T) //nolint:errcheck
+	}
+	flat := b.Flat.([]T) //nolint:errcheck
+	for i := range flat {
+		flat[i] = value
+	}
+}
+
+// Zeros fills the buffer with zeros.
+//
+// It returns a reference to the buffer to allow cascading calls.
+func (b *Buffer) Zeros() *Buffer {
+	_ = b.Fill(nil)
+	return b
+}
+
+// Ones fills the buffer with ones.
+//
+// It returns a reference to the buffer to allow cascading calls.
+func (b *Buffer) Ones() *Buffer {
+	dtype := b.RawShape.DType
+	_ = b.Fill(shapes.CastAsDType(1, dtype))
+	return b
+}
+
+// CloneBuffer using the pool to allocate a new one.
+func (b *Backend) CloneBuffer(buffer *Buffer) (*Buffer, error) {
+	if buffer == nil {
+		return nil, errors.Errorf("cloneBuffer(%p): buffer was nil -- buffer was already isFinalized", buffer)
+	}
+	var issues []string
+	if buffer.Flat == nil {
+		issues = append(issues, "buffer.flat was nil")
+	}
+	if !buffer.RawShape.Ok() {
+		issues = append(issues, "buffer.shape was invalid")
+	}
+	if !buffer.InUse {
+		issues = append(issues, "buffer was marked as not in use (cloning buffer already freed)")
+	}
+	if len(issues) > 0 {
+		return nil, errors.Errorf("cloneBuffer(%p): %s -- buffer was already isFinalized", buffer,
+			strings.Join(issues, ", "))
+	}
+	newBuffer, err := b.GetBuffer(buffer.RawShape)
+	if err != nil {
+		return nil, err
+	}
+	CopyFlat(newBuffer.Flat, buffer.Flat)
+	return newBuffer, nil
+}
+
+// NewBuffer creates a buffer with an exact-sized newly allocated flat space, not owned by the buffer pool.
+func NewBuffer(shape shapes.Shape) *Buffer {
+	dtype := shape.DType
+	length := shape.Size()
+	requestedSizeInBytes := dtype.SizeForDimensions(length)
+	buf := &Buffer{
+		RawBytes:  make([]byte, requestedSizeInBytes),
+		InUse:     true,
+		isUserFed: true,
+		RawShape:  shape,
+	}
+	buf.recast(dtype, length)
+	return buf
+}
+
+// Finalize allows the client to inform the backend that the buffer is no longer needed and associated resources
+// can be freed immediately.
+//
+// A isFinalized buffer should never be used again. Preferably, the caller should set its references to it to nil.
+// Finalize allows the client to inform the backend that the buffer is no longer needed and associated resources
+// can be freed immediately.
+func (buffer *Buffer) Finalize() error {
+	if buffer == nil {
+		return errors.Errorf("Finalize(%p): buffer was nil", buffer)
+	}
+	if buffer.RawBackend != nil && buffer.RawBackend.isFinalized {
+		buffer.Flat = nil // Accelerates GC.
+		buffer.flatDType = dtypes.InvalidDType
+		buffer.flatLen = 0
+		buffer.RawBytes = nil
+		buffer.RawShape = shapes.Invalid()
+		return errors.Errorf("Finalize(%p): backend is already finalized", buffer)
+	}
+	var issues []string
+	if buffer.Flat == nil {
+		issues = append(issues, "buffer.flat was nil")
+	}
+	if !buffer.RawShape.Ok() {
+		issues = append(issues, "buffer.shape was invalid")
+	}
+	if !buffer.InUse {
+		issues = append(issues, "buffer was marked as not in use (already back in the pool)")
+	}
+	if len(issues) > 0 {
+		return errors.Errorf("Finalize(%p): %s -- buffer was already finalized or back in the pool",
+			buffer, strings.Join(issues, ", "))
+	}
+
+	buffer.InUse = false
+	buffer.Flat = nil
+	buffer.flatDType = dtypes.InvalidDType
+	buffer.flatLen = 0
+	buffer.RawBytes = nil
+	buffer.RawShape = shapes.Invalid()
+	return nil
+}
+
+// BufferShape returns the shape for the buffer.
+// Shape returns the shape for the buffer.
+func (buffer *Buffer) Shape() (shapes.Shape, error) {
+	return buffer.RawShape.Clone(), nil
+}
+
+// BufferDeviceNum returns the deviceNum for the buffer.
+// DeviceNum returns the deviceNum for the buffer.
+func (buffer *Buffer) DeviceNum() (compute.DeviceNum, error) {
+	return 0, nil
+}
+
+// BufferToFlatData transfers the flat values of the buffer to the Go flat array.
+// The slice flat must have the exact number of elements required to store the compute.Buffer shape.
+//
+// See also FlatDataToBuffer, BufferShape, and shapes.Shape.Size.
+// ToFlatData transfers the flat values of the buffer to the Go flat array.
+func (buffer *Buffer) ToFlatData(flat any) error {
+	CopyFlat(flat, buffer.Flat)
+	return nil
+}
+
+// BufferFromFlatData transfers data from Go given as a flat slice (of the type corresponding to the shape DType)
+// to the deviceNum, and returns the corresponding compute.Buffer.
+func (b *Backend) BufferFromFlatData(deviceNum compute.DeviceNum, flat any, shape shapes.Shape) (compute.Buffer,
+	error) {
+	if b.isFinalized {
+		return nil, errors.WithStack(ErrBackendAlreadyFinalized)
+	}
+	if deviceNum != 0 {
+		return nil,
+			errors.Errorf("backend (%s) only supports deviceNum 0, cannot create buffer on deviceNum %d (shape=%s)",
+				b.Name(), deviceNum, shape)
+	}
+	// For packed sub-byte types (Int4, Uint4, Int2, Uint2), flat data is []byte (packed bytes).
+	// dtypes.FromGoType(byte) returns Uint8, not Int4, so we validate the element
+	// type directly rather than round-tripping through FromGoType.
+	if shape.DType.IsPacked() {
+		if reflect.TypeOf(flat).Elem() != reflect.TypeFor[byte]() {
+			return nil, errors.Errorf("sub-byte dtype %s requires []byte packed flat data, got %s",
+				shape.DType, reflect.TypeOf(flat).Elem())
+		}
+	} else if dtypes.FromGoType(reflect.TypeOf(flat).Elem()) != shape.DType {
+		return nil, errors.Errorf("flat data type (%s) does not match shape DType (%s)",
+			reflect.TypeOf(flat).Elem(), shape.DType)
+	}
+	buffer := NewBuffer(shape)
+	buffer.RawBackend = b
+
+	CopyFlat(buffer.Flat, flat)
+	return buffer, nil
+}
+
+// HasSharedBuffers returns whether the backend supports "shared buffers": these are buffers
+// that can be used directly by the engine and has a local address that can be read or mutated
+// directly by the client.
+func (b *Backend) HasSharedBuffers() bool {
+	return true
+}
+
+// NewSharedBuffer returns a "shared buffer" that can be both used as input for execution of
+// computations and directly read or mutated by the clients.
+//
+// It panics if the backend doesn't support shared buffers -- see HasSharedBuffer.
+//
+// The shared buffer should not be mutated while it is used by an execution.
+// Also, the shared buffer cannot be "donated" during execution.
+//
+// When done, to release the memory, call BufferFinalized on the returned buffer.
+//
+// It returns a handle to the buffer and a slice of the corresponding data type pointing
+// to the shared data.
+func (b *Backend) NewSharedBuffer(deviceNum compute.DeviceNum, shape shapes.Shape) (buffer compute.Buffer,
+	flat any, err error) {
+	if b.isFinalized {
+		return nil, nil, errors.Errorf("backend is already finalized")
+	}
+	if deviceNum != 0 {
+		return nil, nil,
+			errors.Errorf("backend (%s) only supports deviceNum 0, cannot create buffer on deviceNum %d (shape=%s)",
+				b.Name(), deviceNum, shape)
+	}
+	goBuffer := NewBuffer(shape)
+	goBuffer.RawBackend = b
+	return goBuffer, goBuffer.Flat, nil
+}
+
+// BufferData returns a slice pointing to the buffer storage memory directly.
+//
+// This only works if HasSharedBuffer is true, that is, if the backend engine runs on CPU, or
+// shares CPU memory.
+//
+// The returned slice becomes invalid after the buffer is destroyed.
+// Data returns a slice pointing to the buffer storage memory directly.
+func (buffer *Buffer) Data() (flat any, err error) {
+	if buffer.RawBackend != nil && buffer.RawBackend.isFinalized {
+		return nil, errors.Errorf("backend is already finalized")
+	}
+	return buffer.Flat, nil
+}
+
+// BufferCopyToDevice implements the compute.Backend interface.
+// CopyToDevice implements the compute.Buffer interface.
+func (buffer *Buffer) CopyToDevice(deviceNum compute.DeviceNum) (compute.Buffer, error) {
+	return nil, errors.Errorf("backend %q: multi-device not supported on this backend", BackendName)
+}
+
+// Backend returns the backend that owns this buffer.
+func (buffer *Buffer) Backend() compute.Backend {
+	return buffer.RawBackend
+}
+
+// Check does a sanity-check on the buffer.
+// Returns a corresponding error if something is wrong.
+//
+// Used only for debugging.
+func (buffer *Buffer) Check() error {
+	var issues []string
+	if buffer == nil {
+		return errors.Errorf("Check(%p): buffer was nil", buffer)
+	}
+	if buffer.Flat == nil {
+		issues = append(issues, "buffer.Flat was nil")
+	}
+	if !buffer.RawShape.Ok() {
+		issues = append(issues, "buffer.RawShape was invalid")
+	}
+	if !buffer.InUse {
+		issues = append(issues, "buffer was marked as not in use")
+	}
+	if buffer.Flat != nil && buffer.RawShape.Ok() && buffer.RawShape.Size() != reflect.ValueOf(buffer.Flat).Len() {
+		issues = append(issues, fmt.Sprintf("buffer.RawShape.Size() != len(buffer.Flat): %d != %d", buffer.RawShape.Size(), reflect.ValueOf(buffer.Flat).Len()))
+	}
+	if len(issues) > 0 {
+		return errors.Errorf("Check(%p, shape=%s): %s",
+			buffer, buffer.RawShape, strings.Join(issues, "; "))
+	}
+	return nil
+}

@@ -5,20 +5,26 @@ import (
 	"errors"
 
 	"github.com/knights-analytics/hugot/backends"
-	"github.com/knights-analytics/hugot/options"
 )
 
 type TextGenerationPipeline struct {
 	*backends.BasePipeline
-	SystemPrompt  string
-	MaxLength     int
-	Streaming     bool
 	Temperature   *float64
 	TopP          *float64
 	Seed          *int
+	Guidance      *backends.Guidance
+	SystemPrompt  string
 	StopSequences []string
 	Tools         []string
-	Guidance      *backends.Guidance
+	MaxLength     int
+	Streaming     bool
+}
+
+// TextGenerationCallOptions contains settings that can be changed for a single call.
+type TextGenerationCallOptions struct {
+	// MaxLength overrides the pipeline's configured maximum when greater than zero.
+	// A zero value uses the pipeline maximum.
+	MaxLength int
 }
 
 type TextGenerationOutput struct {
@@ -50,6 +56,15 @@ func WithSystemPrompt(systemPrompt string) backends.PipelineOption[*TextGenerati
 func WithMaxLength(maxLength int) backends.PipelineOption[*TextGenerationPipeline] {
 	return func(pipeline *TextGenerationPipeline) error {
 		pipeline.MaxLength = maxLength
+		return nil
+	}
+}
+
+// WithEnableThinking controls the chat template's enable_thinking argument for
+// every call made by this pipeline. Engine mode does not support this option.
+func WithEnableThinking(enabled bool) backends.PipelineOption[*TextGenerationPipeline] {
+	return func(pipeline *TextGenerationPipeline) error {
+		pipeline.EnableThinking = &enabled
 		return nil
 	}
 }
@@ -109,11 +124,9 @@ func WithGuidance(guidance *backends.Guidance) backends.PipelineOption[*TextGene
 }
 
 // NewTextGenerationPipeline initializes a new text generation pipeline.
-func NewTextGenerationPipeline(sessionContext context.Context, config backends.PipelineConfig[*TextGenerationPipeline], s *options.Options, model *backends.Model) (*TextGenerationPipeline, error) {
-	defaultPipeline, err := backends.NewBasePipeline(sessionContext, config, s, model)
-	if err != nil {
-		return nil, err
-	}
+func NewTextGenerationPipeline(sessionContext context.Context, config backends.PipelineConfig[*TextGenerationPipeline], model *backends.Model) (*TextGenerationPipeline, error) {
+	defaultPipeline := backends.NewBasePipeline(sessionContext, config, model)
+	var err error
 	pipeline := &TextGenerationPipeline{BasePipeline: defaultPipeline}
 	for _, o := range config.Options {
 		err = o(pipeline)
@@ -122,7 +135,7 @@ func NewTextGenerationPipeline(sessionContext context.Context, config backends.P
 		}
 	}
 	if pipeline.MaxLength == 0 {
-		pipeline.MaxLength = 1028 // Default value if not set as per Python
+		pipeline.MaxLength = 4096 // Default value if not set
 	}
 	err = pipeline.Validate()
 	if err != nil {
@@ -147,29 +160,10 @@ func (p *TextGenerationPipeline) GetModel() *backends.Model {
 
 // GetStatistics returns the runtime statistics for the pipeline.
 func (p *TextGenerationPipeline) GetStatistics() backends.PipelineStatistics {
-	var stats backends.PipelineStatistics
-	if p.Model.ORTModel.GenerativeEngine != nil {
-		engineStats := p.Model.ORTModel.GenerativeEngine.GetStatistics()
-		stats = backends.PipelineStatistics{
-			AvgPrefillSeconds:              engineStats.AvgPrefillSeconds,
-			TokensPerSecond:                engineStats.TokensPerSecond,
-			CumulativePrefillSum:           engineStats.CumulativePrefillSum,
-			CumulativePrefillCount:         engineStats.CumulativePrefillCount,
-			CumulativeTokens:               engineStats.CumulativeTokens,
-			CumulativeTokenDurationSeconds: engineStats.CumulativeTokenDurationSeconds,
-		}
-	} else if p.Model.ORTModel.GenerativeSession != nil {
-		sessionStats := p.Model.ORTModel.GenerativeSession.GetStatistics()
-		stats = backends.PipelineStatistics{
-			AvgPrefillSeconds:              sessionStats.AvgPrefillSeconds,
-			TokensPerSecond:                sessionStats.TokensPerSecond,
-			CumulativePrefillSum:           sessionStats.CumulativePrefillSum,
-			CumulativePrefillCount:         sessionStats.CumulativePrefillCount,
-			CumulativeTokens:               sessionStats.CumulativeTokens,
-			CumulativeTokenDurationSeconds: sessionStats.CumulativeTokenDurationSeconds,
-		}
+	if p.Model.ORTModel.Generative != nil {
+		return p.Model.ORTModel.Generative.Statistics()
 	}
-	return stats
+	return backends.PipelineStatistics{}
 }
 
 func (p *TextGenerationPipeline) Validate() error {
@@ -190,7 +184,7 @@ func (p *TextGenerationPipeline) preprocess(batch *backends.PipelineBatch, input
 }
 
 // forward initiates the generation loop with explicit tools and guidance, allowing per-call overrides.
-func (p *TextGenerationPipeline) forward(ctx context.Context, batch *backends.PipelineBatch, tools []string, guidance *backends.Guidance) (chan backends.SequenceDelta, chan error, error) {
+func (p *TextGenerationPipeline) forward(ctx context.Context, batch *backends.PipelineBatch, maxLength int, tools []string, guidance *backends.Guidance) (chan backends.SequenceDelta, chan error, error) {
 	effectiveTools := tools
 	if len(effectiveTools) == 0 {
 		effectiveTools = p.Tools
@@ -199,7 +193,7 @@ func (p *TextGenerationPipeline) forward(ctx context.Context, batch *backends.Pi
 	if effectiveGuidance == nil {
 		effectiveGuidance = p.Guidance
 	}
-	tokenStream, errorStream, initErr := backends.RunGenerativeSessionOnBatch(ctx, batch, p.BasePipeline, p.MaxLength, p.StopSequences, p.Temperature, p.TopP, p.Seed, effectiveTools, effectiveGuidance)
+	tokenStream, errorStream, initErr := backends.RunGenerativeSessionOnBatch(ctx, batch, p.BasePipeline, maxLength, p.StopSequences, p.Temperature, p.TopP, p.Seed, effectiveTools, effectiveGuidance)
 	if initErr != nil {
 		return nil, nil, initErr
 	}
@@ -210,15 +204,30 @@ func (p *TextGenerationPipeline) Run(ctx context.Context, inputs []string) (back
 	return p.RunPipeline(ctx, inputs)
 }
 
+// RunWithOptions runs text prompts and returns the standard pipeline output with
+// optional per-call overrides.
+func (p *TextGenerationPipeline) RunWithOptions(ctx context.Context, inputs []string, options *TextGenerationCallOptions) (backends.PipelineBatchOutput, error) {
+	return p.RunPipelineWithOptions(ctx, inputs, options)
+}
+
 func (p *TextGenerationPipeline) RunPipeline(ctx context.Context, inputs []string) (*TextGenerationOutput, error) {
+	return p.RunPipelineWithOptions(ctx, inputs, nil)
+}
+
+// RunPipelineWithOptions runs text prompts with optional per-call overrides.
+func (p *TextGenerationPipeline) RunPipelineWithOptions(ctx context.Context, inputs []string, options *TextGenerationCallOptions) (*TextGenerationOutput, error) {
+	maxLength, err := p.callMaxLength(options)
+	if err != nil {
+		return nil, err
+	}
 	var runErrors []error
 	batch := backends.NewBatch(len(inputs))
-	batch.MaxNewTokens = p.MaxLength
+	batch.MaxNewTokens = maxLength
 	runErrors = append(runErrors, p.preprocess(batch, inputs))
 	if e := errors.Join(runErrors...); e != nil {
 		return nil, errors.Join(e, batch.Destroy())
 	}
-	tokenStream, errorStream, forwardErr := p.forward(ctx, batch, p.Tools, p.Guidance)
+	tokenStream, errorStream, forwardErr := p.forward(ctx, batch, maxLength, p.Tools, p.Guidance)
 	if forwardErr != nil {
 		return nil, errors.Join(forwardErr, batch.Destroy())
 	}
@@ -242,15 +251,19 @@ func (p *TextGenerationPipeline) RunPipeline(ctx context.Context, inputs []strin
 // tools and guidance override the pipeline-level defaults for this call only.
 // If the model produces any of the provided strings in the output, generation for that sequence will stop and the stop string will be excluded.
 // If multimodal, the images should be added to the messages.
-func (p *TextGenerationPipeline) runMessages(ctx context.Context, inputs [][]backends.Message, tools []string, guidance *backends.Guidance) (*TextGenerationOutput, error) {
+func (p *TextGenerationPipeline) runMessages(ctx context.Context, inputs [][]backends.Message, tools []string, guidance *backends.Guidance, options *TextGenerationCallOptions) (*TextGenerationOutput, error) {
+	maxLength, err := p.callMaxLength(options)
+	if err != nil {
+		return nil, err
+	}
 	var runErrors []error
 	batch := backends.NewBatch(len(inputs))
-	batch.MaxNewTokens = p.MaxLength
+	batch.MaxNewTokens = maxLength
 	runErrors = append(runErrors, p.preprocess(batch, inputs))
 	if e := errors.Join(runErrors...); e != nil {
 		return nil, errors.Join(e, batch.Destroy())
 	}
-	tokenStream, errorStream, forwardErr := p.forward(ctx, batch, tools, guidance)
+	tokenStream, errorStream, forwardErr := p.forward(ctx, batch, maxLength, tools, guidance)
 	if forwardErr != nil {
 		return nil, errors.Join(forwardErr, batch.Destroy())
 	}
@@ -271,11 +284,34 @@ func (p *TextGenerationPipeline) runMessages(ctx context.Context, inputs [][]bac
 }
 
 func (p *TextGenerationPipeline) RunMessages(ctx context.Context, inputs [][]backends.Message) (*TextGenerationOutput, error) {
-	return p.runMessages(ctx, inputs, p.Tools, p.Guidance)
+	return p.runMessages(ctx, inputs, p.Tools, p.Guidance, nil)
+}
+
+// RunMessagesWithOptions runs message conversations with optional per-call overrides.
+func (p *TextGenerationPipeline) RunMessagesWithOptions(ctx context.Context, inputs [][]backends.Message, options *TextGenerationCallOptions) (*TextGenerationOutput, error) {
+	return p.runMessages(ctx, inputs, p.Tools, p.Guidance, options)
 }
 
 func (p *TextGenerationPipeline) RunMessagesWithOverrides(ctx context.Context, inputs [][]backends.Message, tools []string, guidance *backends.Guidance) (*TextGenerationOutput, error) {
-	return p.runMessages(ctx, inputs, tools, guidance)
+	return p.runMessages(ctx, inputs, tools, guidance, nil)
+}
+
+func (p *TextGenerationPipeline) callMaxLength(options *TextGenerationCallOptions) (int, error) {
+	if options == nil || options.MaxLength == 0 {
+		return p.MaxLength, nil
+	}
+	if options.MaxLength < 0 {
+		return 0, errors.New("max length must be greater than zero")
+	}
+	return options.MaxLength, nil
+}
+
+// GetContextLength returns the model's configured context length.
+func (p *TextGenerationPipeline) GetContextLength() int {
+	if p == nil || p.Model == nil {
+		return 0
+	}
+	return p.Model.ContextLength
 }
 
 func collectResponses(tokenStream chan backends.SequenceDelta, errorStream chan error, batchSize int) ([]string, error) {

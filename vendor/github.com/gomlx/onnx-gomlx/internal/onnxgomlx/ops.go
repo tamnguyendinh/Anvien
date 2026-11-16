@@ -7,19 +7,21 @@ import (
 	"reflect"
 	"slices"
 
+	"github.com/gomlx/compute"
+	"github.com/gomlx/compute-onnx/support/protos"
+	"github.com/gomlx/compute/dtypes"
+	"github.com/gomlx/compute/dtypes/gotype"
+	"github.com/gomlx/compute/shapes"
 	"github.com/gomlx/exceptions"
-	"github.com/gomlx/gomlx/backends"
-	"github.com/gomlx/gomlx/pkg/core/dtypes"
-	. "github.com/gomlx/gomlx/pkg/core/graph"
-	"github.com/gomlx/gomlx/pkg/core/shapes"
-	"github.com/gomlx/gomlx/pkg/core/tensors"
-	timage "github.com/gomlx/gomlx/pkg/core/tensors/images"
-	"github.com/gomlx/gomlx/pkg/ml/context"
-	"github.com/gomlx/gomlx/pkg/ml/layers"
-	"github.com/gomlx/gomlx/pkg/ml/layers/attention"
-	"github.com/gomlx/gomlx/pkg/ml/layers/attention/pos"
-	"github.com/gomlx/gomlx/pkg/ml/layers/lstm"
-	"github.com/gomlx/onnx-gomlx/internal/protos"
+	. "github.com/gomlx/gomlx/core/graph"
+	"github.com/gomlx/gomlx/core/tensors"
+	"github.com/gomlx/gomlx/ml/layers/activation"
+	"github.com/gomlx/gomlx/ml/layers/attention"
+	"github.com/gomlx/gomlx/ml/layers/attention/pos"
+	"github.com/gomlx/gomlx/ml/layers/lstm"
+	"github.com/gomlx/gomlx/ml/layers/norm"
+	"github.com/gomlx/gomlx/ml/model"
+	"github.com/gomlx/gomlx/ml/nn"
 	"github.com/pkg/errors"
 )
 
@@ -127,35 +129,6 @@ func (m *Model) convertBinaryOp(fn gomlxBinaryOp, lhs, rhs *Node) *Node {
 	return fn(lhs, rhs)
 }
 
-// convertMod converts an ONNX Mod node to GoMLX.
-//
-// See ONNX documentation in:
-// https://onnx.ai/onnx/operators/onnx__Mod.html
-//
-// The fmod attribute (default 0) controls the behavior:
-//   - fmod=1: C-style fmod — the result has the same sign as the dividend.
-//     This maps directly to GoMLX's Mod/Rem.
-//   - fmod=0: Python-style modulo — the result has the same sign as the divisor.
-func (m *Model) convertMod(node *protos.NodeProto, inputs []*Node) *Node {
-	fmod := GetIntAttrOr(node, "fmod", 0)
-
-	operands := onnxImplicitExpansion([]*Node{inputs[0], inputs[1]})
-	lhs, rhs := operands[0], operands[1]
-	lhs, rhs = m.checkOrPromoteDTypes(lhs, rhs)
-
-	r := Mod(lhs, rhs)
-	if fmod == 1 {
-		return r
-	}
-
-	// fmod=0: adjust C-style remainder to Python-style modulo.
-	// r and rhs have different signs exactly when r*rhs < 0;
-	// this also correctly skips adjustment when r == 0.
-	zero := ScalarZero(r.Graph(), r.DType())
-	needsAdjust := LessThan(Mul(r, rhs), zero)
-	return Where(needsAdjust, Add(r, rhs), r)
-}
-
 // convertMatMul handles dtype promotion before matrix multiplication.
 // Dtype mismatches are handled based on the Model's dtype promotion config.
 func (m *Model) convertMatMul(lhs, rhs *Node) *Node {
@@ -187,6 +160,45 @@ func (m *Model) convertClip(_ *protos.NodeProto, inputs []*Node) *Node {
 	return m.convertBinaryOp(Min, inputs[2], m.convertBinaryOp(Max, inputs[0], inputs[1]))
 }
 
+// convertLeakyRelu converts an ONNX LeakyRelu node to a GoMLX node.
+//
+// See ONNX documentation in:
+// https://onnx.ai/onnx/operators/onnx__LeakyRelu.html
+func (m *Model) convertLeakyRelu(node *protos.NodeProto, inputs []*Node) *Node {
+	alpha := float64(GetFloatAttrOr(node, "alpha", 0.01))
+	x := m.onnxImplicitFloatPromotion(inputs[0])
+	return activation.LeakyReluWith(x, alpha)
+}
+
+// convertHardSigmoid converts an ONNX HardSigmoid node to a GoMLX node.
+//
+// See ONNX documentation in:
+// https://onnx.ai/onnx/operators/onnx__HardSigmoid.html
+func (m *Model) convertHardSigmoid(node *protos.NodeProto, inputs []*Node) *Node {
+	alpha := float64(GetFloatAttrOr(node, "alpha", 0.2))
+	beta := float64(GetFloatAttrOr(node, "beta", 0.5))
+	x := m.onnxImplicitFloatPromotion(inputs[0])
+	return activation.HardSigmoidWith(x, alpha, beta)
+}
+
+// convertSelu converts an ONNX Selu node to a GoMLX node.
+//
+// See ONNX documentation in:
+// https://onnx.ai/onnx/operators/onnx__Selu.html
+func (m *Model) convertSelu(node *protos.NodeProto, inputs []*Node) *Node {
+	alpha := float64(GetFloatAttrOr(node, "alpha", float32(activation.SeluAlpha)))
+	gamma := float64(GetFloatAttrOr(node, "gamma", float32(activation.SeluScale)))
+	x := m.onnxImplicitFloatPromotion(inputs[0])
+	if math.Abs(alpha-activation.SeluAlpha) < 1e-4 && math.Abs(gamma-activation.SeluScale) < 1e-4 {
+		return activation.Selu(x)
+	}
+	xWhere := Where(GreaterThan(x, ScalarZero(x.Graph(), x.DType())),
+		x,
+		MulScalar(MinusOne(Exp(x)), alpha),
+	)
+	return MulScalar(xWhere, gamma)
+}
+
 // convertWhere converts a ONNX node to a GoMLX node.
 //
 // See ONNX documentation in:
@@ -205,8 +217,8 @@ func (m *Model) convertWhere(node *protos.NodeProto, inputs []*Node) *Node {
 // onnxWhere implements ONNX implicit broadcasting rules.
 // inputs is a tuple with (cond, onTrue, onFalse) values.
 func (m *Model) onnxWhere(inputs []*Node) *Node {
-	// Broadcast according to ONNX rules.
-	inputs = onnxBroadcastToCommonShape(inputs)
+	// Expand to common rank according to ONNX rules.
+	inputs = onnxImplicitExpansion(inputs)
 
 	cond, onTrue, onFalse := inputs[0], inputs[1], inputs[2]
 	onTrue, onFalse = m.checkOrPromoteDTypes(onTrue, onFalse)
@@ -478,6 +490,8 @@ func onnxGatherND(data, indices *Node, batchDims int) *Node {
 		exceptions.Panicf("GatherND: batch_dims=%d not yet supported (only batch_dims=0 is implemented)", batchDims)
 	}
 
+	indices = normalizeNDIndices(data, indices)
+
 	// GoMLX's Gather function already handles the GatherND semantics for batch_dims=0:
 	// - indices has shape [i0, i1, ..., im, indexDepth]
 	// - it gathers slices from data using the last dimension of indices as multi-dimensional indices
@@ -543,27 +557,6 @@ func onnxGatherElements(data *Node, indices *Node, gatherAxis int) *Node {
 	return output
 }
 
-// convertShape converts a ONNX node to a GoMLX node.
-//
-// See ONNX documentation in:
-// https://onnx.ai/onnx/operators/onnx__Shape.html
-func convertShape(node *protos.NodeProto, inputs []*Node) *Node {
-	shape := inputs[0].Shape()
-	start := GetIntAttrOr(node, "start", 0)
-	if start < 0 {
-		start = shape.Rank() + start
-	}
-	end := GetIntAttrOr(node, "end", 0)
-	if end == 0 {
-		end = shape.Rank()
-	} else if end < 0 {
-		end = shape.Rank() + end
-	}
-	dims := sliceMap(shape.Dimensions[start:end], func(dim int) int64 { return int64(dim) })
-	g := inputs[0].Graph()
-	return Const(g, dims)
-}
-
 // convertSize converts an ONNX Size node to a GoMLX constant.
 // Size returns the total number of elements of the input tensor as a scalar int64.
 //
@@ -578,30 +571,6 @@ func convertSize(inputs []*Node) *Node {
 	}
 	size := int64(shape.Size())
 	return Const(inputs[0].Graph(), size)
-}
-
-// convertFlatten converts a ONNX node to a GoMLX node.
-//
-// See ONNX documentation in:
-// https://onnx.ai/onnx/operators/onnx__Flatten.html
-func convertFlatten(node *protos.NodeProto, inputs []*Node) *Node {
-	operand := inputs[0]
-	splitAxis := GetIntAttrOr(node, "axis", 1)
-	splitAxis = MustAdjustAxis(splitAxis, operand)
-	return onnxFlatten(operand, splitAxis)
-}
-
-// onnxFlatten implements the corresponding ONNX operation.
-func onnxFlatten(operand *Node, splitAxis int) *Node {
-	outerDim, innerDim := 1, 1
-	for axis, dim := range operand.Shape().Dimensions {
-		if axis < splitAxis {
-			outerDim *= dim
-		} else {
-			innerDim *= dim
-		}
-	}
-	return Reshape(operand, outerDim, innerDim)
 }
 
 // convertConcat converts a ONNX node to a GoMLX node.
@@ -864,204 +833,6 @@ func convertUnsqueeze(m *Model, convertedOutputs map[string]*Node, node *protos.
 	return ExpandAxes(inputs[0], axes...)
 }
 
-// convertSlice converts a ONNX node to a GoMLX node.
-//
-// See ONNX documentation in:
-// https://onnx.ai/onnx/operators/onnx__Slice.html
-func convertSlice(m *Model, convertedOutputs map[string]*Node, node *protos.NodeProto, inputs []*Node) *Node {
-	if len(inputs) < 3 {
-		exceptions.Panicf("Slice requires at least 3 inputs, got %d in node %s", len(inputs), NodeToString(node))
-	}
-
-	operand := inputs[0]
-	rank := operand.Rank()
-
-	startsT, err := m.materializeConstantExpression(node.Input[1], convertedOutputs)
-	if err != nil {
-		panic(errors.WithMessagef(err, "while converting 'starts' for node %s", NodeToString(node)))
-	}
-	inputStarts := tensorToInts(startsT)
-
-	endsT, err := m.materializeConstantExpression(node.Input[2], convertedOutputs)
-	if err != nil {
-		panic(errors.WithMessagef(err, "while converting 'ends' for node %s", NodeToString(node)))
-	}
-	inputEnds := tensorToInts(endsT)
-
-	// optional axes param
-	var inputAxes []int
-	if len(inputs) > 3 {
-		axesT, err := m.materializeConstantExpression(node.Input[3], convertedOutputs)
-		if err != nil {
-			panic(errors.WithMessagef(err, "while converting 'axes' for node %s", NodeToString(node)))
-		}
-		inputAxes = tensorToInts(axesT)
-	} else {
-		// default values according to spec
-		inputAxes = make([]int, rank)
-		for i := range rank {
-			inputAxes[i] = i
-		}
-	}
-
-	// optional steps param
-	var inputSteps []int
-	if len(inputs) > 4 {
-		stepsT, err := m.materializeConstantExpression(node.Input[4], convertedOutputs)
-		if err != nil {
-			panic(errors.WithMessagef(err, "while converting 'steps' for node %s", NodeToString(node)))
-		}
-		inputSteps = tensorToInts(stepsT)
-	} else {
-		// default steps according to spec
-		inputSteps = make([]int, len(inputStarts))
-		for i := range inputSteps {
-			inputSteps[i] = 1
-		}
-	}
-
-	min := func(a, b int) int {
-		if a < b {
-			return a
-		}
-		return b
-	}
-	max := func(a, b int) int {
-		if a > b {
-			return a
-		}
-		return b
-	}
-
-	effectiveStarts := make([]int, rank)
-	effectiveEnds := make([]int, rank)
-	effectiveSteps := make([]int, rank)
-
-	for i := range rank {
-		effectiveStarts[i] = 0
-		effectiveEnds[i] = operand.Shape().Dim(i)
-		effectiveSteps[i] = 1
-	}
-
-	normalizedAxes := make([]int, len(inputAxes))
-	for i, axis := range inputAxes {
-		if axis < 0 {
-			normalizedAxes[i] = axis + rank
-		} else {
-			normalizedAxes[i] = axis
-		}
-
-		if normalizedAxes[i] < 0 || normalizedAxes[i] >= rank {
-			exceptions.Panicf("axis %d is out of bounds for tensor of rank %d in node %s",
-				inputAxes[i], rank, NodeToString(node))
-		}
-	}
-
-	// Process each specified axis to override the effective values
-	for i := range normalizedAxes {
-		axis := normalizedAxes[i]
-		start := inputStarts[i]
-		end := inputEnds[i]
-		step := inputSteps[i]
-		dimSize := operand.Shape().Dim(axis)
-
-		// Validate step is not zero
-		if step == 0 {
-			panic(errors.Errorf("step cannot be 0 for axis %d in node %s", axis, NodeToString(node)))
-		}
-
-		// Handle negative start and end indices by adding dimension size
-		if start < 0 {
-			start += dimSize
-		}
-		if end < 0 {
-			end += dimSize
-		}
-
-		if step > 0 {
-			// Positive stepping
-			// start clamped to [0, dimSize]
-			// end clamped to [0, dimSize]
-			start = max(0, min(start, dimSize))
-			end = max(0, min(end, dimSize))
-		} else {
-			// Negative stepping (step < 0)
-			// start clamped to [0, dimSize-1]
-			// end clamped to [-1, dimSize-1]
-			start = max(0, min(start, dimSize-1))
-			end = max(-1, min(end, dimSize-1))
-		}
-
-		effectiveStarts[axis] = start
-		effectiveEnds[axis] = end
-		effectiveSteps[axis] = step
-	}
-
-	// Check if any axis produces an empty slice (start >= end for positive step,
-	// or start <= end for negative step). Per the ONNX spec, this should produce
-	// a zero-length result along that axis, but GoMLX's Slice doesn't support
-	// start == dimSize, so we handle it here.
-	emptySlice := false
-	outputDims := make([]int, rank)
-	for i := range rank {
-		start := effectiveStarts[i]
-		end := effectiveEnds[i]
-		step := effectiveSteps[i]
-		if step > 0 {
-			if start >= end {
-				emptySlice = true
-				outputDims[i] = 0
-			} else {
-				outputDims[i] = (end - start + step - 1) / step
-			}
-		} else {
-			if start <= end {
-				emptySlice = true
-				outputDims[i] = 0
-			} else {
-				outputDims[i] = (start - end + (-step) - 1) / (-step)
-			}
-		}
-	}
-	if emptySlice {
-		return Zeros(operand.Graph(), shapes.Make(operand.DType(), outputDims...))
-	}
-
-	specs := make([]SliceAxisSpec, rank)
-	for i := range rank {
-		specs[i] = AxisRange(effectiveStarts[i], effectiveEnds[i]).Stride(effectiveSteps[i])
-	}
-
-	return Slice(operand, specs...)
-}
-
-// convertReshape converts a ONNX node to a GoMLX node.
-//
-// See ONNX documentation in:
-// https://onnx.ai/onnx/operators/onnx__Reshape.html
-func convertReshape(m *Model, convertedOutputs map[string]*Node, node *protos.NodeProto, inputs []*Node) *Node {
-	operand := inputs[0]
-	if !inputs[1].DType().IsInt() {
-		exceptions.Panicf("shape must be integer, got %s for node %s", inputs[1].DType(), NodeToString(node))
-	}
-	allowZero := GetIntAttrOr(node, "allowZero", 0)
-
-	dimsT, err := m.materializeConstantExpression(node.Input[1], convertedOutputs)
-	if err != nil {
-		panic(errors.WithMessagef(err, "while converting 'shape' for node %s", NodeToString(node)))
-	}
-	dims := tensorToInts(dimsT)
-	if allowZero == 0 {
-		// If new shape dim is 0, copy over from previous shape.
-		for newAxis, dim := range dims {
-			if dim == 0 && newAxis < operand.Rank() {
-				dims[newAxis] = operand.Shape().Dim(newAxis) // Copy over dimension from previous shape.
-			}
-		}
-	}
-	return Reshape(inputs[0], dims...)
-}
-
 // convertReduceMean converts a ONNX node to a GoMLX node.
 //
 // See ONNX documentation in:
@@ -1287,7 +1058,7 @@ func computeNonZero(t *tensors.Tensor) *tensors.Tensor {
 }
 
 // nonZeroMask returns a boolean slice indicating which elements are non-zero.
-func nonZeroMask[T dtypes.Supported](values []T) []bool {
+func nonZeroMask[T gotype.Supported](values []T) []bool {
 	res := make([]bool, len(values))
 	var zero T
 	for i, v := range values {
@@ -1504,7 +1275,7 @@ func convertRange(m *Model, convertedOutputs map[string]*Node, node *protos.Node
 	return output
 }
 
-func rangeCount(backend backends.Backend, start, limit, delta *tensors.Tensor) int {
+func rangeCount(backend compute.Backend, start, limit, delta *tensors.Tensor) int {
 	count := MustExecOnce(backend, func(start, limit, delta *Node) *Node {
 		amount := Sub(limit, start)
 		var count *Node
@@ -1620,58 +1391,6 @@ func convertTrilu(m *Model, convertedOutputs map[string]*Node, node *protos.Node
 	} else {
 		return TakeLowerTriangular(input, k)
 	}
-}
-
-// convertScatterND operator
-//
-// See ONNX documentation in:
-// https://onnx.ai/onnx/operators/onnx__ScatterND.html
-func convertScatterND(_ *Model, _ map[string]*Node, node *protos.NodeProto, inputs []*Node) *Node {
-	// inputs
-	data := inputs[0]
-	indices := inputs[1]
-	updates := inputs[2]
-
-	// attributes
-	reduction := GetStringAttrOr(node, "reduction", "none")
-
-	r := data.Rank()
-	if !(r >= 1) {
-		exceptions.Panicf("ScatterND: data must have rank >= 1, got %d", r)
-	}
-
-	q := indices.Rank()
-	if !(q >= 1) {
-		exceptions.Panicf("ScatterND: indices must have rank >= 1, got %d", q)
-	}
-
-	v := q + r - indices.Shape().Dimensions[len(indices.Shape().Dimensions)-1] - 1
-
-	if updates.Rank() != v {
-		exceptions.Panicf("ScatterND: updates has wrong rank")
-	}
-
-	operand := Identity(data)
-	var output *Node
-	switch reduction {
-	case "add":
-		output = ScatterSum(operand, indices, updates, false, false)
-	case "mul":
-		exceptions.Panicf("ScatterMul has not been implemented yet")
-	case "max":
-		output = ScatterMax(operand, indices, updates, false, false)
-	case "min":
-		output = ScatterMin(operand, indices, updates, false, false)
-	case "none", "":
-		output = ScatterUpdate(operand, indices, updates, false, true)
-	default:
-		exceptions.Panicf("ScatterND: unrecognized reduction mode %q", reduction)
-	}
-
-	if output.Rank() < 1 {
-		exceptions.Panicf("ScatterND: output must have rank >= 1, got rank %d", output.Rank())
-	}
-	return output
 }
 
 ////////////////////////////////////////////////////////////////////
@@ -1851,7 +1570,7 @@ func convertConv(_ *Model, _ map[string]*Node, node *protos.NodeProto, inputs []
 	// why: cause onnx standard is [O, I, spatial...]
 	// but gomlx Conv accepts different orders by default in channels first/last mode
 	// e.g input as first kernel dim in channelsFirst mode. So we just specify the dimensions.
-	axes := backends.ConvolveAxesConfig{
+	axes := compute.ConvolveAxesConfig{
 		InputBatch:           0,
 		InputChannels:        1,
 		InputSpatial:         spatialAxes,
@@ -1890,221 +1609,6 @@ func convertConv(_ *Model, _ map[string]*Node, node *protos.NodeProto, inputs []
 		out = Add(out, b)
 	}
 	return out
-}
-
-// convertAveragePool converts an ONNX AveragePool node to a GoMLX node.
-//
-// See ONNX documentation in:
-// https://onnx.ai/onnx/operators/onnx__AveragePool.html
-func convertAveragePool(_ *Model, _ map[string]*Node, node *protos.NodeProto, inputs []*Node) *Node {
-	autoPad := GetStringAttrOr(node, "auto_pad", "NOTSET")
-	if autoPad != "NOTSET" {
-		exceptions.Panicf("AveragePool: support for attribute 'auto_pad' (%s) is not yet implemented", autoPad)
-	}
-	ceilMode := GetIntAttrOr(node, "ceil_mode", 0)
-	if ceilMode != 0 {
-		exceptions.Panicf("AveragePool: support for attribute 'ceil_mode' is not yet implemented")
-	}
-	countIncludePad := GetIntAttrOr(node, "count_include_pad", 0)
-	if countIncludePad != 0 {
-		// GoMLX MeanPool doesn't support including padding in the count.
-		exceptions.Panicf("AveragePool: support for attribute 'count_include_pad' is not yet implemented")
-	}
-	kernelShape := GetIntsAttrOr(node, "kernel_shape", nil)
-	strides := GetIntsAttrOr(node, "strides", nil)
-	pads := GetIntsAttrOr(node, "pads", nil)
-
-	x := inputs[0]
-
-	var paddings [][2]int
-	numSpatialDims := x.Rank() - 2
-	if pads != nil {
-		if len(pads) != 2*numSpatialDims {
-			exceptions.Panicf("invalid number of padding values: %d spatial axes, got %d padding values -- expected 2 pads per axis", numSpatialDims, len(pads))
-		}
-		for i := range numSpatialDims {
-			paddings = append(paddings, [2]int{pads[i], pads[i+numSpatialDims]})
-		}
-	}
-
-	pool := MeanPool(x).ChannelsAxis(timage.ChannelsFirst)
-	if kernelShape != nil {
-		pool = pool.WindowPerAxis(kernelShape...)
-	}
-	if strides != nil {
-		pool = pool.StridePerAxis(strides...)
-	}
-	if paddings != nil {
-		pool = pool.PaddingPerDim(paddings)
-	}
-	out := pool.Done()
-	return out
-}
-
-// convertPad converts an ONNX Pad node to a GoMLX node.
-//
-// See ONNX documentation in:
-// https://onnx.ai/onnx/operators/onnx__Pad.html
-func convertPad(m *Model, convertedOutputs map[string]*Node, node *protos.NodeProto, inputs []*Node) *Node {
-	mode := GetStringAttrOr(node, "mode", "constant")
-	padsT, err := m.materializeConstantExpression(node.Input[1], convertedOutputs)
-	if err != nil {
-		panic(errors.WithMessagef(err, "while converting 'pads' for node %s", NodeToString(node)))
-	}
-	pads := tensorToInts(padsT)
-
-	x := inputs[0]
-
-	// Empty pads tensor (e.g., from a zero-sized constant) means no padding.
-	if len(pads) == 0 {
-		return x
-	}
-
-	rank := x.Rank()
-	if len(pads) != 2*rank {
-		exceptions.Panicf("invalid number of padding values: %d axes, got %d padding values -- expected 2 pads per axis", rank, len(pads))
-	}
-
-	switch mode {
-	case "constant":
-		var constantValueNode *Node
-		if len(inputs) > 2 {
-			constantValueNode = inputs[2]
-		} else {
-			constantValueNode = Scalar(x.Graph(), x.DType(), 0)
-		}
-		paddings := make([]backends.PadAxis, rank)
-		for i := range rank {
-			paddings[i] = backends.PadAxis{Start: pads[i], End: pads[i+rank]}
-		}
-		return Pad(x, constantValueNode, paddings...)
-
-	case "reflect":
-		return convertPadReflect(x, pads, rank)
-
-	default:
-		exceptions.Panicf("Pad: unsupported mode %q", mode)
-		return nil
-	}
-}
-
-// convertPadReflect implements ONNX reflect padding using Slice, Reverse, and Concatenate.
-//
-// Reflect padding mirrors values at the boundary, excluding the edge element itself.
-// For [a, b, c, d] with left=2, right=1: [c, b, a, b, c, d, c].
-func convertPadReflect(x *Node, pads []int, rank int) *Node {
-	result := x
-	for axis := range rank {
-		padStart := pads[axis]
-		padEnd := pads[axis+rank]
-		if padStart == 0 && padEnd == 0 {
-			continue
-		}
-
-		var parts []*Node
-
-		if padStart > 0 {
-			// Slice elements [1, 1+padStart) along axis, then reverse.
-			specs := make([]SliceAxisSpec, rank)
-			for i := range rank {
-				if i == axis {
-					specs[i] = AxisRange(1, 1+padStart)
-				} else {
-					specs[i] = AxisRange()
-				}
-			}
-			leftSlice := Slice(result, specs...)
-			parts = append(parts, Reverse(leftSlice, axis))
-		}
-
-		parts = append(parts, result)
-
-		if padEnd > 0 {
-			// Slice elements [dim-1-padEnd, dim-1) along axis, then reverse.
-			// Using negative indices: [-1-padEnd, -1).
-			specs := make([]SliceAxisSpec, rank)
-			for i := range rank {
-				if i == axis {
-					specs[i] = AxisRange(-1-padEnd, -1)
-				} else {
-					specs[i] = AxisRange()
-				}
-			}
-			rightSlice := Slice(result, specs...)
-			parts = append(parts, Reverse(rightSlice, axis))
-		}
-
-		result = Concatenate(parts, axis)
-	}
-	return result
-}
-
-// convertMaxPool converts an ONNX MaxPool node to a GoMLX node.
-//
-// See ONNX documentation in:
-// https://onnx.ai/onnx/operators/onnx__MaxPool.html
-func convertMaxPool(_ *Model, _ map[string]*Node, node *protos.NodeProto, inputs []*Node) *Node {
-	autoPad := GetStringAttrOr(node, "auto_pad", "NOTSET")
-	if autoPad != "NOTSET" {
-		exceptions.Panicf("MaxPool: support for attribute 'auto_pad' (%s) is not yet implemented", autoPad)
-	}
-	ceilMode := GetIntAttrOr(node, "ceil_mode", 0)
-	if ceilMode != 0 {
-		exceptions.Panicf("MaxPool: support for attribute 'ceil_mode' is not yet implemented")
-	}
-	dilations := GetIntsAttrOr(node, "dilations", nil)
-	if dilations != nil {
-		exceptions.Panicf("MaxPool: support for attribute 'dilations' is not yet implemented")
-	}
-	storageOrder := GetIntAttrOr(node, "storage_order", 0)
-	if storageOrder != 0 {
-		exceptions.Panicf("MaxPool: support for attribute 'storage_order' is not yet implemented")
-	}
-	kernelShape := GetIntsAttrOr(node, "kernel_shape", nil)
-	strides := GetIntsAttrOr(node, "strides", nil)
-	pads := GetIntsAttrOr(node, "pads", nil)
-
-	x := inputs[0]
-
-	var paddings [][2]int
-	numSpatialDims := x.Rank() - 2
-	if pads != nil {
-		if len(pads) != 2*numSpatialDims {
-			exceptions.Panicf("invalid number of padding values: %d spatial axes, got %d padding values -- "+
-				"expected 2 pads per axis", numSpatialDims, len(pads))
-		}
-		for i := range numSpatialDims {
-			paddings = append(paddings, [2]int{pads[i], pads[i+numSpatialDims]})
-		}
-	}
-
-	pool := MaxPool(x).ChannelsAxis(timage.ChannelsFirst)
-	if kernelShape != nil {
-		pool = pool.WindowPerAxis(kernelShape...)
-	}
-	if strides != nil {
-		pool = pool.StridePerAxis(strides...)
-	}
-	if paddings != nil {
-		pool = pool.PaddingPerDim(paddings)
-	}
-	out := pool.Done()
-	return out
-}
-
-// convertGlobalAveragePool converts an ONNX GlobalAveragePool node to a GoMLX node.
-//
-// See ONNX documentation in:
-// https://onnx.ai/onnx/operators/onnx__GlobalAveragePool.html
-func convertGlobalAveragePool(_ *Model, _ map[string]*Node, _ *protos.NodeProto, inputs []*Node) *Node {
-	x := inputs[0]
-	spatialDims := x.Rank() - 2
-	window := make([]int, spatialDims)
-	for i := range window {
-		window[i] = x.Shape().Dim(i + 2)
-	}
-	pool := MeanPool(x).ChannelsAxis(timage.ChannelsFirst).WindowPerAxis(window...)
-	return pool.Done()
 }
 
 // convertBatchNormalization converts an ONNX BatchNormalization node to a GoMLX node.
@@ -2183,59 +1687,7 @@ func convertLayerNormalization(_ *Model, _ map[string]*Node, node *protos.NodePr
 		axes[i] = axis + i
 	}
 
-	// Reshape scale and bias to match input rank for broadcasting
-	// Scale/bias have shape matching the normalized dimensions
-	// Need to add leading 1s to match the input rank
-	if scale.Rank() < inputRank {
-		scaleShape := make([]int, inputRank)
-		// Set leading dimensions to 1
-		for i := 0; i < axis; i++ {
-			scaleShape[i] = 1
-		}
-		// Copy the scale dimensions for the normalized axes
-		scaleDims := scale.Shape().Dimensions
-		scaleRank := len(scaleDims)
-		for i := axis; i < inputRank; i++ {
-			scaleIdx := i - axis
-			if scaleIdx >= scaleRank {
-				exceptions.Panicf("LayerNormalization: scale tensor has insufficient dimensions (rank=%d) for input rank=%d and axis=%d",
-					scaleRank, inputRank, axis)
-			}
-			scaleShape[i] = scaleDims[scaleIdx]
-		}
-		scale = Reshape(scale, scaleShape...)
-		if bias != nil {
-			biasDims := bias.Shape().Dimensions
-			biasShape := make([]int, inputRank)
-			for i := 0; i < axis; i++ {
-				biasShape[i] = 1
-			}
-			for i := axis; i < inputRank; i++ {
-				biasShape[i] = biasDims[i-axis]
-			}
-			bias = Reshape(bias, biasShape...)
-		}
-	}
-
-	// Calculate mean and variance over the normalization axes
-	// Use ReduceAndKeep to preserve dimensions for broadcasting
-	mean := ReduceAndKeep(x, ReduceMean, axes...)
-	// Variance calculation: E[(X - mean)^2]
-	centered := Sub(x, mean)
-	variance := ReduceAndKeep(Square(centered), ReduceMean, axes...)
-
-	// Normalize: (X - mean) / Sqrt(variance + epsilon)
-	normalized := Div(centered, Sqrt(Add(variance, Scalar(x.Graph(), x.DType(), epsilon))))
-
-	// Apply scale (gamma)
-	result := Mul(normalized, scale)
-
-	// Apply bias (beta) if provided
-	if bias != nil {
-		result = Add(result, bias)
-	}
-
-	return result
+	return nn.LayerNorm(x, axes, float64(epsilon), scale, bias, nil)
 }
 
 // convertSimplifiedLayerNormalization converts the corresponding ONNX node to GoMLX nodes.
@@ -2275,7 +1727,7 @@ func convertSimplifiedLayerNormalization(_ *Model, _ map[string]*Node, node *pro
 	}
 
 	// Use GoMLX's RMSNorm without its learnable scale (we apply the ONNX-provided scale ourselves).
-	normalized := layers.RMSNorm(context.New(), x).
+	normalized := norm.RMSNorm(model.NewStore().RootScope(), x).
 		WithScale(false).
 		WithEpsilon(float64(epsilon)).
 		WithNormalizationAxes(axes...).
@@ -2304,6 +1756,31 @@ func convertSimplifiedLayerNormalization(_ *Model, _ map[string]*Node, node *pro
 
 	// Apply the ONNX-provided scale (gamma)
 	return Mul(normalized, scale)
+}
+
+// convertSkipSimplifiedLayerNormalization converts the corresponding ONNX node to GoMLX nodes.
+//
+// SkipSimplifiedLayerNormalization is SimplifiedLayerNormalization (RMSNorm) of input + skip (+ bias).
+// This is a Microsoft ONNX Runtime contrib op.
+//
+// See ONNX Runtime contrib ops documentation in:
+// https://github.com/microsoft/onnxruntime/blob/main/docs/ContribOperators.md#com.microsoft.SkipSimplifiedLayerNormalization
+func convertSkipSimplifiedLayerNormalization(m *Model, convertedOutputs map[string]*Node, node *protos.NodeProto, inputs []*Node) *Node {
+	// Inputs: [input, skip, gamma, bias (optional)]
+	// Outputs: [output, mean, inv_std_var, input_skip_bias_sum]; mean and inv_std_var are not converted.
+	if len(inputs) < 3 {
+		exceptions.Panicf("SkipSimplifiedLayerNormalization: expected at least 3 inputs (input, skip, gamma), got %d", len(inputs))
+	}
+	operands := onnxImplicitExpansion([]*Node{inputs[0], inputs[1]})
+	sum := Add(operands[0], operands[1])
+	if len(inputs) > 3 && inputs[3] != nil {
+		operands = onnxImplicitExpansion([]*Node{sum, inputs[3]})
+		sum = Add(operands[0], operands[1])
+	}
+	if len(node.Output) >= 4 && node.Output[3] != "" {
+		convertedOutputs[node.Output[3]] = sum
+	}
+	return convertSimplifiedLayerNormalization(m, convertedOutputs, node, []*Node{sum, inputs[2]})
 }
 
 // convertRotaryEmbedding converts the corresponding ONNX node to GoMLX nodes.
@@ -2377,6 +1854,16 @@ func convertRotaryEmbedding(m *Model, convertedOutputs map[string]*Node, node *p
 	var cos, sin *Node
 
 	if positionIds != nil {
+		// A scalar or 1-element position_ids is a single offset: token s is at position_ids[0] + s.
+		// This follows ONNX Runtime, where rotary_embedding_helper.h selects this format
+		// (IsScalarOr1ElementVector) and rotary_embedding.cc computes the positions.
+		if positionIds.IsScalar() || positionIds.Shape().CheckDims(1) == nil {
+			offset := Reshape(positionIds)
+			numPositions := x.Shape().Dimensions[2]
+			positionIds = Iota(x.Graph(), shapes.Make(offset.DType(), numPositions), 0)
+			positionIds = Add(positionIds, offset)
+			positionIds = Reshape(positionIds, 1, numPositions)
+		}
 		// cos_cache/sin_cache shape: (max_pos+1, rotary_dim/2)
 		// Gather using position_ids to get (batch, seq_len, rotary_dim/2)
 		cos = onnxGather(cosCache, positionIds, 0)
@@ -2518,7 +2005,10 @@ func convertMultiHeadAttention(_ *Model, _ map[string]*Node, node *protos.NodePr
 	if scale <= 0 {
 		scaleValue = 1.0 / math.Sqrt(float64(headDim))
 	}
-	output, _ := attention.Core(nil, query, key, value, scaleValue, attentionMask, nil, attention.LayoutBHSD, false, false)
+	output, _ := attention.Core(query, key, value, attention.LayoutBHSD, attention.CoreOptions{
+		Scale:         scaleValue,
+		AttentionMask: attentionMask,
+	})
 
 	// Reshape back to 3D if input was 3D
 	if was3D {
@@ -2624,7 +2114,10 @@ func convertGroupQueryAttention(_ *Model, convertedOutputs map[string]*Node, nod
 	}
 	// Pass the boolean mask directly — Core auto-detects boolean masks and uses MaskedSoftmax.
 	// K/V retain their original numKVHeads; Core handles GQA head mapping natively.
-	output, _ := attention.Core(nil, query, presentKey, presentValue, scaleValue, mask, nil, attention.LayoutBHSD, false, false)
+	output, _ := attention.Core(query, presentKey, presentValue, attention.LayoutBHSD, attention.CoreOptions{
+		Scale:         scaleValue,
+		AttentionMask: mask,
+	})
 
 	// Reshape output: (batch, num_heads, qSeqLen, head_size) -> (batch, qSeqLen, num_heads * head_size)
 	output = TransposeAllDims(output, 0, 2, 1, 3)
@@ -2641,125 +2134,11 @@ func convertGroupQueryAttention(_ *Model, convertedOutputs map[string]*Node, nod
 	return output
 }
 
-// convertSplit converts the corresponding ONNX node to GoMLX nodes.
-//
-// Split splits a tensor into multiple outputs along a specified axis.
-// This is commonly used in attention mechanisms to split into Q, K, V.
-//
-// See ONNX documentation in:
-// https://onnx.ai/onnx/operators/onnx__Split.html
-func convertSplit(m *Model, convertedOutputs map[string]*Node, node *protos.NodeProto, inputs []*Node) *Node {
-	x := inputs[0]
-
-	// Get axis attribute (default is 0)
-	axis := GetIntAttrOr(node, "axis", 0)
-
-	// Determine the number of splits from the output count
-	numOutputs := len(node.Output)
-	if numOutputs == 0 {
-		exceptions.Panicf("Split: expected at least 1 output, got 0")
-	}
-
-	// Check if split sizes are provided as second input (ONNX opset >= 13)
-	// or as attribute (older opset)
-	var splitSizes []int
-	if len(inputs) > 1 {
-		// Split sizes provided as input (need to materialize it)
-		splitSizesTensor, err := m.materializeConstantExpression(node.Input[1], convertedOutputs)
-		if err != nil {
-			exceptions.Panicf("Split: failed to materialize split sizes for node %s: %v", NodeToString(node), err)
-		}
-		// Convert tensor to int slice
-		splitSizes = tensorToInts(splitSizesTensor)
-	} else {
-		// Equal splits - divide dimension evenly
-		dim := x.Shape().Dim(axis)
-		if dim%numOutputs != 0 {
-			exceptions.Panicf("Split: dimension %d (size=%d) not evenly divisible by number of outputs (%d)",
-				axis, dim, numOutputs)
-		}
-		splitSize := dim / numOutputs
-		splitSizes = make([]int, numOutputs)
-		for i := range splitSizes {
-			splitSizes[i] = splitSize
-		}
-	}
-
-	// Perform the split using SliceAxis
-	splits := make([]*Node, numOutputs)
-	currentStart := 0
-	for i := range numOutputs {
-		end := currentStart + splitSizes[i]
-		splits[i] = SliceAxis(x, axis, AxisRange(currentStart, end))
-		currentStart = end
-	}
-
-	// Assign each output to convertedOutputs
-	for i, split := range splits {
-		convertedOutputs[node.Output[i]] = split
-	}
-
-	// Return first output (convention for multi-output ops)
-	return splits[0]
-}
-
 ////////////////////////////////////////////////////////////////////
 //
 // Quantization related ops.
 //
 ////////////////////////////////////////////////////////////////////
-
-// convertDequantizeLinear converts the corresponding ONNX node to a GoMLX node.
-//
-// Not yet supporting block dequantization.
-//
-// See ONNX documentation in:
-// https://onnx.ai/onnx/operators/onnx__DequantizeLinear.html
-func (m *Model) convertDequantizeLinear(convertedOutputs map[string]*Node, nodeProto *protos.NodeProto, inputs []*Node) *Node {
-	// Attributes:
-	// - Axis (optional) on which to apply the multi-valued scale.
-	// - blockSize: optional, only active if != 0. Not yet implemented.
-	targetAxis := GetIntAttrOr(nodeProto, "axis", 1)
-	blockSize := GetIntAttrOr(nodeProto, "blockSize", 0)
-	if blockSize != 0 {
-		exceptions.Panicf("DequantizeLinear: support for attribute 'block_size' is not yet implemented")
-	}
-	outputDType := GetDTypeAttrOr(nodeProto, "output_dtype", dtypes.Float32)
-
-	x := inputs[0]
-	scale := inputs[1]
-	var xZeroPoint *Node
-	if len(inputs) > 2 {
-		xZeroPoint = inputs[2]
-	}
-	return onnxDequantizeLinear(x, scale, xZeroPoint, targetAxis, outputDType)
-}
-
-func onnxDequantizeLinear(x, scale, xZeroPoint *Node, targetAxis int, outputDType dtypes.DType) *Node {
-	if !scale.IsScalar() {
-		// Add extra axes of dim=1 in scale to match x's rank.
-		if scale.Rank() != 1 {
-			exceptions.Panicf("DequantizeLinear: scale must be a scalar or 1D, got %s instead", scale.Shape())
-		}
-		newScaleShape := x.Shape().Clone()
-		for axis := range newScaleShape.Dimensions {
-			if axis != targetAxis {
-				newScaleShape.Dimensions[axis] = 1
-			} else if newScaleShape.Dimensions[axis] != scale.Shape().Dimensions[0] {
-				exceptions.Panicf("DequantizeLinear: scale must have same dimension as the input axis %d (input shape=%s), got %s instead", targetAxis, x.Shape(), scale.Shape())
-			}
-		}
-		scale = Reshape(scale, newScaleShape.Dimensions...)
-	}
-	if xZeroPoint != nil {
-		x = Sub(ConvertDType(x, dtypes.Int32), ConvertDType(xZeroPoint, dtypes.Int32))
-	}
-	x = Mul(ConvertDType(x, scale.DType()), scale)
-	if x.DType() != outputDType {
-		x = ConvertDType(x, outputDType)
-	}
-	return x
-}
 
 // IsZeroInitializer checks if the named tensor in the model's initializers is an
 // all-zeros tensor. Returns false if the name is not found or not all zeros.
@@ -2814,123 +2193,6 @@ func (m *Model) IsZeroInitializer(name string) bool {
 		return true
 	}
 	return slices.Contains(tp.Dims, 0)
-}
-
-// convertQuantizeLinear converts the corresponding ONNX node to a GoMLX node.
-//
-// Not yet supporting block quantization.
-//
-// See ONNX documentation in:
-// https://onnx.ai/onnx/operators/onnx__QuantizeLinear.html
-func convertQuantizeLinear(nodeProto *protos.NodeProto, inputs []*Node) *Node {
-	// Attributes:
-	// - Axis (optional) on which to apply the multi-valued scale.
-	// - blockSize: optional, only active if != 0. Not yet implemented.
-	// - output_dtype: optional, specifies the output dtype.
-	// - saturate: optional, for float8 types only.
-	targetAxis := GetIntAttrOr(nodeProto, "axis", 1)
-	blockSize := GetIntAttrOr(nodeProto, "blockSize", 0)
-	if blockSize != 0 {
-		exceptions.Panicf("QuantizeLinear: support for attribute 'block_size' is not yet implemented")
-	}
-
-	x := inputs[0]
-	yScale := inputs[1]
-	var yZeroPoint *Node
-	if len(inputs) > 2 {
-		yZeroPoint = inputs[2]
-	}
-
-	// Determine output dtype
-	var outputDType dtypes.DType
-	if yZeroPoint != nil {
-		outputDType = yZeroPoint.DType()
-	} else {
-		// Default to int8 if no zero point provided
-		outputDType = GetDTypeAttrOr(nodeProto, "output_dtype", dtypes.Int8)
-	}
-
-	return onnxQuantizeLinear(x, yScale, yZeroPoint, targetAxis, outputDType)
-}
-
-// onnxQuantizeLinear implements the ONNX QuantizeLinear operation.
-// Formula: y = saturate((x / y_scale) + y_zero_point)
-func onnxQuantizeLinear(x, yScale, yZeroPoint *Node, targetAxis int, outputDType dtypes.DType) *Node {
-	g := x.Graph()
-	targetAxis = MustAdjustAxis(targetAxis, x)
-
-	// Reshape scale to match input rank if it's 1-D
-	if !yScale.IsScalar() {
-		if yScale.Rank() != 1 {
-			exceptions.Panicf("QuantizeLinear: y_scale must be a scalar or 1D, got %s instead", yScale.Shape())
-		}
-		newScaleShape := x.Shape().Clone()
-		for axis := range newScaleShape.Dimensions {
-			if axis != targetAxis {
-				newScaleShape.Dimensions[axis] = 1
-			} else if newScaleShape.Dimensions[axis] != yScale.Shape().Dimensions[0] {
-				exceptions.Panicf("QuantizeLinear: y_scale must have same dimension as the input axis %d (input shape=%s), got %s instead", targetAxis, x.Shape(), yScale.Shape())
-			}
-		}
-		yScale = Reshape(yScale, newScaleShape.Dimensions...)
-	}
-
-	// Similarly reshape zero point if provided
-	if yZeroPoint != nil && !yZeroPoint.IsScalar() {
-		if yZeroPoint.Rank() != 1 {
-			exceptions.Panicf("QuantizeLinear: y_zero_point must be a scalar or 1D, got %s instead", yZeroPoint.Shape())
-		}
-		newZeroPointShape := x.Shape().Clone()
-		for axis := range newZeroPointShape.Dimensions {
-			if axis != targetAxis {
-				newZeroPointShape.Dimensions[axis] = 1
-			} else if newZeroPointShape.Dimensions[axis] != yZeroPoint.Shape().Dimensions[0] {
-				exceptions.Panicf("QuantizeLinear: y_zero_point must have same dimension as the input axis %d (input shape=%s), got %s instead", targetAxis, x.Shape(), yZeroPoint.Shape())
-			}
-		}
-		yZeroPoint = Reshape(yZeroPoint, newZeroPointShape.Dimensions...)
-	}
-
-	// Convert input to scale's dtype for division
-	x = ConvertDType(x, yScale.DType())
-
-	// Quantize: y = Round(Div(x, yScale))
-	y := Round(Div(x, yScale))
-
-	// Add zero point if provided
-	if yZeroPoint != nil {
-		y = Add(y, ConvertDType(yZeroPoint, y.DType()))
-	}
-
-	// Saturate to output dtype range
-	var minVal, maxVal *Node
-	switch outputDType {
-	case dtypes.Int8:
-		minVal = Scalar(g, y.DType(), -128)
-		maxVal = Scalar(g, y.DType(), 127)
-	case dtypes.Uint8:
-		minVal = Scalar(g, y.DType(), 0)
-		maxVal = Scalar(g, y.DType(), 255)
-	case dtypes.Int16:
-		minVal = Scalar(g, y.DType(), -32768)
-		maxVal = Scalar(g, y.DType(), 32767)
-	case dtypes.Uint16:
-		minVal = Scalar(g, y.DType(), 0)
-		maxVal = Scalar(g, y.DType(), 65535)
-	case dtypes.Int32:
-		minVal = Scalar(g, y.DType(), -2147483648)
-		maxVal = Scalar(g, y.DType(), 2147483647)
-	default:
-		// For other types (float8, etc.), no saturation needed
-	}
-
-	if minVal != nil && maxVal != nil {
-		y = Clip(y, minVal, maxVal)
-	}
-
-	// Convert to output dtype
-	y = ConvertDType(y, outputDType)
-	return y
 }
 
 // convertMatMulInteger converts the corresponding ONNX node to a GoMLX node.
@@ -3171,7 +2433,7 @@ func onnxQLinearMatMul(a, aScale, aZeroPoint, b, bScale, bZeroPoint, yScale, yZe
 //
 // See ONNX documentation in:
 // https://onnx.ai/onnx/operators/onnx__If.html
-func convertIf(ctx *context.Context, m *Model, convertedOutputs map[string]*Node, node *protos.NodeProto, inputs []*Node) *Node {
+func convertIf(scope *model.Scope, m *Model, convertedOutputs map[string]*Node, node *protos.NodeProto, inputs []*Node) *Node {
 	if len(inputs) != 1 {
 		exceptions.Panicf("If: expected exactly 1 input (condition), got %d", len(inputs))
 	}
@@ -3218,7 +2480,7 @@ func convertIf(ctx *context.Context, m *Model, convertedOutputs map[string]*Node
 		} else {
 			branchGraph = elseGraph
 		}
-		results := m.convertSubGraph(ctx, g, branchGraph, convertedOutputs)
+		results := m.convertSubGraph(scope, g, branchGraph, convertedOutputs)
 		for i, result := range results {
 			if i < len(node.Output) && node.Output[i] != "" {
 				convertedOutputs[node.Output[i]] = result
@@ -3238,10 +2500,10 @@ func convertIf(ctx *context.Context, m *Model, convertedOutputs map[string]*Node
 	// branches are built. Each gets a snapshot of convertedOutputs to prevent the true
 	// branch's convertSubGraph from polluting the false branch's name resolution.
 	trueBranch := NewClosure(g, func(branchG *Graph) []*Node {
-		return m.convertSubGraph(ctx, branchG, thenGraph, maps.Clone(convertedOutputs))
+		return m.convertSubGraph(scope, branchG, thenGraph, maps.Clone(convertedOutputs))
 	})
 	falseBranch := NewClosure(g, func(branchG *Graph) []*Node {
-		return m.convertSubGraph(ctx, branchG, elseGraph, maps.Clone(convertedOutputs))
+		return m.convertSubGraph(scope, branchG, elseGraph, maps.Clone(convertedOutputs))
 	})
 
 	results := If(cond, trueBranch, falseBranch)
@@ -3422,118 +2684,4 @@ func convertArgMin(node *protos.NodeProto, inputs []*Node) *Node {
 	}
 
 	return indices
-}
-
-// convertResize converts an ONNX Resize node to GoMLX.
-//
-// See ONNX documentation in:
-// https://onnx.ai/onnx/operators/onnx__Resize.html
-//
-// Inputs: X, roi (unused), scales (optional), sizes (optional).
-// Either scales or sizes must be provided. If both are present, sizes takes priority.
-func convertResize(m *Model, convertedOutputs map[string]*Node, node *protos.NodeProto, inputs []*Node) *Node {
-	x := inputs[0]
-	inputDims := x.Shape().Dimensions
-
-	mode := GetStringAttrOr(node, "mode", "nearest")
-	coordTransformMode := GetStringAttrOr(node, "coordinate_transformation_mode", "half_pixel")
-
-	// Resolve target output sizes from either the "sizes" or "scales" input.
-	outputSizes := resizeOutputSizes(m, convertedOutputs, node, inputDims)
-
-	// Use NoInterpolation for dimensions that don't change.
-	for i := range outputSizes {
-		if outputSizes[i] == inputDims[i] {
-			outputSizes[i] = NoInterpolation
-		}
-	}
-
-	// Check if any dimension actually needs resizing.
-	needsWork := false
-	for _, s := range outputSizes {
-		if s != NoInterpolation {
-			needsWork = true
-			break
-		}
-	}
-	if !needsWork {
-		return x
-	}
-
-	config := Interpolate(x, outputSizes...)
-
-	switch mode {
-	case "nearest":
-		config.Nearest()
-	case "linear":
-		config.Bilinear()
-	case "cubic":
-		// GoMLX doesn't support cubic; bilinear is the closest available.
-		config.Bilinear()
-	default:
-		exceptions.Panicf("Resize: unsupported mode %q in %s", mode, NodeToString(node))
-	}
-
-	switch coordTransformMode {
-	case "half_pixel", "half_pixel_symmetric", "pytorch_half_pixel":
-		// Default is already halfPixelCenters=true, alignCorner=false.
-	case "align_corners":
-		config.HalfPixelCenters(false).AlignCorner(true)
-	case "asymmetric":
-		config.HalfPixelCenters(false)
-	case "tf_crop_and_resize":
-		exceptions.Panicf("Resize: coordinate_transformation_mode %q is not supported in %s",
-			coordTransformMode, NodeToString(node))
-	default:
-		config.HalfPixelCenters(false)
-	}
-
-	return config.Done()
-}
-
-// resizeOutputSizes resolves the target dimensions for a Resize op from either
-// the "sizes" input (index 3) or the "scales" input (index 2).
-func resizeOutputSizes(m *Model, convertedOutputs map[string]*Node, node *protos.NodeProto, inputDims []int) []int {
-	rank := len(inputDims)
-
-	// Try sizes first (takes priority over scales per ONNX spec).
-	if len(node.Input) > 3 && node.Input[3] != "" {
-		sizesT, err := m.materializeConstantExpression(node.Input[3], convertedOutputs)
-		if err != nil {
-			panic(errors.WithMessagef(err, "while converting 'sizes' for node %s", NodeToString(node)))
-		}
-		if sizesT.Size() > 0 {
-			sizes := tensorToInts(sizesT)
-			if len(sizes) != rank {
-				exceptions.Panicf("Resize: sizes length (%d) != input rank (%d) in %s",
-					len(sizes), rank, NodeToString(node))
-			}
-			return sizes
-		}
-	}
-
-	// Fall back to scales.
-	if len(node.Input) > 2 && node.Input[2] != "" {
-		scalesT, err := m.materializeConstantExpression(node.Input[2], convertedOutputs)
-		if err != nil {
-			panic(errors.WithMessagef(err, "while converting 'scales' for node %s", NodeToString(node)))
-		}
-		if scalesT.Size() > 0 {
-			scales := tensorToFloat64s(scalesT)
-			if len(scales) != rank {
-				exceptions.Panicf("Resize: scales length (%d) != input rank (%d) in %s",
-					len(scales), rank, NodeToString(node))
-			}
-			out := make([]int, rank)
-			for i, s := range scales {
-				out[i] = max(int(float64(inputDims[i])*s), 1)
-			}
-			return out
-		}
-	}
-
-	// Neither provided — return input dimensions unchanged.
-	out := make([]int, rank)
-	copy(out, inputDims)
-	return out
 }

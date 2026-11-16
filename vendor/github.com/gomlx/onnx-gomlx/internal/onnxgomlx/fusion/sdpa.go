@@ -20,13 +20,13 @@ package fusion
 // Grouped Query Attention (GQA) is supported when NumHeads != NumKVHeads.
 
 import (
-	. "github.com/gomlx/gomlx/pkg/core/graph" //nolint
-	"github.com/gomlx/gomlx/pkg/ml/context"
-	"github.com/gomlx/gomlx/pkg/ml/layers/attention"
+	. "github.com/gomlx/gomlx/core/graph" //nolint
+	"github.com/gomlx/gomlx/ml/layers/attention"
+	"github.com/gomlx/gomlx/ml/model"
 	"github.com/gomlx/onnx-gomlx/internal/onnxgomlx"
 
 	"github.com/gomlx/onnx-gomlx/internal/onnxgraph"
-	"github.com/gomlx/onnx-gomlx/internal/protos"
+	"github.com/gomlx/compute-onnx/support/protos"
 )
 
 // SDPAParams holds parameters for fused scaled dot-product attention.
@@ -34,15 +34,23 @@ type SDPAParams struct {
 	QInputName, KInputName, VInputName string
 	MaskInputName                      string  // empty if no mask
 	Scale                              float64 // 1/sqrt(headDim)
+	QScaleNodeName                     string  // non-empty if Q scale is deferred constant expression
+	KScaleNodeName                     string  // non-empty if K scale is deferred constant expression
+	ScaleNodeName                      string  // non-empty if post-scale is deferred constant expression
+	IsDivScale                         bool    // true if ScaleNodeName is a divisor (scale = 1/s)
 	NumHeads                           int
 	NumKVHeads                         int
 	// KNeedsHeadsFirst is true when K is in [batch, kvLen, numKVHeads, headDim] layout
 	// and needs a [0,2,1,3] transpose to become [batch, numKVHeads, kvLen, headDim].
 	KNeedsHeadsFirst bool
+	// UseBSHD is true when Q, K, V, and output [0,2,1,3] transposes are absorbed so
+	// attention.Core runs directly in [batch, seq, heads, headDim] (LayoutBSHD).
+	UseBSHD bool
 }
 
 // sdpaCandidate implements onnxgomlx.FusionCandidate for scaled dot-product attention.
 type sdpaCandidate struct {
+	model           *onnxgomlx.Model
 	params          *SDPAParams
 	outputName      string
 	internalOutputs map[string]bool
@@ -55,8 +63,29 @@ func (c *sdpaCandidate) OutputNames() []string            { return []string{c.ou
 func (c *sdpaCandidate) InternalOutputs() map[string]bool { return c.internalOutputs }
 func (c *sdpaCandidate) ExternalInputs() []string         { return c.externalInputs }
 
-func (c *sdpaCandidate) Emit(ctx *context.Context, g *Graph, convertedOutputs map[string]*Node) {
+func (c *sdpaCandidate) Emit(scope *model.Scope, g *Graph, convertedOutputs map[string]*Node) {
 	p := c.params
+	m := c.model
+
+	scale := p.Scale
+	if scale == 0 && m != nil {
+		if p.QScaleNodeName != "" && p.KScaleNodeName != "" {
+			sq, err1 := m.MaterializeConstantScalar(p.QScaleNodeName, convertedOutputs)
+			sk, err2 := m.MaterializeConstantScalar(p.KScaleNodeName, convertedOutputs)
+			if err1 == nil && err2 == nil && sq != 0 && sk != 0 {
+				scale = sq * sk
+			}
+		} else if p.ScaleNodeName != "" {
+			s, err := m.MaterializeConstantScalar(p.ScaleNodeName, convertedOutputs)
+			if err == nil && s != 0 {
+				if p.IsDivScale {
+					scale = 1.0 / s
+				} else {
+					scale = s
+				}
+			}
+		}
+	}
 
 	q := convertedOutputs[p.QInputName]
 	k := convertedOutputs[p.KInputName]
@@ -73,7 +102,18 @@ func (c *sdpaCandidate) Emit(ctx *context.Context, g *Graph, convertedOutputs ma
 		mask = convertedOutputs[p.MaskInputName]
 	}
 
-	output, _ := attention.Core(ctx, q, k, v, p.Scale, mask, nil, attention.LayoutBHSD, false, false)
+	layout := attention.LayoutBHSD
+	if p.UseBSHD {
+		layout = attention.LayoutBSHD
+		if mask != nil && mask.Rank() == 4 && (mask.Shape().Dim(1) != 1 || mask.Shape().Dim(2) != 1) {
+			mask = TransposeAllDims(mask, 0, 2, 1, 3)
+		}
+	}
+
+	output, _ := attention.Core(q, k, v, layout, attention.CoreOptions{
+		Scale:         scale,
+		AttentionMask: mask,
+	})
 	convertedOutputs[c.outputName] = output
 }
 
@@ -81,9 +121,13 @@ func init() {
 	onnxgomlx.RegisterFusionDetector(detectSDPACandidates)
 }
 
+func detectSDPACandidates(m *onnxgomlx.Model) []onnxgomlx.FusionCandidate {
+	return DetectSDPA(m)
+}
+
 // detectSDPACandidates scans the ONNX graph for decomposed scaled dot-product attention
 // and returns onnxgomlx.FusionCandidates for each match.
-func detectSDPACandidates(m *onnxgomlx.Model) []onnxgomlx.FusionCandidate {
+func DetectSDPA(m *onnxgomlx.Model) []onnxgomlx.FusionCandidate {
 	var candidates []onnxgomlx.FusionCandidate
 	for _, node := range m.Proto.Graph.Node {
 		if node.OpType != "MatMul" {
@@ -115,16 +159,29 @@ func sdpaTryMatch(m *onnxgomlx.Model, matmul1 *protos.NodeProto) *sdpaCandidate 
 		return nil
 	}
 
-	// Try to match K^T: either direct Transpose, or Mul(Transpose(...), scalar).
+	// Try to match K^T: direct Transpose ([0,1,3,2] or combined [0,2,3,1]), or Mul(Transpose(...), scalar).
 	kTransposeNode, kInputName := matchKTranspose(m, matmul1.Input[1])
 	var kPreScaleMulNode *protos.NodeProto
 	var kNeedsHeadsFirst bool
+	var kScaleNodeName string
 	if kTransposeNode == nil {
-		// Try pre-scaled K: Mul(Transpose(...), scalar)
-		kPreScaleMulNode, kTransposeNode, kInputName, kNeedsHeadsFirst = matchPreScaledKTranspose(m, matmul1.Input[1])
-		if kTransposeNode == nil {
-			return nil
+		if tNode, preInput, ok := matchCombinedKTranspose(m, matmul1.Input[1]); ok {
+			kTransposeNode = tNode
+			kInputName = preInput
+			kNeedsHeadsFirst = true
+		} else {
+			// Try pre-scaled K: Mul(Transpose(...), scalar)
+			kPreScaleMulNode, kTransposeNode, kInputName, kNeedsHeadsFirst, kScaleNodeName = matchPreScaledKTranspose(m, matmul1.Input[1])
+			if kTransposeNode == nil {
+				return nil
+			}
 		}
+	}
+	if kTransposeNode != nil && len(kTransposeNode.Output) > 0 && isGraphOutput(m, kTransposeNode.Output[0]) {
+		return nil
+	}
+	if kPreScaleMulNode != nil && len(kPreScaleMulNode.Output) > 0 && isGraphOutput(m, kPreScaleMulNode.Output[0]) {
+		return nil
 	}
 
 	// Follow chain from MatMul1 output.
@@ -136,18 +193,20 @@ func sdpaTryMatch(m *onnxgomlx.Model, matmul1 *protos.NodeProto) *sdpaCandidate 
 	var scale float64
 	var afterScaleOut string
 	var scaleNode *protos.NodeProto // non-nil only for post-scale pattern
+	var qScaleNodeName, scaleNodeName string
+	var isDivScale bool
 
 	switch scaleConsumer.OpType {
 	case "Div":
 		// Post-scaled: MatMul → Div
-		scale = sdpaExtractScaleFromDiv(m, scaleConsumer)
+		scale, scaleNodeName = sdpaExtractScaleFromDiv(m, scaleConsumer)
+		isDivScale = true
 		scaleNode = scaleConsumer
 	case "Mul":
 		// Could be post-scaled: MatMul → Mul(·, scalar)
 		// Check if this Mul has a constant scalar input (post-scale).
-		postScale := sdpaExtractScaleFromMul(m, scaleConsumer)
-		if postScale != 0 {
-			scale = postScale
+		scale, scaleNodeName = sdpaExtractScaleFromMul(m, scaleConsumer)
+		if scale != 0 || scaleNodeName != "" {
 			scaleNode = scaleConsumer
 		} else {
 			return nil
@@ -157,8 +216,8 @@ func sdpaTryMatch(m *onnxgomlx.Model, matmul1 *protos.NodeProto) *sdpaCandidate 
 		if kPreScaleMulNode == nil {
 			return nil // K wasn't pre-scaled, and there's no post-scale → not SDPA
 		}
-		scale = sdpaExtractPreScale(m, matmul1.Input[0], kPreScaleMulNode)
-		if scale == 0 {
+		scale, qScaleNodeName, kScaleNodeName = sdpaExtractPreScale(m, matmul1.Input[0], kPreScaleMulNode, kScaleNodeName)
+		if scale == 0 && (qScaleNodeName == "" || kScaleNodeName == "") {
 			return nil
 		}
 		// afterScaleOut is the MatMul output itself (no separate scale node).
@@ -166,7 +225,7 @@ func sdpaTryMatch(m *onnxgomlx.Model, matmul1 *protos.NodeProto) *sdpaCandidate 
 	default:
 		return nil
 	}
-	if scale == 0 {
+	if scale == 0 && scaleNodeName == "" && qScaleNodeName == "" {
 		return nil
 	}
 
@@ -204,6 +263,18 @@ func sdpaTryMatch(m *onnxgomlx.Model, matmul1 *protos.NodeProto) *sdpaCandidate 
 		}
 		if !isMaskRankAcceptable(m, maskInputName) {
 			return nil
+		}
+		// Unwrap a trailing Expand on the mask if its input is already a rank-4 broadcastable
+		// mask (e.g. [B, 1, 1, S] expanded to [B, 1, S, S] after ImplicitExpandPushdown).
+		// attention.Core broadcasts singleton mask axes directly without materializing [B, 1, S, S].
+		if expNode, ok := m.NodeOutputToNode[maskInputName]; ok && expNode.OpType == "Expand" && len(expNode.Input) == 2 {
+			unexpMask := expNode.Input[0]
+			unexpShape := m.InferShapeForName(unexpMask)
+			if unexpShape.Rank() == 4 &&
+				(unexpShape.Dimensions[1] == 1 || unexpShape.Dimensions[2] == 1) &&
+				unexpShape.Dimensions[3] != 1 {
+				maskInputName = unexpMask
+			}
 		}
 		if len(addNode.Output) == 0 {
 			return nil
@@ -252,6 +323,14 @@ func sdpaTryMatch(m *onnxgomlx.Model, matmul1 *protos.NodeProto) *sdpaCandidate 
 	internalOutputs := map[string]bool{
 		m1Out:      true,
 		softmaxOut: true,
+	}
+	if kTransposeNode != nil && len(kTransposeNode.Output) > 0 {
+		internalNodes[kTransposeNode] = true
+		internalOutputs[kTransposeNode.Output[0]] = true
+	}
+	if kPreScaleMulNode != nil && len(kPreScaleMulNode.Output) > 0 {
+		internalNodes[kPreScaleMulNode] = true
+		internalOutputs[kPreScaleMulNode.Output[0]] = true
 	}
 	if scaleNode != nil {
 		internalNodes[scaleNode] = true
@@ -304,16 +383,125 @@ func sdpaTryMatch(m *onnxgomlx.Model, matmul1 *protos.NodeProto) *sdpaCandidate 
 	// For the pre-scale pattern, use pre-Mul inputs (the Mul nodes carry the scale
 	// which is already captured in the scale parameter).
 	qInputName := matmul1.Input[0]
+	var qPreScaleMulNode *protos.NodeProto
 	if kPreScaleMulNode != nil {
+		if qNode, ok := m.NodeOutputToNode[matmul1.Input[0]]; ok && qNode.OpType == "Mul" {
+			qPreScaleMulNode = qNode
+		}
 		// Q input is the non-scalar input to Q's Mul.
 		qInputName = sdpaLookThroughMulForShapeName(m, matmul1.Input[0])
 	}
+	if qPreScaleMulNode != nil && len(qPreScaleMulNode.Output) > 0 {
+		if isGraphOutput(m, qPreScaleMulNode.Output[0]) {
+			return nil
+		}
+		internalNodes[qPreScaleMulNode] = true
+		internalOutputs[qPreScaleMulNode.Output[0]] = true
+		if onnxgraph.HasExternalConsumers(internalOutputs, consumers, internalNodes) {
+			return nil
+		}
+	}
+
+	// Check if Q, K, V inputs and the SDPA output are all wrapped in [0,2,1,3] transposes
+	// between BSHD [batch, seq, heads, headDim] and BHSD [batch, heads, seq, headDim].
+	// Note: PyTorch ONNX exports often use `key_layer.size(-1)` (i.e. Shape -> Slice on qInputName
+	// or kInputName) to compute `1/sqrt(headDim)`. Those `Shape` consumers are part of the scale
+	// constant expression and only inspect metadata at build time (axis 3 is unchanged by [0,2,1,3]).
+	var useBSHD bool
+	qBSHDNode, qBSHDInput := matchHeadsTranspose0213(m, qInputName)
+	vBSHDNode, vBSHDInput := matchHeadsTranspose0213(m, vInputName)
+	outBSHDNode, outBSHDName := matchConsumerHeadsTranspose0213(m, consumers, rootOutput)
+	var kBSHDNode *protos.NodeProto
+	kBSHDInput := kInputName
+	if !kNeedsHeadsFirst {
+		kBSHDNode, kBSHDInput = matchHeadsTranspose0213(m, kInputName)
+	}
+	if qBSHDNode != nil && (kNeedsHeadsFirst || kBSHDNode != nil) && vBSHDNode != nil && outBSHDNode != nil &&
+		!isGraphOutput(m, qInputName) && (kNeedsHeadsFirst || !isGraphOutput(m, kInputName)) &&
+		!isGraphOutput(m, vInputName) && !isGraphOutput(m, rootOutput) {
+		extraNodes := []*protos.NodeProto{qBSHDNode, vBSHDNode, outBSHDNode}
+		extraOutputs := []string{qInputName, vInputName, rootOutput}
+		if kBSHDNode != nil {
+			extraNodes = append(extraNodes, kBSHDNode)
+			extraOutputs = append(extraOutputs, kInputName)
+		}
+		var scaleShapeNodes []*protos.NodeProto
+		for _, scaleExpr := range []string{scaleNodeName, qScaleNodeName, kScaleNodeName} {
+			if scaleExpr == "" {
+				continue
+			}
+			for _, out := range extraOutputs {
+				for _, c := range consumers[out] {
+					if c.OpType == "Shape" && !internalNodes[c] {
+						scaleShapeNodes = append(scaleShapeNodes, c)
+					}
+				}
+			}
+		}
+		for _, n := range extraNodes {
+			internalNodes[n] = true
+		}
+		for _, n := range scaleShapeNodes {
+			internalNodes[n] = true
+		}
+		for _, out := range extraOutputs {
+			internalOutputs[out] = true
+		}
+		hasExt := onnxgraph.HasExternalConsumers(internalOutputs, consumers, internalNodes)
+		for _, n := range scaleShapeNodes {
+			delete(internalNodes, n)
+		}
+		if !hasExt {
+			// Redirect any Shape node that read the BHSD transpose output to read its BSHD input instead
+			// so MaterializeConstantScalar can evaluate it when the BHSD transpose node is skipped.
+			if len(scaleShapeNodes) > 0 {
+				redirect := map[string]string{
+					qInputName: qBSHDInput,
+					vInputName: vBSHDInput,
+				}
+				if kBSHDNode != nil {
+					redirect[kInputName] = kBSHDInput
+				}
+				for _, sn := range scaleShapeNodes {
+					if len(sn.Input) > 0 {
+						if newIn, ok := redirect[sn.Input[0]]; ok && newIn != "" {
+							sn.Input[0] = newIn
+						}
+					}
+				}
+			}
+			useBSHD = true
+			qInputName = qBSHDInput
+			kInputName = kBSHDInput
+			vInputName = vBSHDInput
+			rootOutput = outBSHDName
+			kNeedsHeadsFirst = false
+		} else {
+			for _, n := range extraNodes {
+				delete(internalNodes, n)
+			}
+			for _, out := range extraOutputs {
+				delete(internalOutputs, out)
+			}
+		}
+	}
+
 	externalInputs := []string{qInputName, kInputName, vInputName}
 	if maskInputName != "" {
 		externalInputs = append(externalInputs, maskInputName)
 	}
+	if qScaleNodeName != "" {
+		externalInputs = append(externalInputs, qScaleNodeName)
+	}
+	if kScaleNodeName != "" && kScaleNodeName != qScaleNodeName {
+		externalInputs = append(externalInputs, kScaleNodeName)
+	}
+	if scaleNodeName != "" {
+		externalInputs = append(externalInputs, scaleNodeName)
+	}
 
 	return &sdpaCandidate{
+		model:           m,
 		outputName:      rootOutput,
 		internalOutputs: internalOutputs,
 		externalInputs:  externalInputs,
@@ -323,11 +511,55 @@ func sdpaTryMatch(m *onnxgomlx.Model, matmul1 *protos.NodeProto) *sdpaCandidate 
 			VInputName:       vInputName,
 			MaskInputName:    maskInputName,
 			Scale:            scale,
+			QScaleNodeName:   qScaleNodeName,
+			KScaleNodeName:   kScaleNodeName,
+			ScaleNodeName:    scaleNodeName,
+			IsDivScale:       isDivScale,
 			NumHeads:         numHeads,
 			NumKVHeads:       numKVHeads,
 			KNeedsHeadsFirst: kNeedsHeadsFirst,
+			UseBSHD:          useBSHD,
 		},
 	}
+}
+
+// isGraphOutput reports whether name is one of the ONNX graph's declared outputs.
+func isGraphOutput(m *onnxgomlx.Model, name string) bool {
+	if m == nil || m.Proto.Graph == nil {
+		return false
+	}
+	for _, out := range m.Proto.Graph.Output {
+		if out.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
+// matchHeadsTranspose0213 checks if inputName is produced by a rank-4 Transpose with perm=[0,2,1,3].
+func matchHeadsTranspose0213(m *onnxgomlx.Model, inputName string) (*protos.NodeProto, string) {
+	node, ok := m.NodeOutputToNode[inputName]
+	if !ok || node.OpType != "Transpose" || len(node.Input) == 0 {
+		return nil, ""
+	}
+	perm := onnxgomlx.GetIntsAttrOr(node, "perm", nil)
+	if len(perm) == 4 && perm[0] == 0 && perm[1] == 2 && perm[2] == 1 && perm[3] == 3 {
+		return node, node.Input[0]
+	}
+	return nil, ""
+}
+
+// matchConsumerHeadsTranspose0213 checks if outputName's sole consumer is a rank-4 Transpose with perm=[0,2,1,3].
+func matchConsumerHeadsTranspose0213(m *onnxgomlx.Model, consumers map[string][]*protos.NodeProto, outputName string) (*protos.NodeProto, string) {
+	node := onnxgraph.SoleConsumer(consumers, outputName)
+	if node == nil || node.OpType != "Transpose" || len(node.Output) == 0 {
+		return nil, ""
+	}
+	perm := onnxgomlx.GetIntsAttrOr(node, "perm", nil)
+	if len(perm) == 4 && perm[0] == 0 && perm[1] == 2 && perm[2] == 1 && perm[3] == 3 {
+		return node, node.Output[0]
+	}
+	return nil, ""
 }
 
 // matchKTranspose checks if inputName comes from a Transpose node that swaps the last two axes.
@@ -367,39 +599,40 @@ func matchKTranspose(m *onnxgomlx.Model, inputName string) (*protos.NodeProto, s
 
 // matchPreScaledKTranspose checks if inputName comes from Mul(Transpose(...), scalar)
 // where the Transpose produces K^T (headDim and kvLen in the last two positions).
-// Returns the Mul node, Transpose node, and the pre-transpose input name; or nil if not matched.
+// Returns the Mul node, Transpose node, the pre-transpose input name, and the scalar node name; or nil if not matched.
 // kNeedsHeadsFirst is true when K_raw needs a [0,2,1,3] transpose to get to [batch, heads, kvLen, headDim].
-func matchPreScaledKTranspose(m *onnxgomlx.Model, inputName string) (mulNode, transposeNode *protos.NodeProto, preTransposeInput string, kNeedsHeadsFirst bool) {
+func matchPreScaledKTranspose(m *onnxgomlx.Model, inputName string) (mulNode, transposeNode *protos.NodeProto, preTransposeInput string, kNeedsHeadsFirst bool, scalarNodeName string) {
 	node, ok := m.NodeOutputToNode[inputName]
 	if !ok || node.OpType != "Mul" {
-		return nil, nil, "", false
+		return nil, nil, "", false, ""
 	}
 	if len(node.Input) < 2 {
-		return nil, nil, "", false
+		return nil, nil, "", false, ""
 	}
 
-	// One input should be a Transpose, the other a scalar constant.
+	// One input should be a Transpose, the other a scalar constant (or constant expression).
 	for _, transposeIdx := range []int{0, 1} {
 		scalarIdx := 1 - transposeIdx
-		scalar := tryGetConstantScalar(m, node.Input[scalarIdx])
-		if scalar == 0 {
+		sName := node.Input[scalarIdx]
+		scalar := tryGetConstantScalar(m, sName)
+		if scalar == 0 && !m.IsConstantExpression(sName) {
 			continue
 		}
 
 		// First try: standard K^T (last two axes swapped, e.g. [0,1,3,2]).
 		tNode, preInput := matchKTranspose(m, node.Input[transposeIdx])
 		if tNode != nil {
-			return node, tNode, preInput, false
+			return node, tNode, preInput, false, sName
 		}
 
 		// Second try: combined heads-first + K^T (e.g. [0,2,3,1] on [batch, seqLen, heads, headDim]).
 		// This rearranges to [batch, heads, headDim, seqLen] in one step.
 		tNode, preInput, ok := matchCombinedKTranspose(m, node.Input[transposeIdx])
 		if ok {
-			return node, tNode, preInput, true
+			return node, tNode, preInput, true, sName
 		}
 	}
-	return nil, nil, "", false
+	return nil, nil, "", false, ""
 }
 
 // matchCombinedKTranspose matches Transpose with perm [0,2,3,1] which combines
@@ -429,41 +662,47 @@ func matchCombinedKTranspose(m *onnxgomlx.Model, inputName string) (*protos.Node
 }
 
 // sdpaExtractPreScale extracts the effective scale when both Q and K inputs to MatMul
-// come from Mul(·, scalar) with the same constant scalar. Returns scalar² or 0 if not matched.
-func sdpaExtractPreScale(m *onnxgomlx.Model, qMulOutputName string, kMulNode *protos.NodeProto) float64 {
+// come from Mul(·, scalar) with the same constant scalar or constant expression.
+// Returns (scale, qScaleNodeName, kScaleNodeName).
+func sdpaExtractPreScale(m *onnxgomlx.Model, qMulOutputName string, kMulNode *protos.NodeProto, kScaleNodeName string) (scale float64, qScaleName, kScaleName string) {
 	// Q input should also come from a Mul(·, scalar).
 	qNode, ok := m.NodeOutputToNode[qMulOutputName]
 	if !ok || qNode.OpType != "Mul" {
-		return 0
+		return 0, "", ""
 	}
 	if len(qNode.Input) < 2 {
-		return 0
+		return 0, "", ""
 	}
 
 	// Extract scalar from Q's Mul.
-	qScalar := tryGetConstantScalar(m, qNode.Input[1])
-	if qScalar == 0 {
-		// Try the other input.
-		qScalar = tryGetConstantScalar(m, qNode.Input[0])
-	}
-	if qScalar == 0 {
-		return 0
+	qScaleName, qScalar := sdpaGetScalarOrExpr(m, qNode)
+	if qScaleName == "" {
+		return 0, "", ""
 	}
 
-	// Extract scalar from K's Mul.
-	if len(kMulNode.Input) < 2 {
-		return 0
+	kScalar := tryGetConstantScalar(m, kScaleNodeName)
+	if qScalar != 0 && kScalar != 0 {
+		return qScalar * kScalar, "", ""
 	}
-	kScalar := tryGetConstantScalar(m, kMulNode.Input[1])
-	if kScalar == 0 {
-		kScalar = tryGetConstantScalar(m, kMulNode.Input[0])
-	}
-	if kScalar == 0 {
-		return 0
-	}
+	return 0, qScaleName, kScaleNodeName
+}
 
-	// Effective scale is qScalar * kScalar (typically both are the same, so scalar²).
-	return qScalar * kScalar
+// sdpaGetScalarOrExpr returns the name of a scalar input (either constant or constant expression),
+// and the scalar float64 value if it's already an immediate constant.
+func sdpaGetScalarOrExpr(m *onnxgomlx.Model, node *protos.NodeProto) (string, float64) {
+	if len(node.Input) < 2 {
+		return "", 0
+	}
+	for _, idx := range []int{1, 0} {
+		name := node.Input[idx]
+		if s := tryGetConstantScalar(m, name); s != 0 {
+			return name, s
+		}
+		if m.IsConstantExpression(name) {
+			return name, 0
+		}
+	}
+	return "", 0
 }
 
 // sdpaLookThroughMulForShapeName returns the non-scalar input to a Mul node, which typically
@@ -476,39 +715,45 @@ func sdpaLookThroughMulForShapeName(m *onnxgomlx.Model, name string) string {
 	if len(node.Input) < 2 {
 		return name
 	}
-	// Return the input that is NOT a scalar constant.
-	if tryGetConstantScalar(m, node.Input[1]) != 0 {
+	// Return the input that is NOT a scalar constant or constant expression.
+	if tryGetConstantScalar(m, node.Input[1]) != 0 || m.IsConstantExpression(node.Input[1]) {
 		return node.Input[0]
 	}
-	if tryGetConstantScalar(m, node.Input[0]) != 0 {
+	if tryGetConstantScalar(m, node.Input[0]) != 0 || m.IsConstantExpression(node.Input[0]) {
 		return node.Input[1]
 	}
 	return name
 }
 
 // sdpaExtractScaleFromDiv extracts the scale factor from a Div node: result = x / divisor → scale = 1/divisor.
-func sdpaExtractScaleFromDiv(m *onnxgomlx.Model, node *protos.NodeProto) float64 {
+func sdpaExtractScaleFromDiv(m *onnxgomlx.Model, node *protos.NodeProto) (scale float64, scaleNodeName string) {
 	if len(node.Input) < 2 {
-		return 0
+		return 0, ""
 	}
 	divisor := tryGetConstantScalar(m, node.Input[1])
-	if divisor == 0 {
-		return 0
+	if divisor != 0 {
+		return 1.0 / divisor, ""
 	}
-	return 1.0 / divisor
+	if m.IsConstantExpression(node.Input[1]) {
+		return 0, node.Input[1]
+	}
+	return 0, ""
 }
 
 // sdpaExtractScaleFromMul extracts the scale factor from a Mul node: result = x * scale.
 // The scalar constant may appear as either input.
-func sdpaExtractScaleFromMul(m *onnxgomlx.Model, node *protos.NodeProto) float64 {
-
+func sdpaExtractScaleFromMul(m *onnxgomlx.Model, node *protos.NodeProto) (scale float64, scaleNodeName string) {
 	if len(node.Input) < 2 {
-		return 0
+		return 0, ""
 	}
-	if s := tryGetConstantScalar(m, node.Input[1]); s != 0 {
-		return s
+	name, s := sdpaGetScalarOrExpr(m, node)
+	if s != 0 {
+		return s, ""
 	}
-	return tryGetConstantScalar(m, node.Input[0])
+	if name != "" {
+		return 0, name
+	}
+	return 0, ""
 }
 
 // tryGetConstantScalar attempts to read a scalar float64 from a constant/initializer.
@@ -530,10 +775,71 @@ func tryGetConstantScalar(m *onnxgomlx.Model, name string) float64 {
 // Returns false if rank is unknown (be conservative and skip fusion).
 func isMaskRankAcceptable(m *onnxgomlx.Model, maskName string) bool {
 	s := m.ShapeForName(maskName)
-	if s.Dimensions == nil {
-		return false // unknown rank, be conservative
+	if s.Dimensions != nil {
+		return len(s.Dimensions) <= 4
 	}
-	return len(s.Dimensions) <= 4
+	rank := inferRank(m, maskName, 0)
+	if rank < 0 {
+		return false
+	}
+	return rank <= 4
+}
+
+func inferRank(m *onnxgomlx.Model, name string, depth int) int {
+	if depth > 20 {
+		return -1
+	}
+	s := m.ShapeForName(name)
+	if s.Dimensions != nil {
+		return len(s.Dimensions)
+	}
+	node, ok := m.NodeOutputToNode[name]
+	if !ok {
+		return -1
+	}
+	switch node.OpType {
+	case "Where", "Cast", "Sub", "Add", "Mul", "Div", "Neg", "Abs":
+		for _, inp := range node.Input {
+			if r := inferRank(m, inp, depth+1); r >= 0 {
+				return r
+			}
+		}
+	case "Expand":
+		if len(node.Input) > 1 {
+			if shapeNode, ok := m.NodeOutputToNode[node.Input[1]]; ok && shapeNode.OpType == "Concat" {
+				return len(shapeNode.Input)
+			}
+		}
+		if len(node.Input) > 0 {
+			return inferRank(m, node.Input[0], depth+1)
+		}
+	case "Unsqueeze":
+		if len(node.Input) > 0 {
+			r := inferRank(m, node.Input[0], depth+1)
+			if r >= 0 {
+				axes := onnxgomlx.GetIntsAttrOr(node, "axes", nil)
+				if len(node.Input) > 1 {
+					if axesTensor, ok := m.VariableNameToValue[node.Input[1]]; ok {
+						return r + len(axesTensor.Int64Data)
+					}
+					if _, ok := m.NodeOutputToNode[node.Input[1]]; ok {
+						return r + 1
+					}
+				}
+				if axes != nil {
+					return r + len(axes)
+				}
+				return r + 1
+			}
+		}
+	case "Reshape":
+		if len(node.Input) > 1 {
+			if shapeNode, ok := m.NodeOutputToNode[node.Input[1]]; ok && shapeNode.OpType == "Concat" {
+				return len(shapeNode.Input)
+			}
+		}
+	}
+	return -1
 }
 
 // extractHeadCounts tries to determine numHeads and numKVHeads from Q and K shapes.
